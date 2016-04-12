@@ -1,0 +1,9 @@
+{
+  "name": "mimacharts",
+  "devDependencies": {
+    "uglifyjs": "latest"
+  },
+  "scripts": {
+    "build": "uglifyjs mimaCharts.js -c -m -o mimaCharts.min.js"
+  }
+}
