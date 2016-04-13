@@ -11,6 +11,44 @@ var charts = [{
         v: 15
     }]
 }, {
+    title: 'Multi Line',
+    config: {
+        type: 'line'
+    },
+    data: [{
+        v: 0,
+        data: [{
+            v: 0
+        }, {
+            v: 0
+        }]
+    }, {
+        v: 1,
+        data: [{
+            v: 1
+        }, {
+            v: 0
+        }]
+    }, {
+        v: 5,
+        data: [{
+            v: 5
+        }, {
+            v: 0
+        }, {
+            v: 3
+        }, {
+            v: 4
+        }]
+    }, {
+        v: 2.45343,
+        data: [{
+            v: 5
+        }, {
+            v: 2.45343
+        }]
+    }]
+}, {
     title: 'Bar',
     config: {
         type: 'bar'
@@ -119,7 +157,7 @@ var genRandomDataSegment = function(){
         }
     });
 };
-for(var i=0; i<2; i++){
+for(var i=0; i<5; i++){
     var dataItem = {
         title: 'Random '+i,
         config: {

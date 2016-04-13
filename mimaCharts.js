@@ -50,6 +50,7 @@
             var k, m = {
                     config: config,
                     data: data,
+                    series: 0,
                     getColorValue: function(color) {
                         return 'hsla(' + color.h + ',' + color.s + ',' + color.l + ',' + color.a + ')';
                     },
@@ -79,11 +80,14 @@
 
                 // first pass at looping the data structure to figure out highest/lowest values
                 gatherInfo1 = function(point, p, ar) {
-                    if (!point.info) {
-                        point.info = {
-                            lowest: config.scaleStart !== 'auto' ? config.scaleStart : undefined
-                        };
-                    }
+                    point.parent = this;
+                    point.i = p;
+
+                    point.info = {
+                        level: this.info.level + 1,
+                        lowest: config.scaleStart !== 'auto' ? config.scaleStart : undefined
+                    };
+
                     if (point.v > this.info.highest || typeof this.info.highest === 'undefined') {
                         this.info.highest = point.v;
                     }
@@ -112,6 +116,8 @@
                 summaryInfo = function(info, ar) {
                     info.gap = 10;
                     info.gap_less = info.gap * (ar.length + 1);
+                    info.seriesIndex = m.series * 1;
+                    m.series++;
                 },
 
                 // bar chart bars
@@ -149,39 +155,37 @@
 
                 // line chart lines
                 generateLines = function(point, p, ar) {
-                    point.color = m.getColor(p, ar.length, this.color ? this.color : false);
 
-                    point.node = document.createElement('div');
-                    point.node.style.cssText = objectCSS({
-                        position: 'absolute',
-                        width: ((100 - this.info.gap_less) / ar.length) + '%',
-                        top: 0,
-                        bottom: 0,
-                        left: (this.info.gap * (p + 1)) + (((100 - this.info.gap_less) / ar.length) * p) + '%'
-                    });
-                    this.node.appendChild(point.node);
+                    if(!this.info.color){
+                        if(this.parent){
+                            console.log('parent index', this.parent.i);
+                        }
+                        this.info.color = m.getColor(this.info.seriesIndex, ar.length, this.color ? this.color : false);
+                    }
 
                     if (!point.data) {
-                        // this generates bars within the parent item only for the lowest level of data available
-                        point.dot = document.createElement('div');
+
+                        point.color = this.info.color;
+
+                        point.dot = document.createElement('span');
                         point.dot.className = cssPrefix + 'sq';
                         point.dot.style.cssText = objectCSS({
                             position: 'absolute',
-                            left: '50%',
-                            top: ((100 - point.percent) + 0.5) + '%',
+                            left: (this.info.gap * (p + 1)) + (((100 - this.info.gap_less) / ar.length) * p) + '%',
+                            top: ((100 - point.percent) - 0.5) + '%',
                             'margin-left': '-0.5%',
                             'border-radius': '50%',
-                            width: '20%',
+                            width: (100 / (ar.length * 3)) + '%',
                             'min-width': '4px',
-                            'max-width': '20px',
+                            'max-width': '10px',
                             'background-color': point.color.color
-
                         });
-                        point.node.appendChild(point.dot);
+                        m.node.appendChild(point.dot);
+
                     }
 
                     if (point.data) {
-                        point.data.forEach(generateVerticalBars, point);
+                        point.data.forEach(generateLines, point);
                     }
                 };
 
@@ -193,6 +197,7 @@
             }
 
             m.info = {
+                level: 0,
                 lowest: config.scaleStart !== 'auto' ? config.scaleStart : undefined
             };
 
@@ -228,7 +233,7 @@
                 m.data.forEach(generatorFunc, m);
 
             }
-
+            console.log('chart', m);
             setStyleSheet();
             return m;
         };
