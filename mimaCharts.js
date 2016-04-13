@@ -1,13 +1,19 @@
 (function mimaChart() {
     'use strict';
+
     var objectCSS = function(obj) {
+            // takes an object and simply converts it into a css string for convenience
             var string = '';
             for (var k in obj) {
                 string += k + ':' + obj[k] + ';';
             }
             return string;
         },
+
+        // all classes will start with this prefix, we threw it into a variable to make changing it easier
         cssPrefix = '_mima_',
+
+        // adds if not already set a stylesheet to the document
         setStyleSheet = function() {
             if (!document.getElementById(cssPrefix + 'sheet')) {
                 var style = document.createElement('style');
@@ -18,7 +24,21 @@
                 document.head.appendChild(style);
             }
         },
+
+        // these are just the hue values of the css colors for hsla() after these it's dynamically set
+        baseColors = [200, 16, 285],
+
+        // the default configuration passed into mimaChart() for the config parameter
+        defaults = {
+            type: 'donut',
+            scale: {},
+            ratio: 0.5,
+            scaleStart: 0,
+        },
+
+        // this is the function exposed
         mimaChart = function(config, data) {
+
             if (typeof data !== 'object') {
                 // alows us to accept just data and use default config
                 data = config;
@@ -29,26 +49,47 @@
             var k, m = {
                     config: config,
                     data: data,
-                    info: {},
-                    getColor: function(i, len) {
-                        var hue = Math.round((360 / len) * i);
-                        return 'hsla(' + hue + ', 100%, 68%, 1)';
+                    getColorValue: function(color) {
+                        return 'hsla(' + color.h + ',' + color.s + ',' + color.l + ',' + color.a + ')';
+                    },
+                    getColor: function(i, len, parent) {
+                        var color = {
+                            h: 0,
+                            s: '100%',
+                            l: '64%',
+                            a: 1
+                        };
+                        if (parent) {
+                            var div = (50 / len);
+                            color.h = parent.h;
+                            color.l = 24 + Math.round((div * 0.5) + (div * i)) + '%';
+                        } else {
+                            if (i < baseColors.length) {
+                                color.h = baseColors[i];
+                            } else {
+                                var div = (360 / len);
+                                color.h = Math.round((div * 0.5) + (div * i));
+                            }
+                        }
+                        color.color = m.getColorValue(color);
+                        return color;
                     },
                 },
-                defaults = {
-                    type: 'donut',
-                    scale: {},
-                    ratio: 0.5
-                },
+
+                // first pass at looping the data structure to figure out highest/lowest values
                 gatherInfo1 = function(point, p, ar) {
                     if (!point.info) {
-                        point.info = {};
+                        point.info = {
+                            lowest: config.scaleStart !== 'auto' ? config.scaleStart : undefined
+                        };
                     }
                     if (point.v > this.info.highest || typeof this.info.highest === 'undefined') {
                         this.info.highest = point.v;
                     }
-                    if (point.v < this.info.lowest || typeof this.info.lowest === 'undefined') {
-                        this.info.lowest = point.v;
+                    if (config.scaleStart === 'auto') {
+                        if (point.v < this.info.lowest || typeof this.info.lowest === 'undefined') {
+                            this.info.lowest = point.v;
+                        }
                     }
                     if (point.data) {
                         point.data.forEach(gatherInfo1, point);
@@ -57,17 +98,25 @@
                         summaryInfo(this.info, ar);
                     }
                 },
+
+                //second pass after we know the highest/lowest values (scale stuff) we can set the percent relative here
                 gatherInfo2 = function(point, p, ar) {
                     point.percent = 100 * ((point.v - this.info.lowest) / this.info.highest);
                     if (point.data) {
                         point.data.forEach(gatherInfo2, point);
                     }
                 },
+
+                // this is executed in gatherInfo1 to figure out soley based on data segment length what even spacing should be
                 summaryInfo = function(info, ar) {
-                    info.gap = 1;
+                    info.gap = 10;
                     info.gap_less = info.gap * (ar.length + 1);
                 },
+
+                // bar chart bars
                 generateVerticalBars = function(point, p, ar) {
+                    point.color = m.getColor(p, ar.length, this.color ? this.color : false);
+
                     point.node = document.createElement('div');
                     point.node.style.cssText = objectCSS({
                         position: 'absolute',
@@ -78,18 +127,19 @@
                     });
                     this.node.appendChild(point.node);
 
-                    point.bar = document.createElement('div');
-                    point.bar.style.cssText = objectCSS({
-                        position: 'absolute',
-                        margin: '0 auto',
-                        'background-color': m.getColor(p, ar.length),
-                        bottom: 0,
-                        width: '100%',
-                        'min-height': '1px',
-                        'max-width': '20px',
-                        height: point.percent + '%'
-                    });
-                    point.node.appendChild(point.bar);
+                    if (!point.data) {
+                        // this generates bars within the parent item only for the lowest level of data available
+                        point.bar = document.createElement('div');
+                        point.bar.style.cssText = objectCSS({
+                            position: 'absolute',
+                            'background-color': point.color.color,
+                            bottom: 0,
+                            width: '100%',
+                            'min-height': '1px',
+                            height: point.percent + '%'
+                        });
+                        point.node.appendChild(point.bar);
+                    }
 
                     if (point.data) {
                         point.data.forEach(generateVerticalBars, point);
@@ -102,6 +152,10 @@
                     m.config[k] = defaults[k];
                 }
             }
+
+            m.info = {
+                lowest: config.scaleStart !== 'auto' ? config.scaleStart : undefined
+            };
 
             m.chart = document.createElement('div');
             m.chart.innerHTML = '<div style="padding-top:' + (config.ratio * 100) + '%"></div>';
@@ -132,14 +186,16 @@
 
             }
 
-            console.log('chart', m);
             setStyleSheet();
             return m;
         };
 
+    // *could* be used in a server-side dom situation but I doubt it. Just throwing it here in case
+    // it is to be modularized in the future somehow
     if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
         module.exports = mimaChart;
     } else {
         window.mimaChart = mimaChart;
     }
+
 })();

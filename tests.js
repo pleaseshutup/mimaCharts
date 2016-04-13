@@ -143,12 +143,14 @@ charts.forEach(function(chart) {
 
 var mimaInstance = mimaChart(),
     colorSec = document.createElement('div');
-[1,2,3,5,10,20,100].forEach(function(num){
+[1,2,3,5,12,20,100,200,600].forEach(function(num){
     var colors = document.createElement('div');
     colors.innerHTML = '<div>'+num+' colors</div>';
     for(var i=0; i<num;i++){
-        var color = document.createElement('span');
-        color.style.cssText = 'display:inline-block;box-sizing:border-box;width:20px;height:16px;margin:0 6px 6px 0;background-color:'+mimaInstance.getColor(i, num);
+        var color = document.createElement('span'),
+            getColor = mimaInstance.getColor(i, num);
+        color.setAttribute('title', JSON.stringify(getColor));
+        color.style.cssText = 'display:inline-block;box-sizing:border-box;width:20px;height:16px;margin:0 6px 6px 0;background-color:'+getColor.color;
         colors.appendChild(color);
     }
     colorSec.appendChild(colors);
