@@ -20,6 +20,7 @@
                 style.id = cssPrefix + 'sheet';
                 style.appendChild(document.createTextNode('\
                 .' + cssPrefix + 'abs{position:absolute;top:0;left:0;width:100%;height:100%}\
+                .' + cssPrefix + 'sq:before{content:"";display:block;padding-top: 100%;}\
                 '));
                 document.head.appendChild(style);
             }
@@ -144,6 +145,44 @@
                     if (point.data) {
                         point.data.forEach(generateVerticalBars, point);
                     }
+                },
+
+                // line chart lines
+                generateLines = function(point, p, ar) {
+                    point.color = m.getColor(p, ar.length, this.color ? this.color : false);
+
+                    point.node = document.createElement('div');
+                    point.node.style.cssText = objectCSS({
+                        position: 'absolute',
+                        width: ((100 - this.info.gap_less) / ar.length) + '%',
+                        top: 0,
+                        bottom: 0,
+                        left: (this.info.gap * (p + 1)) + (((100 - this.info.gap_less) / ar.length) * p) + '%'
+                    });
+                    this.node.appendChild(point.node);
+
+                    if (!point.data) {
+                        // this generates bars within the parent item only for the lowest level of data available
+                        point.dot = document.createElement('div');
+                        point.dot.className = cssPrefix + 'sq';
+                        point.dot.style.cssText = objectCSS({
+                            position: 'absolute',
+                            left: '50%',
+                            top: ((100 - point.percent) + 0.5) + '%',
+                            'margin-left': '-0.5%',
+                            'border-radius': '50%',
+                            width: '20%',
+                            'min-width': '4px',
+                            'max-width': '20px',
+                            'background-color': point.color.color
+
+                        });
+                        point.node.appendChild(point.dot);
+                    }
+
+                    if (point.data) {
+                        point.data.forEach(generateVerticalBars, point);
+                    }
                 };
 
 
@@ -182,7 +221,11 @@
                 m.data.forEach(gatherInfo1, m);
                 m.data.forEach(gatherInfo2, m);
 
-                m.data.forEach(generateVerticalBars, m);
+                var generatorFunc = generateVerticalBars;
+                if (config.type === 'line') {
+                    generatorFunc = generateLines;
+                }
+                m.data.forEach(generatorFunc, m);
 
             }
 

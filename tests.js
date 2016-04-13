@@ -100,6 +100,8 @@ var charts = [{
     }]
 }];
 
+var types = ['line','bar','donut','pie','dial'];
+
 // two random charts
 var genRandomDataSegment = function(){
     var data = [],
@@ -121,7 +123,7 @@ for(var i=0; i<2; i++){
     var dataItem = {
         title: 'Random '+i,
         config: {
-            type: 'dial'
+            type: types[Math.round(Math.random() * (types.length-1))]
         },
         data: genRandomDataSegment()
     }, levels = Math.round(Math.random() * 3);
