@@ -34,7 +34,8 @@
 
         xyRadius = function(cx, cy, radius, degrees) {
             //lets have zero be at the left and go clockwise
-            //degrees = (360 - (degrees + 90));
+            //degrees = degrees + 180;
+            console.log('deg', degrees);
             return {
                 x: cx + radius * Math.sin(degrees * Math.PI / 180),
                 y: cy + radius * Math.cos(degrees * Math.PI / 180)
@@ -48,7 +49,7 @@
         defaults = {
             type: 'donut',
             scale: {},
-            ratio: 1,
+            ratio: 0.5,
             scaleStart: 0,
         },
 
@@ -154,10 +155,10 @@
                         lowest: config.scaleStart !== 'auto' ? config.scaleStart : undefined,
                         sum: 0,
                         average: 0,
-                        cx: 50,
-                        cy: 50,
-                        o_rad: 40,
-                        i_rad: 20
+                        cx: 25,
+                        cy: 25,
+                        o_rad: 24,
+                        i_rad: 14
                     };
                     if (level === 0) {
                         point.info.id = 0;
@@ -283,7 +284,7 @@
 
                         if (p > 0) {
                             point.line = document.createElementNS(svgNS, 'path');
-                            point.line.setAttribute('d', 'M' + this.info.lastPoint.x + ',' + this.info.lastPoint.y + ' ' + x + ',' + y);
+                            point.line.setAttribute('d', 'M' + this.info.lastPoint.x + ',' + (this.info.lastPoint.y * m.config.ratio) + ' ' + x + ',' + (y * m.config.ratio));
                             point.line.setAttribute('stroke', point.color.hsla);
                             point.line.setAttribute('stroke-width', '0.5%');
                             m.svg.appendChild(point.line);
@@ -347,7 +348,7 @@
                     point.line.setAttribute('stroke-width', 1);
                     point.line.setAttribute('stroke', point.color.hsla);
                     point.line.setAttribute('data-point', point.id);
-                    point.toolTip = (point.label || '') + ' '+Math.round(point.v) + ' (' + Math.round(point.percent_series) + '%)';
+                    point.toolTip = (point.label || '') + ' ' + Math.round(point.v) + ' (' + Math.round(point.percent_series) + '%)';
 
                     m.svg.appendChild(point.line);
 
@@ -376,10 +377,10 @@
             });
 
             m.svg = document.createElementNS(svgNS, 'svg');
-            m.svg.setAttribute('viewBox', '0 0 100 100');
+            m.svg.setAttribute('viewBox', '0 0 100 ' + (100 * m.config.ratio));
             m.svg.setAttribute('width', '100%');
             m.svg.setAttribute('height', '100%');
-            m.svg.setAttribute('preserveAspectRatio', 'none');
+            //m.svg.setAttribute('preserveAspectRatio', 'none');
             m.svg.setAttribute('class', cssPrefix + 'abs');
             m.chart.appendChild(m.svg);
             // example for xlink if used use.elements[0].setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', '#icon-' + name);
