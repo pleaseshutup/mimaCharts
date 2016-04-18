@@ -22,9 +22,11 @@
                 var style = document.createElement('style');
                 style.id = cssPrefix + 'sheet';
                 style.appendChild(document.createTextNode('\
-                .' + cssPrefix + 'abs{position:absolute;top:0;left:0;width:100%;height:100%}\
+                .' + cssPrefix + 'abs{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none}\
                 .' + cssPrefix + 'sq:before{content:"";display:block;padding-top: 100%;}\
                 .' + cssPrefix + 'dot{position:absolute;margin-left:-0.5%;border-radius:50%;min-width:4px;max-width:10px;}\
+                .' + cssPrefix + 'pe{pointer-events: all}\
+                .' + cssPrefix + 'tooltip{position:absolute;z-index:1;left:0;top:0;min-width:100px;min-height:100px;border-radius:4px;background-color:#000;color:white;box-shadow:0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24)}\
                 '));
                 document.head.appendChild(style);
             }
@@ -34,8 +36,8 @@
             //lets have zero be at the left and go clockwise
             //degrees = (360 - (degrees + 90));
             return {
-                x: (cx + (radius * Math.sin((degrees) * Math.PI / 180))),
-                y: (cy + (radius * Math.cos((degrees) * Math.PI / 180)))
+                x: cx + radius * Math.sin(degrees * Math.PI / 180),
+                y: cy + radius * Math.cos(degrees * Math.PI / 180)
             };
         },
 
@@ -46,7 +48,7 @@
         defaults = {
             type: 'donut',
             scale: {},
-            ratio: 0.5,
+            ratio: 1,
             scaleStart: 0,
         },
 
@@ -58,9 +60,15 @@
             data = typeof data !== 'object' ? [] : data;
             config = typeof config !== 'object' ? {} : config;
 
+            config.type1 = (config.type || '')[0] || '';
+            if (config.type1 === 'b' || config.type1 === 'l') {
+                config.ratio = 0.5;
+            }
+
             var k, m = {
                     config: config,
                     data: data,
+                    dataref: {},
                     series: 0,
                     getColorValue: function(color) {
                         return 'hsla(' + color.h + ',' + color.s + ',' + color.l + ',' + color.a + ')';
@@ -87,6 +95,29 @@
                         color.hsla = m.getColorValue(color);
                         return color;
                     },
+                    toolTip: function(e, point) {
+                        if(!m.currentToolTip){
+                            m.currentToolTip = document.createElement('div');
+                            m.currentToolTip.className = cssPrefix + 'tooltip';
+                            m.chart.appendChild(m.currentToolTip);
+                        }
+                        var chartBox = m.chart.getBoundingClientRect(),
+                            st = (document.body.scrollTop || document.documentElement.scrollTop),
+                            sl = (document.body.scrollLeft || document.documentElement.scrollLeft),
+                            x = (e.pageX - (chartBox.left+sl)),
+                            y = (e.pageY - (chartBox.top+st)) ;
+                        m.currentToolTip.style.left = (x) + 'px';
+                        m.currentToolTip.style.top = (y) + 'px';
+
+                        //debug
+                        var showPointDebug = {};
+                        for(var k in point){
+                            if(k !== 'parent'){
+                                showPointDebug[k] = point[k];
+                            }
+                        }
+                        m.currentToolTip.innerHTML = '<pre>'+JSON.stringify(showPointDebug, undefined, 2)+'</pre>';
+                    }
                 },
 
                 // simplify the initialization of the info setting for the top level and each data segment
@@ -101,12 +132,20 @@
                         o_rad: 40,
                         i_rad: 20
                     };
+                    if(level === 0){
+                        point.info.id = 0;
+                    }
                 },
 
                 // first pass at looping the data structure to figure out highest/lowest values
                 gatherInfo1 = function(point, p, ar) {
                     point.parent = this;
                     point.i = p;
+
+                    //set and increment id
+                    point.id = m.info.id * 1;
+                    m.dataref[point.id] = point;
+                    m.info.id++;
 
                     // we'll assume blank/undefined as zero to not break any math
                     if (!point.v) {
@@ -238,33 +277,51 @@
                 generateSlices = function(point, p, ar) {
                     point.color = m.getColor(p, ar.length, this.color ? this.color : false);
 
-                    point.deg = 360 * (100 / point.percent_series),
+                    point.deg = 360 * (100 / point.percent_series);
                     point.lastDeg = this.info.lastPoint ? this.info.lastPoint.deg : 0;
 
-                    point.p1 = xyRadius(this.info.cx, this.info.cy, this.info.i_rad, point.lastDeg),
-                    point.p2 = xyRadius(this.info.cx, this.info.cy, this.info.o_rad, point.lastDeg),
-                    point.p3 = xyRadius(this.info.cx, this.info.cy, this.info.o_rad, point.deg),
-                    point.p4 = xyRadius(this.info.cx, this.info.cy, this.info.i_rad, point.lastDeg),
+                    point.p1 = xyRadius(this.info.cx, this.info.cy, this.info.i_rad, point.lastDeg);
+                    point.p2 = xyRadius(this.info.cx, this.info.cy, this.info.o_rad, point.lastDeg);
+                    point.p3 = xyRadius(this.info.cx, this.info.cy, this.info.o_rad, point.deg);
+                    point.p4 = xyRadius(this.info.cx, this.info.cy, this.info.i_rad, point.deg);
 
-                    point.sweep = ((point.deg - point.lastDeg)) <= 180 ? '0' : '1';
+                    point.o_sweep = point.percent_series >= 50 ? '0 1,1' : '0 0,1';
+                    point.i_sweep = point.percent_series >= 50 ? '0 1,0' : '0 0,0';
 
                     point.line = document.createElementNS(svgNS, 'path');
                     point.line.setAttribute('d',
                         'M' + point.p1.x + ',' + point.p1.y +
                         ' L' + point.p2.x + ',' + point.p2.y +
-                        ' A' + this.info.o_rad + ',' + this.info.o_rad + ' 0 ' + point.sweep + ',0 ' + point.p3.x + ',' + point.p3.y +
+                        ' A' + this.info.o_rad + ',' + this.info.o_rad + ' ' + point.o_sweep + ' ' + point.p3.x + ',' + point.p3.y +
                         ' L' + point.p4.x + ',' + point.p4.y +
-                        ' A' + this.info.i_rad + ',' + this.info.i_rad + ' 0 ' + point.sweep + ',0 ' + point.p1.x + ',' + point.p1.y);
-
+                        ' A' + this.info.i_rad + ',' + this.info.i_rad + ' ' + point.i_sweep + ' ' + point.p1.x + ',' + point.p1.y
+                    );
+                    point.line.setAttribute('class', cssPrefix + 'pe');
                     point.line.setAttribute('fill', point.color.hsla);
                     point.line.setAttribute('stroke-width', 1);
                     point.line.setAttribute('stroke', point.color.hsla);
+                    point.line.setAttribute('data-point', point.id);
                     m.svg.appendChild(point.line);
 
                     this.info.lastPoint = {
                         deg: point.deg
                     };
 
+                },
+
+                //all pointer events
+                pointerEvents = function(e){
+                    if(e.target){
+                        var pointID = e.target.getAttribute('data-point');
+                        if(pointID !== null){
+                            pointID = pointID * 1;
+                            if(m.dataref[pointID]){
+                                m.toolTip(e, m.dataref[pointID]);
+                            } else {
+                                console.error('No dataref to id', pointID);
+                            }
+                        }
+                    }
                 };
 
 
@@ -314,6 +371,9 @@
                 m.data.forEach(generatorFunc, m);
 
             }
+
+            m.chart.addEventListener('mousemove', pointerEvents);
+
             console.log('chart', m);
             setStyleSheet();
             return m;

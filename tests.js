@@ -136,6 +136,54 @@ var charts = [{
     }, {
         v: 15
     }]
+}, {
+    title: 'Pie Test 2',
+    config: {
+        type: 'pie'
+    },
+    data: [{
+        v: 100
+    }]
+}, {
+    title: 'Pie Test 3',
+    config: {
+        type: 'pie'
+    },
+    data: [{
+        v: 100
+    },{
+        v: 100
+    }]
+}, {
+    title: 'Pie Test 4',
+    config: {
+        type: 'pie'
+    },
+    data: [{
+        v: 10
+    },{
+        v: 100
+    }]
+}, {
+    title: 'Pie Test 5',
+    config: {
+        type: 'pie'
+    },
+    data: [{
+        v: 100
+    },{
+        v: 10
+    }]
+}, {
+    title: 'Pie Test 6',
+    config: {
+        type: 'pie'
+    },
+    data: [{
+        v: 0.001
+    },{
+        v: 99.999
+    }]
 }];
 
 var types = ['line','bar','donut','pie','dial'];
