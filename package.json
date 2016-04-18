@@ -4,6 +4,6 @@
     "uglifyjs": "latest"
   },
   "scripts": {
-    "build": "uglifyjs mimaCharts.js -c -m -o mimaCharts.min.js"
+    "build": "uglifyjs mimaCharts.js -c -m -o mimaCharts.min.js; gzip < mimaCharts.min.js > mimaCharts.min.js.gz; stat --printf=\"%s\" mimaCharts.min.js.gz; echo \" bytes\""
   }
 }

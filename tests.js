@@ -118,7 +118,7 @@ var charts = [{
         type: 'donut'
     },
     data: [{
-        v: 10
+        v: 60
     }, {
         v: 20
     }, {

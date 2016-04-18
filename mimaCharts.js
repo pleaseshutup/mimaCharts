@@ -26,7 +26,7 @@
                 .' + cssPrefix + 'sq:before{content:"";display:block;padding-top: 100%;}\
                 .' + cssPrefix + 'dot{position:absolute;margin-left:-0.5%;border-radius:50%;min-width:4px;max-width:10px;}\
                 .' + cssPrefix + 'pe{pointer-events: all}\
-                .' + cssPrefix + 'tooltip{position:absolute;z-index:1;left:0;top:0;min-width:100px;min-height:100px;border-radius:4px;background-color:#000;color:white;box-shadow:0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24)}\
+                .' + cssPrefix + 'tooltip{z-index:1;pointer-events:none;position:absolute;left:0;top:0;border-radius:4px;padding:4px;background-color:#000;color:white;box-shadow:0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);transition: all 0.15s ease-out;}\
                 '));
                 document.head.appendChild(style);
             }
@@ -95,28 +95,55 @@
                         color.hsla = m.getColorValue(color);
                         return color;
                     },
-                    toolTip: function(e, point) {
-                        if(!m.currentToolTip){
-                            m.currentToolTip = document.createElement('div');
-                            m.currentToolTip.className = cssPrefix + 'tooltip';
-                            m.chart.appendChild(m.currentToolTip);
-                        }
-                        var chartBox = m.chart.getBoundingClientRect(),
-                            st = (document.body.scrollTop || document.documentElement.scrollTop),
-                            sl = (document.body.scrollLeft || document.documentElement.scrollLeft),
-                            x = (e.pageX - (chartBox.left+sl)),
-                            y = (e.pageY - (chartBox.top+st)) ;
-                        m.currentToolTip.style.left = (x) + 'px';
-                        m.currentToolTip.style.top = (y) + 'px';
+                    toolTip: function(e) {
+                        var point,
+                            pointID = e.target ? e.target.getAttribute('data-point') : null,
+                            point = m.dataref[pointID * 1],
+                            show = e.type === 'mouseover';
 
-                        //debug
-                        var showPointDebug = {};
-                        for(var k in point){
-                            if(k !== 'parent'){
-                                showPointDebug[k] = point[k];
+                        if (point && show) {
+                            if (!m.currentToolTip) {
+                                m.currentToolTip = document.createElement('div');
+                                m.currentToolTip.className = cssPrefix + 'tooltip';
+                                m.chart.appendChild(m.currentToolTip);
+                            } else {
+                                m.currentToolTip.style.display = '';
+                            }
+                            var chartBox = m.chart.getBoundingClientRect(),
+                                st = (document.body.scrollTop || document.documentElement.scrollTop),
+                                sl = (document.body.scrollLeft || document.documentElement.scrollLeft),
+                                x = (e.pageX - (chartBox.left + sl)),
+                                y = (e.pageY - (chartBox.top + st));
+
+                            m.currentToolTip.style.left = (x) + 'px';
+                            m.currentToolTip.style.top = (y) + 'px';
+
+                            if (false) {
+                                //debug
+                                var showPointDebug = {};
+                                for (var k in point) {
+                                    if (k !== 'parent') {
+                                        showPointDebug[k] = point[k];
+                                    }
+                                }
+                                m.currentToolTip.innerHTML = '<pre>' + JSON.stringify(showPointDebug, undefined, 2) + '</pre>';
+                            } else {
+                                if (!point.toolTip) {
+                                    show = false;
+                                } else {
+                                    m.currentToolTip.innerHTML = point.toolTip || '';
+                                }
+                            }
+                        } else {
+                            if (!point) {
+                                console.error('No dataref to id', pointID);
                             }
                         }
-                        m.currentToolTip.innerHTML = '<pre>'+JSON.stringify(showPointDebug, undefined, 2)+'</pre>';
+                        if (!show) {
+                            if (m.currentToolTip) {
+                                m.currentToolTip.style.display = 'none';
+                            }
+                        }
                     }
                 },
 
@@ -132,7 +159,7 @@
                         o_rad: 40,
                         i_rad: 20
                     };
-                    if(level === 0){
+                    if (level === 0) {
                         point.info.id = 0;
                     }
                 },
@@ -277,53 +304,56 @@
                 generateSlices = function(point, p, ar) {
                     point.color = m.getColor(p, ar.length, this.color ? this.color : false);
 
-                    point.deg = 360 * (100 / point.percent_series);
-                    point.lastDeg = this.info.lastPoint ? this.info.lastPoint.deg : 0;
+                    point.percent_decimal = point.percent_series ? point.percent_series / 100 : 0;
+                    point.deg_from = this.info.lastDegTo || 0;
+                    point.deg_to = point.deg_from + (360 * point.percent_decimal);
+                    this.info.lastDegTo = point.deg_to * 1;
 
-                    point.p1 = xyRadius(this.info.cx, this.info.cy, this.info.i_rad, point.lastDeg);
-                    point.p2 = xyRadius(this.info.cx, this.info.cy, this.info.o_rad, point.lastDeg);
-                    point.p3 = xyRadius(this.info.cx, this.info.cy, this.info.o_rad, point.deg);
-                    point.p4 = xyRadius(this.info.cx, this.info.cy, this.info.i_rad, point.deg);
+                    point.p1 = xyRadius(this.info.cx, this.info.cy, this.info.i_rad, point.deg_from);
+                    point.p2 = xyRadius(this.info.cx, this.info.cy, this.info.o_rad, point.deg_from);
+                    point.p3 = xyRadius(this.info.cx, this.info.cy, this.info.o_rad, point.deg_to);
+                    point.p4 = xyRadius(this.info.cx, this.info.cy, this.info.i_rad, point.deg_to);
 
-                    point.o_sweep = point.percent_series >= 50 ? '0 1,1' : '0 0,1';
-                    point.i_sweep = point.percent_series >= 50 ? '0 1,0' : '0 0,0';
+                    point.o_sweep = point.deg_to - point.deg_from > 180 ? '0 1,0' : '0 0,0';
+                    point.i_sweep = point.deg_to - point.deg_from > 180 ? '0 1,1' : '0 0,1';
 
                     point.line = document.createElementNS(svgNS, 'path');
-                    point.line.setAttribute('d',
-                        'M' + point.p1.x + ',' + point.p1.y +
-                        ' L' + point.p2.x + ',' + point.p2.y +
-                        ' A' + this.info.o_rad + ',' + this.info.o_rad + ' ' + point.o_sweep + ' ' + point.p3.x + ',' + point.p3.y +
-                        ' L' + point.p4.x + ',' + point.p4.y +
-                        ' A' + this.info.i_rad + ',' + this.info.i_rad + ' ' + point.i_sweep + ' ' + point.p1.x + ',' + point.p1.y
-                    );
+                    point.d = '';
+                    if (point.percent_decimal >= 1) {
+
+                        // two line hack for cicles
+                        point.p3a = xyRadius(this.info.cx, this.info.cy, this.info.o_rad, point.deg_to * 0.5);
+                        point.p1a = xyRadius(this.info.cx, this.info.cy, this.info.i_rad, point.deg_to * 0.5);
+
+                        point.d =
+                            'M' + point.p1.x + ',' + point.p1.y +
+                            ' L' + point.p2.x + ',' + point.p2.y +
+                            ' A' + this.info.o_rad + ',' + this.info.o_rad + ' ' + point.o_sweep + ' ' + point.p3a.x + ',' + point.p3a.y +
+                            ' A' + this.info.o_rad + ',' + this.info.o_rad + ' ' + point.o_sweep + ' ' + point.p3.x + ',' + point.p3.y +
+                            ' L' + point.p4.x + ',' + point.p4.y +
+                            ' A' + this.info.i_rad + ',' + this.info.i_rad + ' ' + point.i_sweep + ' ' + point.p1a.x + ',' + point.p1a.y +
+                            ' A' + this.info.i_rad + ',' + this.info.i_rad + ' ' + point.i_sweep + ' ' + point.p1.x + ',' + point.p1.y;
+                    } else {
+                        point.d =
+                            'M' + point.p1.x + ',' + point.p1.y +
+                            ' L' + point.p2.x + ',' + point.p2.y +
+                            ' A' + this.info.o_rad + ',' + this.info.o_rad + ' ' + point.o_sweep + ' ' + point.p3.x + ',' + point.p3.y +
+                            ' L' + point.p4.x + ',' + point.p4.y +
+                            ' A' + this.info.i_rad + ',' + this.info.i_rad + ' ' + point.i_sweep + ' ' + point.p1.x + ',' + point.p1.y;
+                    }
+                    point.line.setAttribute('d', point.d);
                     point.line.setAttribute('class', cssPrefix + 'pe');
                     point.line.setAttribute('fill', point.color.hsla);
                     point.line.setAttribute('stroke-width', 1);
                     point.line.setAttribute('stroke', point.color.hsla);
                     point.line.setAttribute('data-point', point.id);
+                    point.toolTip = (point.label || '') + ' '+Math.round(point.v) + ' (' + Math.round(point.percent_series) + '%)';
+
                     m.svg.appendChild(point.line);
 
-                    this.info.lastPoint = {
-                        deg: point.deg
-                    };
 
-                },
 
-                //all pointer events
-                pointerEvents = function(e){
-                    if(e.target){
-                        var pointID = e.target.getAttribute('data-point');
-                        if(pointID !== null){
-                            pointID = pointID * 1;
-                            if(m.dataref[pointID]){
-                                m.toolTip(e, m.dataref[pointID]);
-                            } else {
-                                console.error('No dataref to id', pointID);
-                            }
-                        }
-                    }
                 };
-
 
             for (k in defaults) {
                 if (typeof config[k] === 'undefined') {
@@ -372,7 +402,8 @@
 
             }
 
-            m.chart.addEventListener('mousemove', pointerEvents);
+            m.chart.addEventListener('mouseover', m.toolTip);
+            m.chart.addEventListener('mouseout', m.toolTip);
 
             console.log('chart', m);
             setStyleSheet();
