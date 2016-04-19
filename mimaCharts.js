@@ -27,6 +27,8 @@
                 .' + cssPrefix + 'dot{position:absolute;margin-left:-0.5%;border-radius:50%;min-width:4px;max-width:10px;}\
                 .' + cssPrefix + 'pe{pointer-events: all}\
                 .' + cssPrefix + 'tooltip{z-index:1;pointer-events:none;position:absolute;left:0;top:0;border-radius:4px;padding:4px;background-color:#000;color:white;box-shadow:0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);transition: all 0.15s ease-out;}\
+                .' + cssPrefix + 'scaleLine{position: absolute; top: 0; left: 0; right: 0; height: 1px; background-color: #ccc; }\
+                .' + cssPrefix + 'scaleText{position: absolute; top: 0; left: 2%; font-size: 12px; color: #999; margin-top: 1%; }\
                 '));
                 document.head.appendChild(style);
             }
@@ -35,7 +37,6 @@
         xyRadius = function(cx, cy, radius, degrees) {
             //lets have zero be at the left and go clockwise
             //degrees = degrees + 180;
-            console.log('deg', degrees);
             return {
                 x: cx + radius * Math.sin(degrees * Math.PI / 180),
                 y: cy + radius * Math.cos(degrees * Math.PI / 180)
@@ -49,8 +50,7 @@
         defaults = {
             type: 'donut',
             scale: {},
-            ratio: 0.5,
-            scaleStart: 0,
+            ratio: 0.5
         },
 
         // this is the function exposed
@@ -127,7 +127,7 @@
                                         showPointDebug[k] = point[k];
                                     }
                                 }
-                                m.currentToolTip.innerHTML = '<pre>' + JSON.stringify(showPointDebug, undefined, 2) + '</pre>';
+                                m.currentToolTip.innerHTML = '<pre>' + JSON.stringify(m.info, undefined, 2) + '</pre>';
                             } else {
                                 if (!point.toolTip) {
                                     show = false;
@@ -152,7 +152,8 @@
                 initInfo = function(point, level) {
                     point.info = {
                         level: level,
-                        lowest: config.scaleStart !== 'auto' ? config.scaleStart : undefined,
+                        lowest: config.scale.lowest,
+                        highest: config.scale.highest,
                         sum: 0,
                         average: 0,
                         cx: 25,
@@ -185,12 +186,11 @@
                     this.info.sum += point.v;
 
                     if (point.v > this.info.highest || typeof this.info.highest === 'undefined') {
+                        console.log("set highest to", point.v);
                         this.info.highest = point.v;
                     }
-                    if (config.scaleStart === 'auto') {
-                        if (point.v < this.info.lowest || typeof this.info.lowest === 'undefined') {
-                            this.info.lowest = point.v;
-                        }
+                    if (point.v < this.info.lowest || typeof this.info.lowest === 'undefined') {
+                        this.info.lowest = point.v;
                     }
                     if (point.data) {
                         point.data.forEach(gatherInfo1, point);
@@ -251,8 +251,12 @@
                             'min-height': '1px',
                             height: point.percent_scale + '%'
                         });
+                        point.bar.setAttribute('class', cssPrefix + 'pe');
+                        point.bar.setAttribute('data-point', point.id);
                         point.node.appendChild(point.bar);
                     }
+
+                    point.toolTip = (point.label || '') + ' ' + Math.round(point.v);
 
                     if (point.data) {
                         point.data.forEach(generateVerticalBars, point);
@@ -267,7 +271,7 @@
                         point.color = this.info.color;
 
                         point.dot = document.createElement('span');
-                        point.dot.className = cssPrefix + 'dot ' + cssPrefix + 'sq';
+                        point.dot.className = cssPrefix + 'dot ' + cssPrefix + 'sq ' + cssPrefix + 'pe';
 
                         var x = (this.info.gap * (p + 1)) + (((100 - this.info.gap_less) / ar.length) * p),
                             y = 100 - point.percent_scale,
@@ -280,6 +284,7 @@
                             width: w + '%',
                             'background-color': point.color.hsla
                         });
+                        point.dot.setAttribute('data-point', point.id);
                         m.node.appendChild(point.dot);
 
                         if (p > 0) {
@@ -289,6 +294,9 @@
                             point.line.setAttribute('stroke-width', '0.5%');
                             m.svg.appendChild(point.line);
                         }
+
+                        point.toolTip = (point.label || '') + ' ' + Math.round(point.v);
+
                         this.info.lastPoint = {
                             x: x,
                             y: y
@@ -351,9 +359,37 @@
                     point.toolTip = (point.label || '') + ' ' + Math.round(point.v) + ' (' + Math.round(point.percent_series) + '%)';
 
                     m.svg.appendChild(point.line);
+                },
 
+                // generate the scale!
+                generateScale = function() {
 
+                    m.scale = document.createElement('div');
+                    m.scale.className = cssPrefix + 'abs';
+                    m.chart.insertBefore(m.scale, m.chart.firstChild);
 
+                    if (typeof m.config.scale.steps != 'number') {
+                        m.config.scale.steps = 5;
+                    }
+                    if (m.config.scale.steps > 0) {
+                        var num, percent, range = (m.info.highest - m.info.lowest),
+                            step = (range / m.config.scale.steps),
+                            displayNum, line, text;
+                        for (var i = 0; i < m.config.scale.steps+1; i++) {
+                            num = step * i;
+                            percent = num / range;
+                            displayNum = (num + m.info.lowest);
+                            line = document.createElement('div');
+                            line.className = cssPrefix + 'scaleLine';
+                            line.style.top = (100 - (percent * 100)) + '%';
+                            m.scale.appendChild(line);
+                            text = document.createElement('span');
+                            text.textContent = displayNum;
+                            text.className = cssPrefix + 'scaleText';
+                            text.style.top = (100 - (percent * 100)) + '%';
+                            m.scale.appendChild(text);
+                        }
+                    }
                 };
 
             for (k in defaults) {
@@ -372,8 +408,7 @@
                 'box-sizing': 'border-box',
                 width: '100%',
                 'max-width': '100%',
-                height: config.height + 'px',
-                outline: '1px solid #ccc'
+                height: config.height + 'px'
             });
 
             m.svg = document.createElementNS(svgNS, 'svg');
@@ -394,9 +429,9 @@
                 m.data.forEach(gatherInfo2, m);
 
                 var generatorFunc = generateVerticalBars;
-                if (config.type === 'line') {
+                if (config.type1 === 'l') {
                     generatorFunc = generateLines;
-                } else if (config.type === 'pie' || config.type === 'donut') {
+                } else if (config.type1 === 'p' || config.type1 === 'd') {
                     generatorFunc = generateSlices;
                 }
                 m.data.forEach(generatorFunc, m);
@@ -405,6 +440,9 @@
 
             m.chart.addEventListener('mouseover', m.toolTip);
             m.chart.addEventListener('mouseout', m.toolTip);
+            if (config.scale && (config.type1 === 'l' || config.type1 === 'b')) {
+                generateScale();
+            }
 
             console.log('chart', m);
             setStyleSheet();

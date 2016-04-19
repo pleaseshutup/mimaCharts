@@ -1,7 +1,11 @@
 var charts = [{
-    title: 'Line',
+    title: 'Line. Scale 10 to 50',
     config: {
-        type: 'line'
+        type: 'line',
+        scale: {
+            lowest: 10,
+            highest: 50
+        }
     },
     data: [{
         v: 10
