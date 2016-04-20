@@ -26,9 +26,10 @@
                 .' + cssPrefix + 'sq:before{content:"";display:block;padding-top: 100%;}\
                 .' + cssPrefix + 'dot{position:absolute;margin-left:-0.5%;border-radius:50%;min-width:4px;max-width:10px;}\
                 .' + cssPrefix + 'pe{pointer-events: all}\
-                .' + cssPrefix + 'tooltip{z-index:1;pointer-events:none;position:absolute;left:0;top:0;border-radius:4px;padding:4px;background-color:#000;color:white;box-shadow:0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);transition: all 0.15s ease-out;}\
+                .' + cssPrefix + 'slice{transition: transform 0.15s ease-in-out, filter 0.15s ease-in-out; transform: translate3d(0,0,0); transform-origin: 50% 50%; }\
+                .' + cssPrefix + 'hoverContainer{z-index:1;pointer-events:none;position:absolute;left:0;top:0;border-radius:4px;padding:4px;background-color:#000;color:white;box-shadow:0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);transition: all 0.15s ease-out;}\
                 .' + cssPrefix + 'scaleLine{position: absolute; top: 0; left: 0; right: 0; height: 1px; background-color: #ccc; }\
-                .' + cssPrefix + 'scaleText{position: absolute; top: 0; left: 2%; font-size: 12px; color: #999; margin-top: 1%; }\
+                .' + cssPrefix + 'scaleText{position: absolute; top: 0; left: 0; font-size: 12px; color: #999; }\
                 '));
                 document.head.appendChild(style);
             }
@@ -96,19 +97,19 @@
                         color.hsla = m.getColorValue(color);
                         return color;
                     },
-                    toolTip: function(e) {
+                    hover: function(e) {
                         var point,
                             pointID = e.target ? e.target.getAttribute('data-point') : null,
                             point = m.dataref[pointID * 1],
                             show = e.type === 'mouseover';
 
                         if (point && show) {
-                            if (!m.currentToolTip) {
-                                m.currentToolTip = document.createElement('div');
-                                m.currentToolTip.className = cssPrefix + 'tooltip';
-                                m.chart.appendChild(m.currentToolTip);
+                            if (!m.currentHover) {
+                                m.currentHover = document.createElement('div');
+                                m.currentHover.className = cssPrefix + 'hoverContainer';
+                                m.chart.appendChild(m.currentHover);
                             } else {
-                                m.currentToolTip.style.display = '';
+                                m.currentHover.style.display = '';
                             }
                             var chartBox = m.chart.getBoundingClientRect(),
                                 st = (document.body.scrollTop || document.documentElement.scrollTop),
@@ -116,8 +117,14 @@
                                 x = (e.pageX - (chartBox.left + sl)),
                                 y = (e.pageY - (chartBox.top + st));
 
-                            m.currentToolTip.style.left = (x) + 'px';
-                            m.currentToolTip.style.top = (y) + 'px';
+                            m.currentHover.style.left = (x) + 'px';
+                            m.currentHover.style.top = (y) + 'px';
+
+                            if(point.slice){
+                                point.slice.style.transform = 'scale(1.05)';
+                                point.slice.setAttribute('filter', 'url(#'+cssPrefix+'material-shadow-1)');
+                                point.slice.parentNode.appendChild(point.slice);
+                            }
 
                             if (false) {
                                 //debug
@@ -127,12 +134,12 @@
                                         showPointDebug[k] = point[k];
                                     }
                                 }
-                                m.currentToolTip.innerHTML = '<pre>' + JSON.stringify(m.info, undefined, 2) + '</pre>';
+                                m.currentHover.innerHTML = '<pre>' + JSON.stringify(m.info, undefined, 2) + '</pre>';
                             } else {
-                                if (!point.toolTip) {
+                                if (!point.hoverContent) {
                                     show = false;
                                 } else {
-                                    m.currentToolTip.innerHTML = point.toolTip || '';
+                                    m.currentHover.innerHTML = point.hoverContent || '';
                                 }
                             }
                         } else {
@@ -141,8 +148,14 @@
                             }
                         }
                         if (!show) {
-                            if (m.currentToolTip) {
-                                m.currentToolTip.style.display = 'none';
+                            if (m.currentHover) {
+                                m.currentHover.style.display = 'none';
+
+                                if(point.slice){
+                                    point.slice.style.transform = 'scale(1)';
+                                    point.slice.setAttribute('filter', '');
+                                }
+
                             }
                         }
                     }
@@ -158,8 +171,8 @@
                         average: 0,
                         cx: 25,
                         cy: 25,
-                        o_rad: 24,
-                        i_rad: 14
+                        o_rad: 22,
+                        i_rad: 12
                     };
                     if (level === 0) {
                         point.info.id = 0;
@@ -186,7 +199,6 @@
                     this.info.sum += point.v;
 
                     if (point.v > this.info.highest || typeof this.info.highest === 'undefined') {
-                        console.log("set highest to", point.v);
                         this.info.highest = point.v;
                     }
                     if (point.v < this.info.lowest || typeof this.info.lowest === 'undefined') {
@@ -256,7 +268,7 @@
                         point.node.appendChild(point.bar);
                     }
 
-                    point.toolTip = (point.label || '') + ' ' + Math.round(point.v);
+                    point.hoverContent = (point.label || '') + ' ' + Math.round(point.v);
 
                     if (point.data) {
                         point.data.forEach(generateVerticalBars, point);
@@ -295,7 +307,7 @@
                             m.svg.appendChild(point.line);
                         }
 
-                        point.toolTip = (point.label || '') + ' ' + Math.round(point.v);
+                        point.hoverContent = (point.label || '') + ' ' + Math.round(point.v);
 
                         this.info.lastPoint = {
                             x: x,
@@ -326,7 +338,7 @@
                     point.o_sweep = point.deg_to - point.deg_from > 180 ? '0 1,0' : '0 0,0';
                     point.i_sweep = point.deg_to - point.deg_from > 180 ? '0 1,1' : '0 0,1';
 
-                    point.line = document.createElementNS(svgNS, 'path');
+                    point.slice = document.createElementNS(svgNS, 'path');
                     point.d = '';
                     if (point.percent_decimal >= 1) {
 
@@ -350,15 +362,15 @@
                             ' L' + point.p4.x + ',' + point.p4.y +
                             ' A' + this.info.i_rad + ',' + this.info.i_rad + ' ' + point.i_sweep + ' ' + point.p1.x + ',' + point.p1.y;
                     }
-                    point.line.setAttribute('d', point.d);
-                    point.line.setAttribute('class', cssPrefix + 'pe');
-                    point.line.setAttribute('fill', point.color.hsla);
-                    point.line.setAttribute('stroke-width', 1);
-                    point.line.setAttribute('stroke', point.color.hsla);
-                    point.line.setAttribute('data-point', point.id);
-                    point.toolTip = (point.label || '') + ' ' + Math.round(point.v) + ' (' + Math.round(point.percent_series) + '%)';
+                    point.slice.setAttribute('d', point.d);
+                    point.slice.setAttribute('class', cssPrefix + 'slice ' + cssPrefix + 'pe');
+                    point.slice.setAttribute('fill', point.color.hsla);
+                    point.slice.setAttribute('stroke-width', 1);
+                    point.slice.setAttribute('stroke', point.color.hsla);
+                    point.slice.setAttribute('data-point', point.id);
+                    point.hoverContent = (point.label || '') + ' ' + Math.round(point.v) + ' (' + Math.round(point.percent_series) + '%)';
 
-                    m.svg.appendChild(point.line);
+                    m.svg.appendChild(point.slice);
                 },
 
                 // generate the scale!
@@ -375,6 +387,7 @@
                         var num, percent, range = (m.info.highest - m.info.lowest),
                             step = (range / m.config.scale.steps),
                             displayNum, line, text;
+
                         for (var i = 0; i < m.config.scale.steps+1; i++) {
                             num = step * i;
                             percent = num / range;
@@ -383,12 +396,15 @@
                             line.className = cssPrefix + 'scaleLine';
                             line.style.top = (100 - (percent * 100)) + '%';
                             m.scale.appendChild(line);
-                            text = document.createElement('span');
-                            text.textContent = displayNum;
-                            text.className = cssPrefix + 'scaleText';
-                            text.style.top = (100 - (percent * 100)) + '%';
-                            m.scale.appendChild(text);
+                            if(i > 0){
+                                text = document.createElement('span');
+                                text.textContent = displayNum;
+                                text.className = cssPrefix + 'scaleText';
+                                text.style.top = (100 - (percent * 100)) + '%';
+                                m.scale.appendChild(text);
+                            }
                         }
+
                     }
                 };
 
@@ -418,7 +434,11 @@
             //m.svg.setAttribute('preserveAspectRatio', 'none');
             m.svg.setAttribute('class', cssPrefix + 'abs');
             m.chart.appendChild(m.svg);
-            // example for xlink if used use.elements[0].setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', '#icon-' + name);
+            //m.svg.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', '#icon-' + name);
+            m.filter = document.createElementNS(svgNS, 'filter');
+            m.filter.id = cssPrefix + 'material-shadow-1';
+            m.filter.innerHTML = '<feGaussianBlur in="SourceAlpha" stdDeviation="0.5"/><feOffset dx="0" dy="0" result="offsetblur"/><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>';
+            m.svg.appendChild(m.filter);
 
             m.node = document.createElement('div');
             m.node.className = cssPrefix + 'abs';
@@ -438,13 +458,12 @@
 
             }
 
-            m.chart.addEventListener('mouseover', m.toolTip);
-            m.chart.addEventListener('mouseout', m.toolTip);
+            m.chart.addEventListener('mouseover', m.hover);
+            m.chart.addEventListener('mouseout', m.hover);
             if (config.scale && (config.type1 === 'l' || config.type1 === 'b')) {
                 generateScale();
             }
 
-            console.log('chart', m);
             setStyleSheet();
             return m;
         };
