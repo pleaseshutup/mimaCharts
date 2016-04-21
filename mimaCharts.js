@@ -13,6 +13,9 @@
         // svg name space for convenience
         svgNS = 'http://www.w3.org/2000/svg',
 
+        // constants for convenience
+        materialShadow1 = '0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24)',
+
         // all classes will start with this prefix, we threw it into a variable to make changing it easier
         cssPrefix = '_mima_',
 
@@ -24,9 +27,9 @@
                 style.appendChild(document.createTextNode('\
                 .' + cssPrefix + 'abs{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none}\
                 .' + cssPrefix + 'sq:before{content:"";display:block;padding-top: 100%;}\
-                .' + cssPrefix + 'dot{position:absolute;margin-left:-0.5%;border-radius:50%;min-width:4px;max-width:10px;}\
+                .' + cssPrefix + 'dot{position:absolute;margin:-1.5% 0 0 -1.5%;border-radius:50%;width:3%}\
                 .' + cssPrefix + 'pe{pointer-events: all}\
-                .' + cssPrefix + 'slice{transition: transform 0.15s ease-in-out, filter 0.15s ease-in-out; transform: translate3d(0,0,0); transform-origin: 50% 50%; }\
+                .' + cssPrefix + 'slice,.' + cssPrefix + 'bar.' + cssPrefix + 'dot{transition: transform 0.15s ease-in-out, filter 0.15s ease-in-out; transform: translate3d(0,0,0); transform-origin: 50% 50%; }\
                 .' + cssPrefix + 'hoverContainer{z-index:1;pointer-events:none;position:absolute;left:0;top:0;border-radius:4px;padding:4px;background-color:#000;color:white;box-shadow:0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);transition: all 0.15s ease-out;}\
                 .' + cssPrefix + 'scaleLine{position: absolute; top: 0; left: 0; right: 0; height: 1px; background-color: #ccc; }\
                 .' + cssPrefix + 'scaleText{position: absolute; top: 0; left: 0; font-size: 12px; color: #999; }\
@@ -125,6 +128,13 @@
                                 point.slice.setAttribute('filter', 'url(#'+cssPrefix+'material-shadow-1)');
                                 point.slice.parentNode.appendChild(point.slice);
                             }
+                            if(point.bar){
+                                point.bar.style.transform = 'scale(1.05)';
+                                point.bar.style.boxShadow = materialShadow1;
+                            }
+                            if(point.dot){
+                                point.dot.style.transform = 'scale(1.2)';
+                            }
 
                             if (false) {
                                 //debug
@@ -154,6 +164,13 @@
                                 if(point.slice){
                                     point.slice.style.transform = 'scale(1)';
                                     point.slice.setAttribute('filter', '');
+                                }
+                                if(point.bar){
+                                    point.bar.style.transform = 'scale(1)';
+                                    point.bar.boxShadow = '';
+                                }
+                                if(point.dot){
+                                    point.dot.style.transform = 'scale(1)';
                                 }
 
                             }
@@ -255,6 +272,7 @@
                     if (!point.data || this.info.level === m.config.dataLevel) {
                         // this generates bars within the parent item only for the lowest level of data available
                         point.bar = document.createElement('div');
+                        point.bar.className = cssPrefix + 'bar';
                         point.bar.style.cssText = objectCSS({
                             position: 'absolute',
                             'background-color': point.color.hsla,
@@ -293,7 +311,6 @@
                             left: x + '%',
                             top: y + '%',
                             margin: '-' + (w * 0.5) + '% 0 0 -' + (w * 0.5) + '%',
-                            width: w + '%',
                             'background-color': point.color.hsla
                         });
                         point.dot.setAttribute('data-point', point.id);
@@ -303,7 +320,7 @@
                             point.line = document.createElementNS(svgNS, 'path');
                             point.line.setAttribute('d', 'M' + this.info.lastPoint.x + ',' + (this.info.lastPoint.y * m.config.ratio) + ' ' + x + ',' + (y * m.config.ratio));
                             point.line.setAttribute('stroke', point.color.hsla);
-                            point.line.setAttribute('stroke-width', '0.5%');
+                            point.line.setAttribute('stroke-width', '1%');
                             m.svg.appendChild(point.line);
                         }
 
