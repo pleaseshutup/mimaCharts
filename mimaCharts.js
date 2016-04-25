@@ -19,6 +19,8 @@
         // all classes will start with this prefix, we threw it into a variable to make changing it easier
         cssPrefix = '_mima_',
 
+        shadowDom = document.createElement('div'),
+
         // adds if not already set a stylesheet to the document
         setStyleSheet = function() {
             if (!document.getElementById(cssPrefix + 'sheet')) {
@@ -29,10 +31,13 @@
                 .' + cssPrefix + 'sq:before{content:"";display:block;padding-top: 100%;}\
                 .' + cssPrefix + 'dot{position:absolute;margin:-1.5% 0 0 -1.5%;border-radius:50%;width:3%}\
                 .' + cssPrefix + 'pe{pointer-events: all}\
-                .' + cssPrefix + 'slice,.' + cssPrefix + 'bar.' + cssPrefix + 'dot{transition: transform 0.15s ease-in-out, filter 0.15s ease-in-out; transform: translate3d(0,0,0); transform-origin: 50% 50%; }\
-                .' + cssPrefix + 'hoverContainer{z-index:1;pointer-events:none;position:absolute;left:0;top:0;border-radius:4px;padding:4px;background-color:#000;color:white;box-shadow:0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);transition: all 0.15s ease-out;}\
+                .' + cssPrefix + 'slice,.' + cssPrefix + 'bar,.' + cssPrefix + 'dot{transition: transform 0.15s ease-in-out, filter 0.15s ease-in-out; transform: translate3d(0,0,0); transform-origin: 50% 50%; }\
+                .' + cssPrefix + 'hoverContainer{z-index:1;pointer-events:none;position:absolute;left:0;top:0;border:1px solid #eaeaea; padding:4px;background-color:#fff;box-shadow:'+materialShadow1+';transition: all 0.15s ease-out;}\
                 .' + cssPrefix + 'scaleLine{position: absolute; top: 0; left: 0; right: 0; height: 1px; background-color: #ccc; }\
-                .' + cssPrefix + 'scaleText{position: absolute; top: 0; left: 0; font-size: 12px; color: #999; }\
+                .' + cssPrefix + 'scaleText{display: inline-block; position: absolute; top: 0; left: 0; font-size: 12px; color: #999; line-height: 10%; text-align:right; }\
+                .' + cssPrefix + 'legend{display: inline-block; position: absolute; top: 0; left: 0; font-size: 12px; color: #666; }\
+                .' + cssPrefix + 'legend span{display: inline-block; vertical-align:middle; pointer-events:none; }\
+                .' + cssPrefix + 'legendColor{ border-radius: 50%; width: 12px; height: 12px; margin-right: 4px; }\
                 '));
                 document.head.appendChild(style);
             }
@@ -106,7 +111,7 @@
                             point = m.dataref[pointID * 1],
                             show = e.type === 'mouseover';
 
-                        if (point && show) {
+                        if (pointID && point && show) {
                             if (!m.currentHover) {
                                 m.currentHover = document.createElement('div');
                                 m.currentHover.className = cssPrefix + 'hoverContainer';
@@ -127,6 +132,7 @@
                                 point.slice.style.transform = 'scale(1.05)';
                                 point.slice.setAttribute('filter', 'url(#'+cssPrefix+'material-shadow-1)');
                                 point.slice.parentNode.appendChild(point.slice);
+                                point.legend.style.transform = 'scale(1.1)';
                             }
                             if(point.bar){
                                 point.bar.style.transform = 'scale(1.05)';
@@ -164,6 +170,7 @@
                                 if(point.slice){
                                     point.slice.style.transform = 'scale(1)';
                                     point.slice.setAttribute('filter', '');
+                                    point.legend.style.transform = 'scale(1)';
                                 }
                                 if(point.bar){
                                     point.bar.style.transform = 'scale(1)';
@@ -171,6 +178,10 @@
                                 }
                                 if(point.dot){
                                     point.dot.style.transform = 'scale(1)';
+                                }
+                                if(point.line){
+                                    point.line.style.transform = 'scale(1)';
+                                    point.line.setAttribute('filter', '');
                                 }
 
                             }
@@ -256,7 +267,7 @@
                 },
 
                 // bar chart bars
-                generateVerticalBars = function(point, p, ar) {
+                generateBars = function(point, p, ar) {
                     point.color = m.getColor(p, ar.length, this.color ? this.color : false);
 
                     point.node = document.createElement('div');
@@ -286,10 +297,10 @@
                         point.node.appendChild(point.bar);
                     }
 
-                    point.hoverContent = (point.label || '') + ' ' + Math.round(point.v);
+                    point.hoverContent = (point.l || '') + ' ' + Math.round(point.v);
 
                     if (point.data) {
-                        point.data.forEach(generateVerticalBars, point);
+                        point.data.forEach(generateBars, point);
                     }
                 },
 
@@ -304,13 +315,11 @@
                         point.dot.className = cssPrefix + 'dot ' + cssPrefix + 'sq ' + cssPrefix + 'pe';
 
                         var x = (this.info.gap * (p + 1)) + (((100 - this.info.gap_less) / ar.length) * p),
-                            y = 100 - point.percent_scale,
-                            w = 2;
+                            y = 100 - point.percent_scale;
 
                         point.dot.style.cssText = objectCSS({
                             left: x + '%',
                             top: y + '%',
-                            margin: '-' + (w * 0.5) + '% 0 0 -' + (w * 0.5) + '%',
                             'background-color': point.color.hsla
                         });
                         point.dot.setAttribute('data-point', point.id);
@@ -318,13 +327,15 @@
 
                         if (p > 0) {
                             point.line = document.createElementNS(svgNS, 'path');
+                            point.line.setAttribute('class', cssPrefix + 'pe');
+                            point.line.setAttribute('data-point', point.id);
                             point.line.setAttribute('d', 'M' + this.info.lastPoint.x + ',' + (this.info.lastPoint.y * m.config.ratio) + ' ' + x + ',' + (y * m.config.ratio));
                             point.line.setAttribute('stroke', point.color.hsla);
                             point.line.setAttribute('stroke-width', '1%');
                             m.svg.appendChild(point.line);
                         }
 
-                        point.hoverContent = (point.label || '') + ' ' + Math.round(point.v);
+                        point.hoverContent = (point.l || '') + ' ' + Math.round(point.v);
 
                         this.info.lastPoint = {
                             x: x,
@@ -385,9 +396,23 @@
                     point.slice.setAttribute('stroke-width', 1);
                     point.slice.setAttribute('stroke', point.color.hsla);
                     point.slice.setAttribute('data-point', point.id);
-                    point.hoverContent = (point.label || '') + ' ' + Math.round(point.v) + ' (' + Math.round(point.percent_series) + '%)';
-
+                    point.hoverContent = (point.l || '') + ' ' + Math.round(point.v) + ' (' + Math.round(point.percent_series) + '%)';
                     m.svg.appendChild(point.slice);
+
+                    point.legend = document.createElement('div');
+                    point.legendColor = document.createElement('span');
+                    point.legendColor.className = cssPrefix + 'legendColor';
+                    point.legendColor.style.backgroundColor = point.color.hsla;
+                    point.legend.appendChild(point.legendColor);
+                    point.legendText = document.createElement('span');
+                    point.legendText.textContent = point.hoverContent;
+                    point.legend.appendChild(point.legendText);
+                    point.legend.className = cssPrefix + 'legend '+cssPrefix + 'pe';
+                    point.legend.setAttribute('data-point', point.id);
+                    point.legend.style.top = p * 20 + 'px';
+                    point.legend.style.left = '50%';
+                    m.node.appendChild(point.legend);
+
                 },
 
                 // generate the scale!
@@ -403,7 +428,7 @@
                     if (m.config.scale.steps > 0) {
                         var num, percent, range = (m.info.highest - m.info.lowest),
                             step = (range / m.config.scale.steps),
-                            displayNum, line, text;
+                            displayNum, line, text, w = 0, lines = [], texts = [];
 
                         for (var i = 0; i < m.config.scale.steps+1; i++) {
                             num = step * i;
@@ -413,13 +438,22 @@
                             line.className = cssPrefix + 'scaleLine';
                             line.style.top = (100 - (percent * 100)) + '%';
                             m.scale.appendChild(line);
-                            if(i > 0){
-                                text = document.createElement('span');
-                                text.textContent = displayNum;
-                                text.className = cssPrefix + 'scaleText';
-                                text.style.top = (100 - (percent * 100)) + '%';
-                                m.scale.appendChild(text);
+                            lines.push(line);
+
+                            text = document.createElement('span');
+                            text.textContent = displayNum;
+                            text.className = cssPrefix + 'scaleText';
+                            text.style.top = (100 - (percent * 100)) + '%';
+                            m.scale.appendChild(text);
+                            texts.push(text);
+                            if(text.offsetWidth > w){
+                                w = text.offsetWidth * 1;
                             }
+
+                        }
+                        for (var i = 0; i < m.config.scale.steps+1; i++) {
+                            lines[i].style.left = (w + 4) + 'px';
+                            texts[i].style.width = w + 'px';
                         }
 
                     }
@@ -434,7 +468,7 @@
             initInfo(m, 0);
 
             m.chart = document.createElement('div');
-            m.chart.innerHTML = '<div style="padding-top:' + (config.ratio * 100) + '%"></div>';
+            m.chart.innerHTML = '<div style="padding-top:' + (config.ratio * 100) + '%;pointer-events:none"></div>';
             m.chart.style.cssText = objectCSS({
                 position: 'relative',
                 display: 'inline-block',
@@ -443,6 +477,7 @@
                 'max-width': '100%',
                 height: config.height + 'px'
             });
+            shadowDom.appendChild(m.chart);
 
             m.svg = document.createElementNS(svgNS, 'svg');
             m.svg.setAttribute('viewBox', '0 0 100 ' + (100 * m.config.ratio));
@@ -461,11 +496,19 @@
             m.node.className = cssPrefix + 'abs';
             m.chart.appendChild(m.node);
 
+            // ok so we're going to put this div on the window so we can still get calculations of sizes of things
+            // we'll hide it so that it isn't available until the user appends it somewhere. This should not require paints.
+
+            shadowDom.style.opacity = 0;
+            shadowDom.style.position = 'absolute';
+            shadowDom.style.left = -10000 + 'px';
+            document.body.appendChild(shadowDom);
+
             if (m.data) {
                 m.data.forEach(gatherInfo1, m);
                 m.data.forEach(gatherInfo2, m);
 
-                var generatorFunc = generateVerticalBars;
+                var generatorFunc = generateBars;
                 if (config.type1 === 'l') {
                     generatorFunc = generateLines;
                 } else if (config.type1 === 'p' || config.type1 === 'd') {

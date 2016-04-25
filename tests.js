@@ -3,7 +3,7 @@ var charts = [{
     config: {
         type: 'line',
         scale: {
-            lowest: 10,
+            lowest: 0,
             highest: 50
         }
     },
@@ -58,13 +58,17 @@ var charts = [{
         type: 'bar'
     },
     data: [{
-        v: 0
+        v: 0,
+        l: 'First Item'
     }, {
-        v: 1
+        v: 1,
+        l: 'Second Item'
     }, {
-        v: 5
+        v: 5,
+        l: 'Third Item'
     }, {
-        v: 2.45343
+        v: 2.45343,
+        l: 'Fourth Item'
     }]
 }, {
     title: 'Multi-Bar',
@@ -197,7 +201,7 @@ var genRandomDataSegment = function(){
     var data = [],
         numZeros = Math.random() * 10;
     for(var i=0; i< Math.round(Math.random() * 10); i++){
-        data.push({v: Math.round(Math.random() * 10) * numZeros});
+        data.push({v: Math.round(Math.random() * 10) * numZeros, l: 'Item '+i});
     }
     return data;
 }, addDataSegment = function(item, level, maxLevels){
