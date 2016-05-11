@@ -229,7 +229,7 @@ for(var i=0; i<5; i++){
 
 charts.forEach(function(chart) {
     var sec = document.createElement('section'),
-        chartDOM = mimaChart(chart.config, chart.data).chart;
+        chartDOM = mimaCharts(chart.config, chart.data).chart;
 
     sec.style.cssText = 'display:inline-block;box-sizing:border-box;width:400px;max-width:100%;padding:0 1%';
     sec.innerHTML = '<h2>' + chart.title + '</h2>';
@@ -237,7 +237,7 @@ charts.forEach(function(chart) {
     document.body.appendChild(sec);
 });
 
-var mimaInstance = mimaChart(),
+var mimaInstance = mimaCharts(),
     colorSec = document.createElement('div');
 [1,2,3,5,12,20,100,200,600].forEach(function(num){
     var colors = document.createElement('div');

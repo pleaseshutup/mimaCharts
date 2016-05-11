@@ -1,4 +1,4 @@
-(function mimaChart() {
+(function mimaCharts() {
     'use strict';
 
     var objectCSS = function(obj) {
@@ -531,9 +531,9 @@
     // *could* be used in a server-side dom situation but I doubt it. Just throwing it here in case
     // it is to be modularized in the future somehow
     if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
-        module.exports = mimaChart;
+        module.exports = mimaCharts;
     } else {
-        window.mimaChart = mimaChart;
+        window.mimaCharts = mimaChart;
     }
 
 })();
