@@ -114,11 +114,14 @@ var charts = [{
         type: 'pie'
     },
     data: [{
-        v: 10
+        v: 10,
+        l: 'Small Label'
     }, {
-        v: 20
+        v: 20,
+        l: 'Very Long Label That Should Not Fit Very Well'
     }, {
-        v: 15
+        v: 15,
+        l: 'Medium Sized Label May Fit'
     }]
 }, {
     title: 'Donut',
@@ -207,7 +210,7 @@ var genRandomDataSegment = function(){
         word = '';
         for(var z=0; z< numWords; z++){
             if(word){ word += ' '; }
-            word += words[Math.round(Math.random()*words.length)];
+            word += words[Math.round(Math.random()*(words.length-1))];
         }
         data.push({v: Math.round(Math.random() * 10) * numZeros, l: word});
     }

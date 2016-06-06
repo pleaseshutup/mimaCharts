@@ -31,8 +31,10 @@
 				.' + cssPrefix + 'sq:before{content:"";display:block;padding-top: 100%;}\
 				.' + cssPrefix + 'dot{position:absolute;margin:-1.5% 0 0 -1.5%;border-radius:50%;width:3%}\
 				.' + cssPrefix + 'pe{pointer-events: all}\
+				.' + cssPrefix + 'pe{pointer-events: all}\
+				.' + cssPrefix + 'ellipsis{text-overflow: ellipsis; max-width: 100%; white-space: nowrap; overflow: hidden;}\
 				.' + cssPrefix + 'slice,.' + cssPrefix + 'bar,.' + cssPrefix + 'dot{transition: transform 0.15s ease-in-out, filter 0.15s ease-in-out; transform: translate3d(0,0,0); transform-origin: 50% 50%; }\
-				.' + cssPrefix + 'hoverContainer{z-index:1;pointer-events:none;position:absolute;left:0;top:0;border:1px solid #eaeaea; padding:4px;background-color:#fff;box-shadow:'+materialShadow1+';transition: all 0.15s ease-out;}\
+				.' + cssPrefix + 'hoverContainer{z-index:1;pointer-events:none;position:absolute;left:0;top:0;border:1px solid #eaeaea; padding:4px;background-color:#fff;box-shadow:' + materialShadow1 + ';transition: all 0.15s ease-out;}\
 				.' + cssPrefix + 'scaleLine{position: absolute; top: 0; left: 0; right: 0; height: 1px; background-color: #ccc; }\
 				.' + cssPrefix + 'scaleText{display: inline-block; position: absolute; top: 0; left: 0; font-size: 12px; color: #999; line-height: 10%; text-align:right; }\
 				.' + cssPrefix + 'legend{display: inline-block; position: absolute; top: 0; left: 0; font-size: 12px; color: #666; }\
@@ -75,7 +77,8 @@
 				config.ratio = 0.5;
 			}
 
-			var k, m = {
+			var k,
+				m = {
 					config: config,
 					data: data,
 					dataref: {},
@@ -128,17 +131,17 @@
 							m.currentHover.style.left = (x) + 'px';
 							m.currentHover.style.top = (y) + 'px';
 
-							if(point.slice){
+							if (point.slice) {
 								point.slice.style.transform = 'scale(1.05)';
-								point.slice.setAttribute('filter', 'url(#'+cssPrefix+'material-shadow-1)');
+								point.slice.setAttribute('filter', 'url(#' + cssPrefix + 'material-shadow-1)');
 								point.slice.parentNode.appendChild(point.slice);
 								point.legend.style.transform = 'scale(1.1)';
 							}
-							if(point.bar){
+							if (point.bar) {
 								point.bar.style.transform = 'scale(1.05)';
 								point.bar.style.boxShadow = materialShadow1;
 							}
-							if(point.dot){
+							if (point.dot) {
 								point.dot.style.transform = 'scale(1.2)';
 							}
 
@@ -167,19 +170,19 @@
 							if (m.currentHover) {
 								m.currentHover.style.display = 'none';
 
-								if(point.slice){
+								if (point.slice) {
 									point.slice.style.transform = 'scale(1)';
 									point.slice.setAttribute('filter', '');
 									point.legend.style.transform = 'scale(1)';
 								}
-								if(point.bar){
+								if (point.bar) {
 									point.bar.style.transform = 'scale(1)';
 									point.bar.boxShadow = '';
 								}
-								if(point.dot){
+								if (point.dot) {
 									point.dot.style.transform = 'scale(1)';
 								}
-								if(point.line){
+								if (point.line) {
 									point.line.style.transform = 'scale(1)';
 									point.line.setAttribute('filter', '');
 								}
@@ -374,21 +377,19 @@
 						point.p3a = xyRadius(this.info.cx, this.info.cy, this.info.o_rad, point.deg_to * 0.5);
 						point.p1a = xyRadius(this.info.cx, this.info.cy, this.info.i_rad, point.deg_to * 0.5);
 
-						point.d =
-							'M' + point.p1.x + ',' + point.p1.y +
-							' L' + point.p2.x + ',' + point.p2.y +
-							' A' + this.info.o_rad + ',' + this.info.o_rad + ' ' + point.o_sweep + ' ' + point.p3a.x + ',' + point.p3a.y +
-							' A' + this.info.o_rad + ',' + this.info.o_rad + ' ' + point.o_sweep + ' ' + point.p3.x + ',' + point.p3.y +
-							' L' + point.p4.x + ',' + point.p4.y +
-							' A' + this.info.i_rad + ',' + this.info.i_rad + ' ' + point.i_sweep + ' ' + point.p1a.x + ',' + point.p1a.y +
-							' A' + this.info.i_rad + ',' + this.info.i_rad + ' ' + point.i_sweep + ' ' + point.p1.x + ',' + point.p1.y;
+						point.d = 'M' + point.p1.x + ',' + point.p1.y +
+						' L' + point.p2.x + ',' + point.p2.y +
+						' A' + this.info.o_rad + ',' + this.info.o_rad + ' ' + point.o_sweep + ' ' + point.p3a.x + ',' + point.p3a.y +
+						' A' + this.info.o_rad + ',' + this.info.o_rad + ' ' + point.o_sweep + ' ' + point.p3.x + ',' + point.p3.y +
+						' L' + point.p4.x + ',' + point.p4.y +
+						' A' + this.info.i_rad + ',' + this.info.i_rad + ' ' + point.i_sweep + ' ' + point.p1a.x + ',' + point.p1a.y +
+						' A' + this.info.i_rad + ',' + this.info.i_rad + ' ' + point.i_sweep + ' ' + point.p1.x + ',' + point.p1.y;
 					} else {
-						point.d =
-							'M' + point.p1.x + ',' + point.p1.y +
-							' L' + point.p2.x + ',' + point.p2.y +
-							' A' + this.info.o_rad + ',' + this.info.o_rad + ' ' + point.o_sweep + ' ' + point.p3.x + ',' + point.p3.y +
-							' L' + point.p4.x + ',' + point.p4.y +
-							' A' + this.info.i_rad + ',' + this.info.i_rad + ' ' + point.i_sweep + ' ' + point.p1.x + ',' + point.p1.y;
+						point.d = 'M' + point.p1.x + ',' + point.p1.y +
+						' L' + point.p2.x + ',' + point.p2.y +
+						' A' + this.info.o_rad + ',' + this.info.o_rad + ' ' + point.o_sweep + ' ' + point.p3.x + ',' + point.p3.y +
+						' L' + point.p4.x + ',' + point.p4.y +
+						' A' + this.info.i_rad + ',' + this.info.i_rad + ' ' + point.i_sweep + ' ' + point.p1.x + ',' + point.p1.y;
 					}
 					point.slice.setAttribute('d', point.d);
 					point.slice.setAttribute('class', cssPrefix + 'slice ' + cssPrefix + 'pe');
@@ -405,13 +406,22 @@
 					point.legendColor.style.backgroundColor = point.color.hsla;
 					point.legend.appendChild(point.legendColor);
 					point.legendText = document.createElement('span');
-					point.legendText.textContent = point.hoverContent;
+					point.legendText.className = cssPrefix + 'ellipsis';
+					point.legendText.textContent = (point.l || '');
 					point.legend.appendChild(point.legendText);
-					point.legend.className = cssPrefix + 'legend '+cssPrefix + 'pe';
+					point.legendValue = document.createElement('span');
+					point.legendValue.textContent = Math.round(point.v) + ' (' + Math.round(point.percent_series) + '%)';
+					point.legendValue.style.float = 'right';
+					point.legend.appendChild(point.legendValue);
+					point.legend.className = cssPrefix + 'legend ' + cssPrefix + 'pe';
 					point.legend.setAttribute('data-point', point.id);
 					point.legend.style.top = p * 20 + 'px';
 					point.legend.style.left = '50%';
+					point.legend.style.width = '50%';
 					m.node.appendChild(point.legend);
+
+					point.legendMinus = 36 + point.legendValue.offsetWidth;
+					point.legendText.style.maxWidth = 'calc(100% - ' + point.legendMinus + 'px)';
 
 				},
 
@@ -426,11 +436,15 @@
 						m.config.scale.steps = 5;
 					}
 					if (m.config.scale.steps > 0) {
-						var num, percent, range = (m.info.highest - m.info.lowest),
+						var num, percent,
+							range = (m.info.highest - m.info.lowest),
 							step = (range / m.config.scale.steps),
-							displayNum, line, text, w = 0, lines = [], texts = [];
+							displayNum, line, text,
+							w = 0,
+							lines = [],
+							texts = [];
 
-						for (var i = 0; i < m.config.scale.steps+1; i++) {
+						for (var i = 0; i < m.config.scale.steps + 1; i++) {
 							num = step * i;
 							percent = num / range;
 							displayNum = (num + m.info.lowest);
@@ -446,12 +460,12 @@
 							text.style.top = (100 - (percent * 100)) + '%';
 							m.scale.appendChild(text);
 							texts.push(text);
-							if(text.offsetWidth > w){
+							if (text.offsetWidth > w) {
 								w = text.offsetWidth * 1;
 							}
 
 						}
-						for (var i = 0; i < m.config.scale.steps+1; i++) {
+						for (var i = 0; i < m.config.scale.steps + 1; i++) {
 							lines[i].style.left = (w + 4) + 'px';
 							texts[i].style.width = w + 'px';
 						}
