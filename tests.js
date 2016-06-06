@@ -194,14 +194,22 @@ var charts = [{
     }]
 }];
 
-var types = ['line','bar','donut','pie','dial'];
+var types = ['line','bar','donut','pie','dial'],
+    words = ['Alfred', 'Barney', 'Chris', 'Daniel', 'Ethan', 'Franklin', 'Gregory', 'Heather'];
 
 // two random charts
 var genRandomDataSegment = function(){
     var data = [],
         numZeros = Math.random() * 10;
+
     for(var i=0; i< Math.round(Math.random() * 10); i++){
-        data.push({v: Math.round(Math.random() * 10) * numZeros, l: 'Item '+i});
+        var numWords = 1 + Math.floor(Math.random() * 8),
+        word = '';
+        for(var z=0; z< numWords; z++){
+            if(word){ word += ' '; }
+            word += words[Math.round(Math.random()*words.length)];
+        }
+        data.push({v: Math.round(Math.random() * 10) * numZeros, l: word});
     }
     return data;
 }, addDataSegment = function(item, level, maxLevels){
