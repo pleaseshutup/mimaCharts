@@ -86,26 +86,32 @@
 					getColorValue: function(color) {
 						return 'hsla(' + color.h + ',' + color.s + ',' + color.l + ',' + color.a + ')';
 					},
-					getColor: function(i, len, parent) {
-						var color = {
-							h: 0,
-							s: '100%',
-							l: '64%',
-							a: 1
-						};
-						if (parent) {
-							var div = (50 / len);
-							color.h = parent.h;
-							color.l = 24 + Math.round((div * 0.5) + (div * i)) + '%';
-						} else {
-							if (i < baseColors.length) {
-								color.h = baseColors[i];
+					getColor: function(obj, i, len, parent) {
+						if(!obj.c){
+							var color = {
+								h: 0,
+								s: '100%',
+								l: '64%',
+								a: 1
+							};
+							if (parent) {
+								var div = (50 / len);
+								color.h = parent.h;
+								color.l = 24 + Math.round((div * 0.5) + (div * i)) + '%';
 							} else {
-								var div = (360 / len);
-								color.h = Math.round((div * 0.5) + (div * i));
+								if (i < baseColors.length) {
+									color.h = baseColors[i];
+								} else {
+									var div = (360 / len);
+									color.h = Math.round((div * 0.5) + (div * i));
+								}
 							}
+							color.value = m.getColorValue(color);
+						} else {
+							var color = {
+								value: obj.c
+							};
 						}
-						color.hsla = m.getColorValue(color);
 						return color;
 					},
 					hover: function(e) {
@@ -264,14 +270,14 @@
 					info.average = info.sum ? info.sum / ar.length : 0;
 
 					// sets a color for the series
-					info.color = m.getColor(info.seriesIndex, ar.length, false);
+					info.color = m.getColor(info, info.seriesIndex, ar.length, false);
 
 					m.series++;
 				},
 
 				// bar chart bars
 				generateBars = function(point, p, ar) {
-					point.color = m.getColor(p, ar.length, this.color ? this.color : false);
+					point.color = m.getColor(point, p, ar.length, this.color ? this.color : false);
 
 					point.node = document.createElement('div');
 					point.node.style.cssText = objectCSS({
@@ -289,7 +295,7 @@
 						point.bar.className = cssPrefix + 'bar';
 						point.bar.style.cssText = objectCSS({
 							position: 'absolute',
-							'background-color': point.color.hsla,
+							'background-color': point.color.value,
 							bottom: 0,
 							width: '100%',
 							'min-height': '1px',
@@ -323,7 +329,7 @@
 						point.dot.style.cssText = objectCSS({
 							left: x + '%',
 							top: y + '%',
-							'background-color': point.color.hsla
+							'background-color': point.color.value
 						});
 						point.dot.setAttribute('data-point', point.id);
 						m.node.appendChild(point.dot);
@@ -333,7 +339,7 @@
 							point.line.setAttribute('class', cssPrefix + 'pe');
 							point.line.setAttribute('data-point', point.id);
 							point.line.setAttribute('d', 'M' + this.info.lastPoint.x + ',' + (this.info.lastPoint.y * m.config.ratio) + ' ' + x + ',' + (y * m.config.ratio));
-							point.line.setAttribute('stroke', point.color.hsla);
+							point.line.setAttribute('stroke', point.color.value);
 							point.line.setAttribute('stroke-width', '1%');
 							m.svg.appendChild(point.line);
 						}
@@ -354,7 +360,7 @@
 
 				// pie / donut slices only render the first series of points
 				generateSlices = function(point, p, ar) {
-					point.color = m.getColor(p, ar.length, this.color ? this.color : false);
+					point.color = m.getColor(point, p, ar.length, this.color ? this.color : false);
 
 					point.percent_decimal = point.percent_series ? point.percent_series / 100 : 0;
 					point.deg_from = this.info.lastDegTo || 0;
@@ -393,9 +399,9 @@
 					}
 					point.slice.setAttribute('d', point.d);
 					point.slice.setAttribute('class', cssPrefix + 'slice ' + cssPrefix + 'pe');
-					point.slice.setAttribute('fill', point.color.hsla);
+					point.slice.setAttribute('fill', point.color.value);
 					point.slice.setAttribute('stroke-width', 1);
-					point.slice.setAttribute('stroke', point.color.hsla);
+					point.slice.setAttribute('stroke', point.color.value);
 					point.slice.setAttribute('data-point', point.id);
 					point.hoverContent = (point.l || '') + ' ' + Math.round(point.v) + ' (' + Math.round(point.percent_series) + '%)';
 					m.svg.appendChild(point.slice);
@@ -403,7 +409,7 @@
 					point.legend = document.createElement('div');
 					point.legendColor = document.createElement('span');
 					point.legendColor.className = cssPrefix + 'legendColor';
-					point.legendColor.style.backgroundColor = point.color.hsla;
+					point.legendColor.style.backgroundColor = point.color.value;
 					point.legend.appendChild(point.legendColor);
 					point.legendText = document.createElement('span');
 					point.legendText.className = cssPrefix + 'ellipsis';

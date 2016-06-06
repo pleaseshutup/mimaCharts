@@ -25,20 +25,28 @@ var charts = [{
             v: 0
         }, {
             v: 0
+        }, {
+            v: 0
+        }, {
+            v: 0
         }]
     }, {
         v: 1,
         data: [{
             v: 1
         }, {
-            v: 0
+            v: 1
+        }, {
+            v: 1
+        }, {
+            v: 1
         }]
     }, {
         v: 5,
         data: [{
             v: 5
         }, {
-            v: 0
+            v: 4
         }, {
             v: 3
         }, {
@@ -50,6 +58,10 @@ var charts = [{
             v: 5
         }, {
             v: 2.45343
+        }, {
+            v: 2.3
+        }, {
+            v: 2.5
         }]
     }]
 }, {
@@ -198,7 +210,8 @@ var charts = [{
 }];
 
 var types = ['line','bar','donut','pie','dial'],
-    words = ['Alfred', 'Barney', 'Chris', 'Daniel', 'Ethan', 'Franklin', 'Gregory', 'Heather'];
+    words = ['Alfred', 'Barney', 'Chris', 'Daniel', 'Ethan', 'Franklin', 'Gregory', 'Heather'],
+    customColors = ['red','blue','green','#00cc00', 'orange', 'navy', 'pink'];
 
 // two random charts
 var genRandomDataSegment = function(){
@@ -212,7 +225,7 @@ var genRandomDataSegment = function(){
             if(word){ word += ' '; }
             word += words[Math.round(Math.random()*(words.length-1))];
         }
-        data.push({v: Math.round(Math.random() * 10) * numZeros, l: word});
+        data.push({v: Math.round(Math.random() * 10) * numZeros, l: word, c: customColors[Math.round(Math.random()*(customColors.length-1))] });
     }
     return data;
 }, addDataSegment = function(item, level, maxLevels){
