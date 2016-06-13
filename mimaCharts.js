@@ -55,7 +55,7 @@
 		},
 
 		// these are just the hue values of the css colors for hsla() after these it's dynamically set
-		baseColors = [200, 16, 285],
+		baseColors = [4, 207, 262, 36, 122, 16, 291, 45, 231, 66, 17, 199, 1874, 340, 88, 54, 14, 200],
 
 		// the default configuration passed into mimaChart() for the config parameter
 		defaults = {
@@ -91,7 +91,7 @@
 							var color = {
 								h: 0,
 								s: '100%',
-								l: '64%',
+								l: '54%',
 								a: 1
 							};
 							if (parent) {

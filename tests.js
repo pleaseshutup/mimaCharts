@@ -268,9 +268,10 @@ var mimaInstance = mimaCharts(),
     colors.innerHTML = '<div>'+num+' colors</div>';
     for(var i=0; i<num;i++){
         var color = document.createElement('span'),
-            getColor = mimaInstance.getColor(i, num);
+            getColor = mimaInstance.getColor({}, i, num);
+        console.log('color', getColor);
         color.setAttribute('title', JSON.stringify(getColor));
-        color.style.cssText = 'display:inline-block;box-sizing:border-box;width:20px;height:16px;margin:0 6px 6px 0;background-color:'+getColor.hsla;
+        color.style.cssText = 'display:inline-block;box-sizing:border-box;width:20px;height:16px;margin:0 6px 6px 0;background-color:'+getColor.value;
         colors.appendChild(color);
     }
     colorSec.appendChild(colors);
