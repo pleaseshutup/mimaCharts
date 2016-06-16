@@ -134,6 +134,42 @@ var charts = [{
 	}, {
 		v: 15,
 		l: 'Medium Sized Label May Fit'
+	}, {
+		v: Math.round(Math.random() * 20),
+		l: 'Long List of Items 1'
+	}, {
+		v: Math.round(Math.random() * 20),
+		l: 'Long List of Items 2'
+	}, {
+		v: Math.round(Math.random() * 20),
+		l: 'Long List of Items 3'
+	}, {
+		v: Math.round(Math.random() * 20),
+		l: 'Long List of Items 4'
+	}, {
+		v: Math.round(Math.random() * 20),
+		l: 'Long List of Items 5'
+	}, {
+		v: Math.round(Math.random() * 20),
+		l: 'Long List of Items 6'
+	}, {
+		v: Math.round(Math.random() * 20),
+		l: 'Long List of Items 7'
+	}, {
+		v: Math.round(Math.random() * 20),
+		l: 'Long List of Items 8'
+	}, {
+		v: Math.round(Math.random() * 20),
+		l: 'Long List of Items 9'
+	}, {
+		v: Math.round(Math.random() * 20),
+		l: 'Long List of Items 10'
+	}, {
+		v: Math.round(Math.random() * 20),
+		l: 'Long List of Items 11'
+	}, {
+		v: Math.round(Math.random() * 20),
+		l: 'Long List of Items 12'
 	}]
 }, {
 	title: 'Donut',
@@ -269,7 +305,6 @@ var mimaInstance = mimaCharts(),
 	for(var i=0; i<num;i++){
 		var color = document.createElement('span'),
 			getColor = mimaInstance.getColor({}, i, num);
-		console.log('color', getColor);
 		color.setAttribute('title', JSON.stringify(getColor));
 		color.style.cssText = 'display:inline-block;box-sizing:border-box;width:20px;height:16px;margin:0 6px 6px 0;background-color:'+getColor.value;
 		colors.appendChild(color);
