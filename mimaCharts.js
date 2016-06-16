@@ -12,6 +12,7 @@
 
 		// svg name space for convenience
 		svgNS = 'http://www.w3.org/2000/svg',
+		//xlinkNS = 'http://www.w3.org/1999/xlink',
 
 		// constants for convenience
 		materialShadow1 = '0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24)',
@@ -37,7 +38,7 @@
 				.' + cssPrefix + 'hoverContainer{z-index:1;pointer-events:none;position:absolute;left:0;top:0;border:1px solid #eaeaea; padding:4px;background-color:#fff;box-shadow:' + materialShadow1 + ';transition: all 0.15s ease-out;}\
 				.' + cssPrefix + 'scaleLine{position: absolute; top: 0; left: 0; right: 0; height: 1px; background-color: #ccc; }\
 				.' + cssPrefix + 'scaleText{display: inline-block; position: absolute; top: 0; left: 0; font-size: 12px; color: #999; line-height: 10%; text-align:right; }\
-				.' + cssPrefix + 'legend{display: inline-block; position: absolute; top: 0; left: 0; font-size: 12px; color: #666; }\
+				.' + cssPrefix + 'legend{font-size: 12px; color: #666; }\
 				.' + cssPrefix + 'legend span{display: inline-block; vertical-align:middle; pointer-events:none; }\
 				.' + cssPrefix + 'legendColor{ border-radius: 50%; width: 12px; height: 12px; margin-right: 4px; }\
 				'));
@@ -87,7 +88,7 @@
 						return 'hsla(' + color.h + ',' + color.s + ',' + color.l + ',' + color.a + ')';
 					},
 					getColor: function(obj, i, len, parent) {
-						if(!obj.c){
+						if (!obj.c) {
 							var color = {
 								h: 0,
 								s: '100%',
@@ -142,6 +143,9 @@
 								point.slice.setAttribute('filter', 'url(#' + cssPrefix + 'material-shadow-1)');
 								point.slice.parentNode.appendChild(point.slice);
 								point.legend.style.transform = 'scale(1.1)';
+								if (m.legend) {
+									m.legend.scrollTop = point.legend.offsetTop;
+								}
 							}
 							if (point.bar) {
 								point.bar.style.transform = 'scale(1.05)';
@@ -151,21 +155,10 @@
 								point.dot.style.transform = 'scale(1.2)';
 							}
 
-							if (false) {
-								//debug
-								var showPointDebug = {};
-								for (var k in point) {
-									if (k !== 'parent') {
-										showPointDebug[k] = point[k];
-									}
-								}
-								m.currentHover.innerHTML = '<pre>' + JSON.stringify(m.info, undefined, 2) + '</pre>';
+							if (!point.hoverContent) {
+								show = false;
 							} else {
-								if (!point.hoverContent) {
-									show = false;
-								} else {
-									m.currentHover.innerHTML = point.hoverContent || '';
-								}
+								m.currentHover.innerHTML = point.hoverContent || '';
 							}
 						} else {
 							if (!point) {
@@ -391,17 +384,22 @@
 						' A' + this.info.i_rad + ',' + this.info.i_rad + ' ' + point.i_sweep + ' ' + point.p1a.x + ',' + point.p1a.y +
 						' A' + this.info.i_rad + ',' + this.info.i_rad + ' ' + point.i_sweep + ' ' + point.p1.x + ',' + point.p1.y;
 					} else {
-						point.d = 'M' + point.p1.x + ',' + point.p1.y +
-						' L' + point.p2.x + ',' + point.p2.y +
-						' A' + this.info.o_rad + ',' + this.info.o_rad + ' ' + point.o_sweep + ' ' + point.p3.x + ',' + point.p3.y +
-						' L' + point.p4.x + ',' + point.p4.y +
-						' A' + this.info.i_rad + ',' + this.info.i_rad + ' ' + point.i_sweep + ' ' + point.p1.x + ',' + point.p1.y;
+						if (config.type1 !== 'd') {
+							point.d = 'M' + this.info.cx + ',' + this.info.cy +
+								' L' + point.p2.x + ',' + point.p2.y +
+								' A' + this.info.o_rad + ',' + this.info.o_rad + ' ' + point.o_sweep + ' ' + point.p3.x + ',' + point.p3.y + 'Z';
+						} else {
+							point.d = 'M' + point.p1.x + ',' + point.p1.y +
+							' L' + point.p2.x + ',' + point.p2.y +
+							' A' + this.info.o_rad + ',' + this.info.o_rad + ' ' + point.o_sweep + ' ' + point.p3.x + ',' + point.p3.y +
+							' L' + point.p4.x + ',' + point.p4.y +
+							' A' + this.info.i_rad + ',' + this.info.i_rad + ' ' + point.i_sweep + ' ' + point.p1.x + ',' + point.p1.y;
+						}
 					}
 					point.slice.setAttribute('d', point.d);
 					point.slice.setAttribute('class', cssPrefix + 'slice ' + cssPrefix + 'pe');
 					point.slice.setAttribute('fill', point.color.value);
-					point.slice.setAttribute('stroke-width', 1);
-					point.slice.setAttribute('stroke', point.color.value);
+					point.slice.setAttribute('stroke', 'none');
 					point.slice.setAttribute('data-point', point.id);
 					point.hoverContent = (point.l || '') + ' ' + Math.round(point.v) + ' (' + Math.round(point.percent_series) + '%)';
 					m.svg.appendChild(point.slice);
@@ -421,10 +419,7 @@
 					point.legend.appendChild(point.legendValue);
 					point.legend.className = cssPrefix + 'legend ' + cssPrefix + 'pe';
 					point.legend.setAttribute('data-point', point.id);
-					point.legend.style.top = p * 20 + 'px';
-					point.legend.style.left = '50%';
-					point.legend.style.width = '50%';
-					m.node.appendChild(point.legend);
+					m.legend.appendChild(point.legend);
 
 					point.legendMinus = 36 + point.legendValue.offsetWidth;
 					point.legendText.style.maxWidth = 'calc(100% - ' + point.legendMinus + 'px)';
@@ -477,6 +472,42 @@
 						}
 
 					}
+				},
+
+				// setup the legend depending on the chart type
+				initLegend = function() {
+					if (config.type1 === 'p' || config.type1 === 'd') {
+						m.legendHolder = document.createElement('div');
+						m.legendHolder.style.cssText = objectCSS({
+							position: 'absolute',
+							top: 0,
+							bottom: 0,
+							left: '50%',
+							width: '50%',
+							overflow: 'hidden'
+						});
+						m.legend = document.createElement('div');
+						m.legend.style.cssText = objectCSS({
+							position: 'absolute',
+							'overflow-x': 'hidden',
+							height: '100%',
+							left: 0,
+							right: 0,
+							'overflow-y': 'scroll'
+						});
+						m.legendHolder.appendChild(m.legend);
+						m.node.appendChild(m.legendHolder);
+
+						var checkWidth = function() {
+							var r = '-' + (m.legend.offsetWidth - m.legend.clientWidth) + 'px';
+							if (m.legend.style.right !== r) {
+								m.legend.style.right = r;
+							}
+						};
+						checkWidth();
+						setTimeout(checkWidth, 10);
+
+					}
 				};
 
 			for (k in defaults) {
@@ -503,10 +534,8 @@
 			m.svg.setAttribute('viewBox', '0 0 100 ' + (100 * m.config.ratio));
 			m.svg.setAttribute('width', '100%');
 			m.svg.setAttribute('height', '100%');
-			//m.svg.setAttribute('preserveAspectRatio', 'none');
 			m.svg.setAttribute('class', cssPrefix + 'abs');
 			m.chart.appendChild(m.svg);
-			//m.svg.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', '#icon-' + name);
 			m.filter = document.createElementNS(svgNS, 'filter');
 			m.filter.id = cssPrefix + 'material-shadow-1';
 			m.filter.innerHTML = '<feGaussianBlur in="SourceAlpha" stdDeviation="0.5"/><feOffset dx="0" dy="0" result="offsetblur"/><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>';
@@ -519,10 +548,14 @@
 			// ok so we're going to put this div on the window so we can still get calculations of sizes of things
 			// we'll hide it so that it isn't available until the user appends it somewhere. This should not require paints.
 
-			shadowDom.style.opacity = 0;
-			shadowDom.style.position = 'absolute';
-			shadowDom.style.left = -10000 + 'px';
+			shadowDom.style.cssText = objectCSS({
+				position: 'absolute',
+				opacity: 0,
+				left: -10000 + 'px'
+			});
 			document.body.appendChild(shadowDom);
+
+			initLegend();
 
 			if (m.data) {
 				m.data.forEach(gatherInfo1, m);
