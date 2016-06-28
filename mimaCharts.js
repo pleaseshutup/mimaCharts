@@ -38,7 +38,7 @@
 				.' + cssPrefix + 'hoverContainer{z-index:1;pointer-events:none;position:absolute;left:0;top:0;border:1px solid #eaeaea; padding:4px;background-color:#fff;box-shadow:' + materialShadow1 + ';transition: all 0.15s ease-out;}\
 				.' + cssPrefix + 'scaleLine{position: absolute; top: 0; left: 0; right: 0; height: 1px; background-color: #ccc; }\
 				.' + cssPrefix + 'scaleText{display: inline-block; position: absolute; top: 0; left: 0; font-size: 12px; color: #999; line-height: 10%; text-align:right; }\
-				.' + cssPrefix + 'legend{font-size: 12px; color: #666; }\
+				.' + cssPrefix + 'legend{font-size: 12px; color: #666; padding: 2px; }\
 				.' + cssPrefix + 'legend span{display: inline-block; vertical-align:middle; pointer-events:none; }\
 				.' + cssPrefix + 'legendColor{ border-radius: 50%; width: 12px; height: 12px; margin-right: 4px; }\
 				'));
@@ -142,10 +142,11 @@
 								point.slice.style.transform = 'scale(1.05)';
 								point.slice.setAttribute('filter', 'url(#' + cssPrefix + 'material-shadow-1)');
 								point.slice.parentNode.appendChild(point.slice);
-								point.legend.style.transform = 'scale(1.1)';
 								if (m.legend) {
 									m.legend.scrollTop = point.legend.offsetTop;
 								}
+								point.legend.style.opacity = 1;
+								point.legend.style.fontWeight = 'bold';
 							}
 							if (point.bar) {
 								point.bar.style.transform = 'scale(1.05)';
@@ -172,7 +173,8 @@
 								if (point.slice) {
 									point.slice.style.transform = 'scale(1)';
 									point.slice.setAttribute('filter', '');
-									point.legend.style.transform = 'scale(1)';
+									point.legend.style.opacity = '';
+									point.legend.style.fontWeight = '';
 								}
 								if (point.bar) {
 									point.bar.style.transform = 'scale(1)';
