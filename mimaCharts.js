@@ -40,7 +40,7 @@
 				.' + cssPrefix + 'scaleText{display: inline-block; position: absolute; top: 0; left: 0; font-size: 12px; color: #999; line-height: 10%; text-align:right; }\
 				.' + cssPrefix + 'legend{font-size: 12px; color: #666; padding: 2px; }\
 				.' + cssPrefix + 'legend span{display: inline-block; vertical-align:middle; pointer-events:none; }\
-				.' + cssPrefix + 'legendColor{ border-radius: 50%; width: 12px; height: 12px; margin-right: 4px; }\
+				.' + cssPrefix + 'legendColor{ border-radius: 50%; width: 8px; height: 8px; margin-right: 4px; }\
 				'));
 				document.head.appendChild(style);
 			}
@@ -204,7 +204,7 @@
 						cx: 25,
 						cy: 25,
 						o_rad: 22,
-						i_rad: 12
+						i_rad: 18
 					};
 					if (level === 0) {
 						point.info.id = 0;
@@ -409,7 +409,10 @@
 					point.legend = document.createElement('div');
 					point.legendColor = document.createElement('span');
 					point.legendColor.className = cssPrefix + 'legendColor';
-					point.legendColor.style.backgroundColor = point.color.value;
+					point.legendColor.style.border = '2px solid ' + point.color.value;
+					if (config.type1 === 'd') {
+						point.legendColor.style.backgroundCorder = '2px solid ' + point.color.value;
+					}
 					point.legend.appendChild(point.legendColor);
 					point.legendText = document.createElement('span');
 					point.legendText.className = cssPrefix + 'ellipsis';
