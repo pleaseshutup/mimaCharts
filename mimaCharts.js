@@ -22,6 +22,10 @@
 
 		shadowDom = document.createElement('div'),
 
+		sortValues = function(a, b){
+			return a.v !== b.b ? a.v - b.v : 0;
+		},
+
 		// adds if not already set a stylesheet to the document
 		setStyleSheet = function() {
 			if (!document.getElementById(cssPrefix + 'sheet')) {
@@ -47,8 +51,8 @@
 		},
 
 		xyRadius = function(cx, cy, radius, degrees) {
-			//lets have zero be at the left and go clockwise
-			//degrees = degrees + 180;
+			//lets have zero be at the top and go clockwise
+			degrees = degrees + 180;
 			return {
 				x: cx + radius * Math.sin(degrees * Math.PI / 180),
 				y: cy + radius * Math.cos(degrees * Math.PI / 180)
@@ -562,6 +566,7 @@
 			initLegend();
 
 			if (m.data) {
+				m.data.sort(sortValues);
 				m.data.forEach(gatherInfo1, m);
 				m.data.forEach(gatherInfo2, m);
 
