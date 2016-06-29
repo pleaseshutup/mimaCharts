@@ -23,13 +23,14 @@
 		shadowDom = document.createElement('div'),
 
 		sortValues = function(a, b){
-			return a.v !== b.b ? a.v - b.v : 0;
+			return a.v !== b.b ? b.v - a.v : 0;
 		},
 
 		// adds if not already set a stylesheet to the document
 		setStyleSheet = function() {
 			if (!document.getElementById(cssPrefix + 'sheet')) {
-				var style = document.createElement('style');
+				var style = document.createElement('style'),
+					bouncy = 'cubic-bezier(0.250, 0.250, 0.705, 1.390)';
 				style.id = cssPrefix + 'sheet';
 				style.appendChild(document.createTextNode('\
 				.' + cssPrefix + 'abs{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none}\
@@ -38,13 +39,13 @@
 				.' + cssPrefix + 'pe{pointer-events: all}\
 				.' + cssPrefix + 'pe{pointer-events: all}\
 				.' + cssPrefix + 'ellipsis{text-overflow: ellipsis; max-width: 100%; white-space: nowrap; overflow: hidden;}\
-				.' + cssPrefix + 'slice,.' + cssPrefix + 'bar,.' + cssPrefix + 'dot{transition: transform 0.15s ease-in-out, filter 0.15s ease-in-out; transform: translate3d(0,0,0); transform-origin: 50% 50%; }\
-				.' + cssPrefix + 'hoverContainer{z-index:99;pointer-events:none;position:absolute;left:0;top:0;border:1px solid #eaeaea; padding:4px;background-color:#fff;box-shadow:' + materialShadow1 + ';transition: all 0.15s ease-out;}\
+				.' + cssPrefix + 'slice,.' + cssPrefix + 'bar,.' + cssPrefix + 'dot{transition: transform 1.15s '+bouncy+', filter 1.15s '+bouncy+'; transform: translate3d(0,0,0); transform-origin: 50% 50%; }\
+				.' + cssPrefix + 'hoverContainer{z-index:99;pointer-events:none;position:absolute;left:0;top:0;border:1px solid #eaeaea; padding:4px;background-color:#fff;box-shadow:' + materialShadow1 + ';transition: left 0.15s ease-out, top 0.15s ease-out;}\
 				.' + cssPrefix + 'scaleLine{position: absolute; top: 0; left: 0; right: 0; height: 1px; background-color: #ccc; }\
 				.' + cssPrefix + 'scaleText{display: inline-block; position: absolute; top: 0; left: 0; font-size: 12px; color: #999; line-height: 10%; text-align:right; }\
-				.' + cssPrefix + 'legend{font-size: 12px; color: #666; padding: 2px; }\
+				.' + cssPrefix + 'legend{font-size: 12px; color: #666; padding: 2px; transition: opacity 0.15s ease-in-out}\
 				.' + cssPrefix + 'legend span{display: inline-block; vertical-align:middle; pointer-events:none; }\
-				.' + cssPrefix + 'legendColor{ border-radius: 50%; width: 8px; height: 8px; margin-right: 4px; }\
+				.' + cssPrefix + 'legendColor{ border-radius: 50%; width: 8px; height: 8px; margin-right: 4px; transform: width 0.15s '+bouncy+', height 0.15s '+bouncy+'; }\
 				'));
 				document.head.appendChild(style);
 			}
@@ -52,7 +53,7 @@
 
 		xyRadius = function(cx, cy, radius, degrees) {
 			//lets have zero be at the top and go clockwise
-			degrees = degrees + 180;
+			//degrees += Math.PI * 2
 			return {
 				x: cx + radius * Math.sin(degrees * Math.PI / 180),
 				y: cy + radius * Math.cos(degrees * Math.PI / 180)
@@ -123,47 +124,54 @@
 						var point,
 							pointID = e.target ? e.target.getAttribute('data-point') : null,
 							point = m.dataref[pointID * 1],
-							show = e.type === 'mouseover';
+							show = e.type === 'mouseover' || e.type === 'mousemove';
 
 						if (pointID && point && show) {
-							if (!m.currentHover) {
-								m.currentHover = document.createElement('div');
-								m.currentHover.className = cssPrefix + 'hoverContainer';
-								document.body.appendChild(m.currentHover);
-							} else {
-								m.currentHover.style.display = '';
-							}
-							var st = (document.body.scrollTop || document.documentElement.scrollTop),
-								sl = (document.body.scrollLeft || document.documentElement.scrollLeft),
-								x = (e.pageX - sl),
-								y = (e.pageY - st);
+							var x = (e.pageX),
+								y = (e.pageY);
 
-							m.currentHover.style.left = (x) + 'px';
-							m.currentHover.style.top = (y - 40) + 'px';
-
-							if (point.slice) {
-								point.slice.style.transform = 'scale(1.05)';
-								point.slice.setAttribute('filter', 'url(#' + cssPrefix + 'material-shadow-1)');
-								point.slice.parentNode.appendChild(point.slice);
-								if (m.legend) {
-									m.legend.scrollTop = point.legend.offsetTop;
+							if(e.type !== 'mousemove'){
+								if (!m.currentHover) {
+									m.currentHover = document.createElement('div');
+									m.currentHover.className = cssPrefix + 'hoverContainer';
+									document.body.appendChild(m.currentHover);
+								} else {
+									m.currentHover.style.display = '';
 								}
-								point.legend.style.opacity = 1;
-								point.legend.style.fontWeight = 'bold';
-							}
-							if (point.bar) {
-								point.bar.style.transform = 'scale(1.05)';
-								point.bar.style.boxShadow = materialShadow1;
-							}
-							if (point.dot) {
-								point.dot.style.transform = 'scale(1.2)';
-							}
 
-							if (!point.hoverContent) {
-								show = false;
-							} else {
-								m.currentHover.innerHTML = point.hoverContent || '';
+								if (point.slice) {
+									point.slice.style.transform = 'translate3d(0, 0, 0) scale(1.05)';
+									point.slice.setAttribute('filter', 'url(#' + cssPrefix + 'material-shadow-1)');
+									point.slice.parentNode.appendChild(point.slice);
+									if (m.legend) {
+										m.legend.scrollTop = point.legend.offsetTop;
+									}
+									[].slice.call(m.chart.getElementsByClassName(cssPrefix+'legend')).forEach(function(el){
+										if(el != point.legend){
+											el.style.opacity = 0.5;
+										}
+									});
+									point.legend.style.opacity = 1;
+									point.legendColor.style.width = '12px';
+									point.legendColor.style.height = '12px';
+									point.legendColor.style.transform = 'translate3d(-2px, 0 , 0)';
+								}
+								if (point.bar) {
+									point.bar.style.transform = 'scale(1.05)';
+									point.bar.style.boxShadow = materialShadow1;
+								}
+								if (point.dot) {
+									point.dot.style.transform = 'scale(1.2)';
+								}
+
+								if (!point.hoverContent) {
+									show = false;
+								} else {
+									m.currentHover.innerHTML = point.hoverContent || '';
+								}
 							}
+							m.currentHover.style.left = (x) + 'px';
+							m.currentHover.style.top = (y - 50) + 'px';
 						} else {
 							if (!point) {
 								console.error('No dataref to id', pointID);
@@ -174,10 +182,16 @@
 								m.currentHover.style.display = 'none';
 
 								if (point.slice) {
-									point.slice.style.transform = 'scale(1)';
+									point.slice.style.transform = 'translate3d(0, 0, 0) scale(1)';
 									point.slice.setAttribute('filter', '');
 									point.legend.style.opacity = '';
 									point.legend.style.fontWeight = '';
+									[].slice.call(m.chart.getElementsByClassName(cssPrefix+'legend')).forEach(function(el){
+										el.style.opacity = 1;
+									});
+									point.legendColor.style.width = '';
+									point.legendColor.style.height = '';
+									point.legendColor.style.transform = 'translate3d(0, 0 , 0)';
 								}
 								if (point.bar) {
 									point.bar.style.transform = 'scale(1)';
@@ -581,6 +595,7 @@
 			}
 
 			m.chart.addEventListener('mouseover', m.hover);
+			m.chart.addEventListener('mousemove', m.hover);
 			m.chart.addEventListener('mouseout', m.hover);
 			if (config.scale && (config.type1 === 'l' || config.type1 === 'b')) {
 				generateScale();
