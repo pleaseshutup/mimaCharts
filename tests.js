@@ -182,6 +182,10 @@ var charts = [{
 		v: 20
 	}, {
 		v: 15
+	}, {
+		v: 15
+	}, {
+		v: 15
 	}]
 }, {
 	title: 'Dial',
@@ -222,6 +226,12 @@ var charts = [{
 		v: 10
 	},{
 		v: 100
+	},{
+		v: 100
+	},{
+		v: 100
+	},{
+		v: 100
 	}]
 }, {
 	title: 'Pie Test 5',
@@ -232,6 +242,18 @@ var charts = [{
 		v: 100
 	},{
 		v: 10
+	},{
+		v: 10
+	},{
+		v: 10
+	},{
+		v: 10
+	},{
+		v: 10
+	},{
+		v: 10
+	},{
+		v: 10
 	}]
 }, {
 	title: 'Pie Test 6',
@@ -240,6 +262,20 @@ var charts = [{
 	},
 	data: [{
 		v: 0.001
+	},{
+		v: 99.999
+	},{
+		v: 99.999
+	},{
+		v: 99.999
+	},{
+		v: 99.999
+	},{
+		v: 99.999
+	},{
+		v: 99.999
+	},{
+		v: 99.999
 	},{
 		v: 99.999
 	}]
@@ -299,7 +335,7 @@ charts.forEach(function(chart) {
 
 var mimaInstance = mimaCharts(),
 	colorSec = document.createElement('div');
-[1,2,3,5,12,20,100,200,600].forEach(function(num){
+[1,2,3,5,12,18,20,100,200,600].forEach(function(num){
 	var colors = document.createElement('div');
 	colors.innerHTML = '<div>'+num+' colors</div>';
 	for(var i=0; i<num;i++){

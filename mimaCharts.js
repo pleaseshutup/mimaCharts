@@ -35,7 +35,7 @@
 				.' + cssPrefix + 'pe{pointer-events: all}\
 				.' + cssPrefix + 'ellipsis{text-overflow: ellipsis; max-width: 100%; white-space: nowrap; overflow: hidden;}\
 				.' + cssPrefix + 'slice,.' + cssPrefix + 'bar,.' + cssPrefix + 'dot{transition: transform 0.15s ease-in-out, filter 0.15s ease-in-out; transform: translate3d(0,0,0); transform-origin: 50% 50%; }\
-				.' + cssPrefix + 'hoverContainer{z-index:1;pointer-events:none;position:absolute;left:0;top:0;border:1px solid #eaeaea; padding:4px;background-color:#fff;box-shadow:' + materialShadow1 + ';transition: all 0.15s ease-out;}\
+				.' + cssPrefix + 'hoverContainer{z-index:99;pointer-events:none;position:absolute;left:0;top:0;border:1px solid #eaeaea; padding:4px;background-color:#fff;box-shadow:' + materialShadow1 + ';transition: all 0.15s ease-out;}\
 				.' + cssPrefix + 'scaleLine{position: absolute; top: 0; left: 0; right: 0; height: 1px; background-color: #ccc; }\
 				.' + cssPrefix + 'scaleText{display: inline-block; position: absolute; top: 0; left: 0; font-size: 12px; color: #999; line-height: 10%; text-align:right; }\
 				.' + cssPrefix + 'legend{font-size: 12px; color: #666; padding: 2px; }\
@@ -56,7 +56,7 @@
 		},
 
 		// these are just the hue values of the css colors for hsla() after these it's dynamically set
-		baseColors = [207, 17, 291, 262, 4, 122, 16, 45, 231, 66, 36, 199, 1874, 340, 88, 54, 14, 200],
+		baseColors = [207, 4, 54, 88, 16, 291, 17, 262, 122, 45, 231, 66, 36, 199, 187, 340, 14, 200],
 
 		// the default configuration passed into mimaChart() for the config parameter
 		defaults = {
@@ -92,7 +92,7 @@
 							var color = {
 								h: 0,
 								s: '100%',
-								l: '54%',
+								l: '60%',
 								a: 1
 							};
 							if (parent) {
@@ -100,7 +100,7 @@
 								color.h = parent.h;
 								color.l = 24 + Math.round((div * 0.5) + (div * i)) + '%';
 							} else {
-								if (i < baseColors.length) {
+								if (len < baseColors.length) {
 									color.h = baseColors[i];
 								} else {
 									var div = (360 / len);
@@ -125,18 +125,17 @@
 							if (!m.currentHover) {
 								m.currentHover = document.createElement('div');
 								m.currentHover.className = cssPrefix + 'hoverContainer';
-								m.chart.appendChild(m.currentHover);
+								document.body.appendChild(m.currentHover);
 							} else {
 								m.currentHover.style.display = '';
 							}
-							var chartBox = m.chart.getBoundingClientRect(),
-								st = (document.body.scrollTop || document.documentElement.scrollTop),
+							var st = (document.body.scrollTop || document.documentElement.scrollTop),
 								sl = (document.body.scrollLeft || document.documentElement.scrollLeft),
-								x = (e.pageX - (chartBox.left + sl)),
-								y = (e.pageY - (chartBox.top + st));
+								x = (e.pageX - sl),
+								y = (e.pageY - st);
 
 							m.currentHover.style.left = (x) + 'px';
-							m.currentHover.style.top = (y) + 'px';
+							m.currentHover.style.top = (y - 40) + 'px';
 
 							if (point.slice) {
 								point.slice.style.transform = 'scale(1.05)';
