@@ -186,8 +186,6 @@
 									y = ly - 10;
 									x = lx - 10;
 
-									console.log('hover anchor', point.hoverAnchor);
-
 									m.currentHover.line = drawLine({
 										x1: lx,
 										y1: ly,
@@ -228,7 +226,9 @@
 
 								if (point.slice) {
 									point.slice.style.transform = 'translate3d(0, 0, 0) scale(1)';
-									point.slice.setAttribute('stroke', '#fff');
+									if(point.percent_decimal < 1){
+										point.slice.setAttribute('stroke', '#fff');
+									}
 									point.slice.setAttribute('filter', '');
 									point.legend.style.opacity = '';
 									point.legend.style.fontWeight = '';
@@ -473,7 +473,9 @@
 					point.slice.setAttribute('d', point.d);
 					point.slice.setAttribute('class', cssPrefix + 'slice ' + cssPrefix + 'pe');
 					point.slice.setAttribute('fill', point.color.value);
-					point.slice.setAttribute('stroke', '#fff');
+					if(point.percent_decimal < 1){
+						point.slice.setAttribute('stroke', '#fff');
+					}
 					point.slice.setAttribute('stroke-width', 0.2);
 					point.slice.setAttribute('data-point', point.id);
 					point.hoverContent = (point.l || '') + ' ' + Math.round(point.v) + ' (' + Math.round(point.percent_series) + '%)';
