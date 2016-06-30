@@ -40,7 +40,7 @@
 				.' + cssPrefix + 'pe{pointer-events: all}\
 				.' + cssPrefix + 'ellipsis{text-overflow: ellipsis; max-width: 100%; white-space: nowrap; overflow: hidden;}\
 				.' + cssPrefix + 'slice,.' + cssPrefix + 'bar,.' + cssPrefix + 'dot{transition: transform 0.15s ' + bouncy + ', filter 0.15s ' + bouncy + '; transform: translate3d(0,0,0); transform-origin: 50% 50%; }\
-				.' + cssPrefix + 'hoverContainer{z-index:99;pointer-events:none;position:absolute;left:0;top:0;border:1px solid #eaeaea; padding:4px;background-color:#fff;box-shadow:' + materialShadow1 + ';transition: left 0.15s ease-out, top 0.15s ease-out;}\
+				.' + cssPrefix + 'hoverContainer{z-index:99;pointer-events:none;position:absolute;left:0;top:0; font-size: 12px; border-radius:3px; color:#fff; padding:8px; background-color:#616161;transition: left 0.15s ease-out, top 0.15s ease-out;}\
 				.' + cssPrefix + 'scaleLine{position: absolute; top: 0; left: 0; right: 0; height: 1px; background-color: #ccc; }\
 				.' + cssPrefix + 'scaleText{display: inline-block; position: absolute; top: 0; left: 0; font-size: 12px; color: #999; line-height: 10%; text-align:right; }\
 				.' + cssPrefix + 'legend{font-size: 12px; color: #666; padding: 2px; transition: opacity 0.15s ease-in-out}\
@@ -163,7 +163,7 @@
 									point.legendColor.style.transform = 'translate3d(-2px, 0 , 0)';
 								}
 								if (point.bar) {
-									point.bar.style.transform = 'scale(1.05)';
+									point.bar.style.transform = 'translate3d(0, 0, 0) scale(1.05)';
 									point.bar.style.boxShadow = materialShadow1;
 								}
 								if (point.dot) {
@@ -180,37 +180,29 @@
 									m.currentHover.style.opacity = 0;
 									point.hoverAnchor.box = point.hoverAnchor.node.getBoundingClientRect();
 									var st = (document.body.scrollTop || document.documentElement.scrollTop),
-										sl = (document.body.scrollLeft || document.documentElement.scrollLeft);
-									lx = (point.hoverAnchor.box.left + sl + (point.hoverAnchor.box.width * 0.5)),
-									ly = (point.hoverAnchor.box.top + st + (point.hoverAnchor.box.height * 0.5)),
-									y = ly - 10;
-									x = lx - 10;
+										sl = (document.body.scrollLeft || document.documentElement.scrollLeft),
+										ox = 0,
+										x = (point.hoverAnchor.box.left + sl + (point.hoverAnchor.box.width * 0.5)),
+										y = (point.hoverAnchor.box.top + st + (point.hoverAnchor.box.height * 0.5));
+									y -= 40;
 
-									m.currentHover.line = drawLine({
-										x1: lx,
-										y1: ly,
-										x2: x,
-										y2: y,
-										opacity: 0,
-										appendTo: document.body,
-										stroke: 2,
-										color: '#eaeaea'
-									});
-									//m.currentHover.style.borderColor = point.color.value;
-									m.currentHover.line.node.style.zIndex = 99;
-									m.currentHover.style.left = (x) + 'px';
-									m.currentHover.style.top = (y) + 'px';
-									setTimeout(function(){
-										m.currentHover.style.transform = 'translate3d(-'+m.currentHover.offsetWidth+'px, -'+m.currentHover.offsetHeight+'px, 0)';
+									if (x < 0) {
+										x = 0;
+									}
+									m.currentHover.style.left = x + 'px';
+									m.currentHover.style.top = y + 'px';
+
+									setTimeout(function() {
+										ox = m.currentHover.offsetWidth;
+										if (x - ox < 10) {
+											ox = (ox - (ox - x)) - 10;
+										}
+										m.currentHover.style.transform = 'translate3d(-' + ox + 'px, -' + m.currentHover.offsetHeight + 'px, 0)';
 										m.currentHover.style.opacity = 1;
-										m.currentHover.line.node.style.opacity = 1;
+										m.currentHover.line.node.style.opacity = 0;
 									}, 10);
 								}
 
-							}
-							if(!point.hoverAnchor){
-								m.currentHover.style.left = (x) + 'px';
-								m.currentHover.style.top = (y) + 'px';
 							}
 						} else {
 							if (!point) {
@@ -220,13 +212,13 @@
 						if (!show) {
 							if (m.currentHover) {
 								m.currentHover.style.display = 'none';
-								if(m.currentHover.line){
+								if (m.currentHover.line) {
 									m.currentHover.line.node.style.display = 'none';
 								}
 
 								if (point.slice) {
 									point.slice.style.transform = 'translate3d(0, 0, 0) scale(1)';
-									if(point.percent_decimal < 1){
+									if (point.percent_decimal < 1) {
 										point.slice.setAttribute('stroke', '#fff');
 									}
 									point.slice.setAttribute('filter', '');
@@ -353,7 +345,7 @@
 						point.hoverAnchor = {
 							node: point.bar
 						};
-						point.bar.className = cssPrefix + 'bar';
+						point.bar.className = cssPrefix + 'bar ' + cssPrefix + 'pe';
 						point.bar.style.cssText = objectCSS({
 							position: 'absolute',
 							'background-color': point.color.value,
@@ -362,7 +354,6 @@
 							'min-height': '1px',
 							height: point.percent_scale + '%'
 						});
-						point.bar.setAttribute('class', cssPrefix + 'pe');
 						point.bar.setAttribute('data-point', point.id);
 						point.node.appendChild(point.bar);
 					}
@@ -473,7 +464,7 @@
 					point.slice.setAttribute('d', point.d);
 					point.slice.setAttribute('class', cssPrefix + 'slice ' + cssPrefix + 'pe');
 					point.slice.setAttribute('fill', point.color.value);
-					if(point.percent_decimal < 1){
+					if (point.percent_decimal < 1) {
 						point.slice.setAttribute('stroke', '#fff');
 					}
 					point.slice.setAttribute('stroke-width', 0.2);
@@ -485,8 +476,8 @@
 					point.legendColor = document.createElement('span');
 					point.legendColor.className = cssPrefix + 'legendColor';
 					point.legendColor.style.border = '2px solid ' + point.color.value;
-					if (config.type1 === 'd') {
-						point.legendColor.style.backgroundCorder = '2px solid ' + point.color.value;
+					if (config.type1 === 'p') {
+						point.legendColor.style.backgroundColor = point.color.value;
 					}
 					point.legend.appendChild(point.legendColor);
 					point.legendText = document.createElement('span');
@@ -568,7 +559,6 @@
 						line.appendTo.appendChild(line.node);
 						line.node.id = line.id;
 					}
-					console.log('line config', line);
 					line.css = {
 						position: 'absolute',
 						'pointer-events': 'none',
