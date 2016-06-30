@@ -22,7 +22,7 @@
 
 		shadowDom = document.createElement('div'),
 
-		sortValues = function(a, b){
+		sortValues = function(a, b) {
 			return a.v !== b.b ? b.v - a.v : 0;
 		},
 
@@ -30,7 +30,7 @@
 		setStyleSheet = function() {
 			if (!document.getElementById(cssPrefix + 'sheet')) {
 				var style = document.createElement('style'),
-					bouncy = 'cubic-bezier(0.250, 0.250, 0.705, 1.390)';
+					bouncy = 'cubic-bezier(0.25, 0.25, 0.65, 2.57)';
 				style.id = cssPrefix + 'sheet';
 				style.appendChild(document.createTextNode('\
 				.' + cssPrefix + 'abs{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none}\
@@ -39,13 +39,13 @@
 				.' + cssPrefix + 'pe{pointer-events: all}\
 				.' + cssPrefix + 'pe{pointer-events: all}\
 				.' + cssPrefix + 'ellipsis{text-overflow: ellipsis; max-width: 100%; white-space: nowrap; overflow: hidden;}\
-				.' + cssPrefix + 'slice,.' + cssPrefix + 'bar,.' + cssPrefix + 'dot{transition: transform 1.15s '+bouncy+', filter 1.15s '+bouncy+'; transform: translate3d(0,0,0); transform-origin: 50% 50%; }\
+				.' + cssPrefix + 'slice,.' + cssPrefix + 'bar,.' + cssPrefix + 'dot{transition: transform 0.15s ' + bouncy + ', filter 0.15s ' + bouncy + '; transform: translate3d(0,0,0); transform-origin: 50% 50%; }\
 				.' + cssPrefix + 'hoverContainer{z-index:99;pointer-events:none;position:absolute;left:0;top:0;border:1px solid #eaeaea; padding:4px;background-color:#fff;box-shadow:' + materialShadow1 + ';transition: left 0.15s ease-out, top 0.15s ease-out;}\
 				.' + cssPrefix + 'scaleLine{position: absolute; top: 0; left: 0; right: 0; height: 1px; background-color: #ccc; }\
 				.' + cssPrefix + 'scaleText{display: inline-block; position: absolute; top: 0; left: 0; font-size: 12px; color: #999; line-height: 10%; text-align:right; }\
 				.' + cssPrefix + 'legend{font-size: 12px; color: #666; padding: 2px; transition: opacity 0.15s ease-in-out}\
 				.' + cssPrefix + 'legend span{display: inline-block; vertical-align:middle; pointer-events:none; }\
-				.' + cssPrefix + 'legendColor{ border-radius: 50%; width: 8px; height: 8px; margin-right: 4px; transform: width 0.15s '+bouncy+', height 0.15s '+bouncy+'; }\
+				.' + cssPrefix + 'legendColor{ border-radius: 50%; width: 8px; height: 8px; margin-right: 4px; transform: width 0.15s ' + bouncy + ', height 0.15s ' + bouncy + '; }\
 				'));
 				document.head.appendChild(style);
 			}
@@ -128,9 +128,11 @@
 
 						if (pointID && point && show) {
 							var x = (e.pageX),
-								y = (e.pageY);
+								y = (e.pageY),
+								lx = 0,
+								ly = 0;
 
-							if(e.type !== 'mousemove'){
+							if (e.type !== 'mousemove') {
 								if (!m.currentHover) {
 									m.currentHover = document.createElement('div');
 									m.currentHover.className = cssPrefix + 'hoverContainer';
@@ -140,14 +142,18 @@
 								}
 
 								if (point.slice) {
-									point.slice.style.transform = 'translate3d(0, 0, 0) scale(1.05)';
-									point.slice.setAttribute('filter', 'url(#' + cssPrefix + 'material-shadow-1)');
 									point.slice.parentNode.appendChild(point.slice);
+									point.slice.setAttribute('stroke', point.color.value);
+									setTimeout(function() {
+										point.slice.style.transform = 'translate3d(0, 0, 0) scale(1.05)';
+									}, 10);
+
+									point.slice.setAttribute('filter', 'url(#' + cssPrefix + 'material-shadow-1)');
 									if (m.legend) {
 										m.legend.scrollTop = point.legend.offsetTop;
 									}
-									[].slice.call(m.chart.getElementsByClassName(cssPrefix+'legend')).forEach(function(el){
-										if(el != point.legend){
+									[].slice.call(m.chart.getElementsByClassName(cssPrefix + 'legend')).forEach(function(el) {
+										if (el != point.legend) {
 											el.style.opacity = 0.5;
 										}
 									});
@@ -169,9 +175,45 @@
 								} else {
 									m.currentHover.innerHTML = point.hoverContent || '';
 								}
+
+								if (point.hoverAnchor) {
+									m.currentHover.style.opacity = 0;
+									point.hoverAnchor.box = point.hoverAnchor.node.getBoundingClientRect();
+									var st = (document.body.scrollTop || document.documentElement.scrollTop),
+										sl = (document.body.scrollLeft || document.documentElement.scrollLeft);
+									lx = (point.hoverAnchor.box.left + sl + (point.hoverAnchor.box.width * 0.5)),
+									ly = (point.hoverAnchor.box.top + st + (point.hoverAnchor.box.height * 0.5)),
+									y = ly - 10;
+									x = lx - 10;
+
+									console.log('hover anchor', point.hoverAnchor);
+
+									m.currentHover.line = drawLine({
+										x1: lx,
+										y1: ly,
+										x2: x,
+										y2: y,
+										opacity: 0,
+										appendTo: document.body,
+										stroke: 2,
+										color: '#eaeaea'
+									});
+									//m.currentHover.style.borderColor = point.color.value;
+									m.currentHover.line.node.style.zIndex = 99;
+									m.currentHover.style.left = (x) + 'px';
+									m.currentHover.style.top = (y) + 'px';
+									setTimeout(function(){
+										m.currentHover.style.transform = 'translate3d(-'+m.currentHover.offsetWidth+'px, -'+m.currentHover.offsetHeight+'px, 0)';
+										m.currentHover.style.opacity = 1;
+										m.currentHover.line.node.style.opacity = 1;
+									}, 10);
+								}
+
 							}
-							m.currentHover.style.left = (x) + 'px';
-							m.currentHover.style.top = (y - 50) + 'px';
+							if(!point.hoverAnchor){
+								m.currentHover.style.left = (x) + 'px';
+								m.currentHover.style.top = (y) + 'px';
+							}
 						} else {
 							if (!point) {
 								console.error('No dataref to id', pointID);
@@ -180,13 +222,17 @@
 						if (!show) {
 							if (m.currentHover) {
 								m.currentHover.style.display = 'none';
+								if(m.currentHover.line){
+									m.currentHover.line.node.style.display = 'none';
+								}
 
 								if (point.slice) {
 									point.slice.style.transform = 'translate3d(0, 0, 0) scale(1)';
+									point.slice.setAttribute('stroke', '#fff');
 									point.slice.setAttribute('filter', '');
 									point.legend.style.opacity = '';
 									point.legend.style.fontWeight = '';
-									[].slice.call(m.chart.getElementsByClassName(cssPrefix+'legend')).forEach(function(el){
+									[].slice.call(m.chart.getElementsByClassName(cssPrefix + 'legend')).forEach(function(el) {
 										el.style.opacity = 1;
 									});
 									point.legendColor.style.width = '';
@@ -221,7 +267,7 @@
 						cx: 25,
 						cy: 25,
 						o_rad: 22,
-						i_rad: 18
+						i_rad: 17
 					};
 					if (level === 0) {
 						point.info.id = 0;
@@ -304,6 +350,9 @@
 					if (!point.data || this.info.level === m.config.dataLevel) {
 						// this generates bars within the parent item only for the lowest level of data available
 						point.bar = document.createElement('div');
+						point.hoverAnchor = {
+							node: point.bar
+						};
 						point.bar.className = cssPrefix + 'bar';
 						point.bar.style.cssText = objectCSS({
 							position: 'absolute',
@@ -335,6 +384,9 @@
 						point.dot = document.createElement('span');
 						point.dot.className = cssPrefix + 'dot ' + cssPrefix + 'sq ' + cssPrefix + 'pe';
 
+						point.hoverAnchor = {
+							node: point.dot
+						};
 						var x = (this.info.gap * (p + 1)) + (((100 - this.info.gap_less) / ar.length) * p),
 							y = 100 - point.percent_scale;
 
@@ -388,6 +440,9 @@
 					point.i_sweep = point.deg_to - point.deg_from > 180 ? '0 1,1' : '0 0,1';
 
 					point.slice = document.createElementNS(svgNS, 'path');
+					point.hoverAnchor = {
+						node: point.slice
+					};
 					point.d = '';
 					if (point.percent_decimal >= 1) {
 
@@ -418,7 +473,8 @@
 					point.slice.setAttribute('d', point.d);
 					point.slice.setAttribute('class', cssPrefix + 'slice ' + cssPrefix + 'pe');
 					point.slice.setAttribute('fill', point.color.value);
-					point.slice.setAttribute('stroke', 'none');
+					point.slice.setAttribute('stroke', '#fff');
+					point.slice.setAttribute('stroke-width', 0.2);
 					point.slice.setAttribute('data-point', point.id);
 					point.hoverContent = (point.l || '') + ' ' + Math.round(point.v) + ' (' + Math.round(point.percent_series) + '%)';
 					m.svg.appendChild(point.slice);
@@ -494,6 +550,38 @@
 						}
 
 					}
+				},
+
+				drawLine = function(line) {
+					if (!line.id) {
+						line.id = cssPrefix + 'hoverLine';
+					}
+					if (!line.appendTo) {
+						line.appendTo = document.body;
+					}
+					line.deg = Math.atan2((line.y2 - line.y1), (line.x2 - line.x1)) * 180 / Math.PI;
+					line.node = line.id ? document.getElementById(line.id) : false;
+					if (!line.node) {
+						line.node = document.createElement('div');
+						line.appendTo.appendChild(line.node);
+						line.node.id = line.id;
+					}
+					console.log('line config', line);
+					line.css = {
+						position: 'absolute',
+						'pointer-events': 'none',
+						left: line.x1 + (line.unit || 'px'),
+						top: line.y1 + (line.unit || 'px'),
+						width: Math.sqrt(Math.pow((line.x1 - line.x2), 2) + Math.pow((line.y1 - line.y2), 2)) + (config.unit || 'px'),
+						height: 0,
+						transform: 'rotate(' + line.deg + 'deg)',
+						'transform-origin': '0 0',
+						'border-top': line.stroke + 'px solid ' + line.color,
+						opacity: 0,
+						'box-shadow': materialShadow1
+					};
+					line.node.style.cssText = objectCSS(line.css);
+					return line;
 				},
 
 				// setup the legend depending on the chart type
@@ -580,7 +668,9 @@
 			initLegend();
 
 			if (m.data) {
-				m.data.sort(sortValues);
+				if (config.sort !== false) {
+					typeof config.sort !== 'function' ? m.data.sort(sortValues) : m.data.sort(config.sort);
+				}
 				m.data.forEach(gatherInfo1, m);
 				m.data.forEach(gatherInfo2, m);
 
