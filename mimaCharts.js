@@ -183,8 +183,9 @@
 										sl = (document.body.scrollLeft || document.documentElement.scrollLeft),
 										ox = 0,
 										x = (point.hoverAnchor.box.left + sl + (point.hoverAnchor.box.width * 0.5)),
-										y = (point.hoverAnchor.box.top + st + (point.hoverAnchor.box.height * 0.5));
-									y -= 40;
+										y = (point.hoverAnchor.box.top + st);
+
+									y -= 10;
 
 									if (x < 0) {
 										x = 0;
@@ -193,13 +194,12 @@
 									m.currentHover.style.top = y + 'px';
 
 									setTimeout(function() {
-										ox = m.currentHover.offsetWidth;
+										ox = (m.currentHover.offsetWidth*0.5);
 										if (x - ox < 10) {
 											ox = (ox - (ox - x)) - 10;
 										}
 										m.currentHover.style.transform = 'translate3d(-' + ox + 'px, -' + m.currentHover.offsetHeight + 'px, 0)';
 										m.currentHover.style.opacity = 1;
-										m.currentHover.line.node.style.opacity = 0;
 									}, 10);
 								}
 
@@ -212,9 +212,6 @@
 						if (!show) {
 							if (m.currentHover) {
 								m.currentHover.style.display = 'none';
-								if (m.currentHover.line) {
-									m.currentHover.line.node.style.display = 'none';
-								}
 
 								if (point.slice) {
 									point.slice.style.transform = 'translate3d(0, 0, 0) scale(1)';
@@ -543,37 +540,6 @@
 						}
 
 					}
-				},
-
-				drawLine = function(line) {
-					if (!line.id) {
-						line.id = cssPrefix + 'hoverLine';
-					}
-					if (!line.appendTo) {
-						line.appendTo = document.body;
-					}
-					line.deg = Math.atan2((line.y2 - line.y1), (line.x2 - line.x1)) * 180 / Math.PI;
-					line.node = line.id ? document.getElementById(line.id) : false;
-					if (!line.node) {
-						line.node = document.createElement('div');
-						line.appendTo.appendChild(line.node);
-						line.node.id = line.id;
-					}
-					line.css = {
-						position: 'absolute',
-						'pointer-events': 'none',
-						left: line.x1 + (line.unit || 'px'),
-						top: line.y1 + (line.unit || 'px'),
-						width: Math.sqrt(Math.pow((line.x1 - line.x2), 2) + Math.pow((line.y1 - line.y2), 2)) + (config.unit || 'px'),
-						height: 0,
-						transform: 'rotate(' + line.deg + 'deg)',
-						'transform-origin': '0 0',
-						'border-top': line.stroke + 'px solid ' + line.color,
-						opacity: 0,
-						'box-shadow': materialShadow1
-					};
-					line.node.style.cssText = objectCSS(line.css);
-					return line;
 				},
 
 				// setup the legend depending on the chart type
