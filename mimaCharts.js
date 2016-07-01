@@ -128,9 +128,7 @@
 
 						if (pointID && point && show) {
 							var x = (e.pageX),
-								y = (e.pageY),
-								lx = 0,
-								ly = 0;
+								y = (e.pageY);
 
 							if (e.type !== 'mousemove') {
 								if (!m.currentHover) {
