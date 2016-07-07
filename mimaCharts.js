@@ -292,6 +292,22 @@
 					if (p === ar.length - 1) {
 						summaryInfo(this.info, ar);
 					}
+
+					if(config.onclick){
+						point.onclick = function onclickPoint(e){
+							if(typeof config.onclick === 'function'){
+								config.onclick(e, point);
+							} else if(typeof config.onclick === 'string'){
+								if(typeof window[config.onclick] === 'function'){
+									window[config.onclick](e, point);
+								} else {
+									console.error('could not find function '+config.onclick+' in global/window');
+								}
+							} else {
+								console.error('invalid click type', config.onclick);
+							}
+						};
+					}
 				},
 
 				//second pass after we know the highest/lowest values (scale stuff) we can set the percent relative here
@@ -489,6 +505,11 @@
 
 					point.legendMinus = 36 + point.legendValue.offsetWidth;
 					point.legendText.style.maxWidth = 'calc(100% - ' + point.legendMinus + 'px)';
+
+					if(point.onclick){
+						point.slice.addEventListener('click', point.onclick);
+						point.legend.addEventListener('click', point.onclick);
+					}
 
 				},
 

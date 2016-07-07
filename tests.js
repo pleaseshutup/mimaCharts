@@ -2,6 +2,9 @@ var charts = [{
 	title: 'Line. Scale 10 to 50',
 	config: {
 		type: 'line',
+		onclick: function(e, point){
+			console.log('clicked point', point);
+		},
 		scale: {
 			lowest: 0,
 			highest: 50
@@ -17,7 +20,10 @@ var charts = [{
 }, {
 	title: 'Multi Line',
 	config: {
-		type: 'line'
+		type: 'line',
+		onclick: function(e, point){
+			console.log('clicked point', point);
+		}
 	},
 	data: [{
 		v: 0,
@@ -67,7 +73,10 @@ var charts = [{
 }, {
 	title: 'Bar',
 	config: {
-		type: 'bar'
+		type: 'bar',
+		onclick: function(e, point){
+			console.log('clicked point', point);
+		}
 	},
 	data: [{
 		v: 0,
@@ -85,7 +94,10 @@ var charts = [{
 }, {
 	title: 'Multi-Bar',
 	config: {
-		type: 'bar'
+		type: 'bar',
+		onclick: function(e, point){
+			console.log('clicked point', point);
+		}
 	},
 	data: [{
 		v: 0,
@@ -123,7 +135,10 @@ var charts = [{
 }, {
 	title: 'Pie',
 	config: {
-		type: 'pie'
+		type: 'pie',
+		onclick: function(e, point){
+			console.log('clicked point', point);
+		},
 	},
 	data: [{
 		v: 10,
@@ -174,7 +189,10 @@ var charts = [{
 }, {
 	title: 'Donut',
 	config: {
-		type: 'donut'
+		type: 'donut',
+		onclick: function(e, point){
+			console.log('clicked point', point);
+		}
 	},
 	data: [{
 		v: 60
