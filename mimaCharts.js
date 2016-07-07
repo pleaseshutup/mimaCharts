@@ -296,9 +296,11 @@
 					if(config.onclick){
 						point.onclick = function onclickPoint(e){
 							if(typeof config.onclick === 'function'){
+								m.hover(e);
 								config.onclick(e, point, m);
 							} else if(typeof config.onclick === 'string'){
 								if(typeof window[config.onclick] === 'function'){
+									m.hover(e);
 									window[config.onclick](e, point, m);
 								} else {
 									console.error('could not find function '+config.onclick+' in global/window');
