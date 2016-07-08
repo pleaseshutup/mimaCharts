@@ -293,6 +293,10 @@
 						summaryInfo(this.info, ar);
 					}
 
+					if(!point.l && config.blankText){
+						point.l = config.blankText;
+					}
+
 					if(config.onclick){
 						point.onclick = function onclickPoint(e){
 							if(typeof config.onclick === 'function'){

@@ -190,6 +190,7 @@ var charts = [{
 	title: 'Donut',
 	config: {
 		type: 'donut',
+		defaultLabel: 'No Label',
 		onclick: function(e, point){
 			console.log('clicked point', point);
 		}

@@ -22,10 +22,12 @@ mimaChart(config, data);
 
 type: 'line' // options are line, bar, pie, donut, dial. Default is donut
 scale: {
-    lowest: 0 // set the lowest value on the scale, leave undefined for automatic
-    highest: 100 // set the highest value on the scale, leave undefined for automatic,
-    steps: 10 // number of steps in the scale
-    roundTo: 100 // round the scale to
+    lowest: 0, // set the lowest value on the scale, leave undefined for automatic
+    highest: 100, // set the highest value on the scale, leave undefined for automatic
+    steps: 10, // number of steps in the scale
+    roundTo: 100, // round the scale to
+    defaultLabel: '', // if no label or a blank label is provided use this default label instead
+    sort: true, // sort by highest value set to "false" to use your own provided sorted order
 },
 dataLevel: 2 // for line and bar charts, what level of data do you want to stop rendering at?
 
