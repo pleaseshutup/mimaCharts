@@ -40,7 +40,8 @@
 				.' + cssPrefix + 'pe{pointer-events: all}\
 				.' + cssPrefix + 'ellipsis{text-overflow: ellipsis; max-width: 100%; white-space: nowrap; overflow: hidden;}\
 				.' + cssPrefix + 'slice,.' + cssPrefix + 'bar,.' + cssPrefix + 'dot{transition: transform 0.15s ' + bouncy + ', filter 0.15s ' + bouncy + '; transform: translate3d(0,0,0); transform-origin: 50% 50%; }\
-				.' + cssPrefix + 'hoverContainer{z-index:99;pointer-events:none;position:absolute;left:0;top:0; font-size: 12px; border-radius:3px; color:#fff; padding:8px; background-color:#616161;transition: left 0.15s ease-out, top 0.15s ease-out;}\
+				.' + cssPrefix + 'bar{transform-origin: 50% 100%;}\
+				.' + cssPrefix + 'hoverContainer{z-index:99;pointer-events:none;position:absolute;left:0;top:0; font-size: 12px; border-radius:3px; color:#fff; padding:8px; background-color:#616161;transition: left 0.15s ease-out, top 0.15s ease-out, opacity 0.15s ease-out;}\
 				.' + cssPrefix + 'hoverContainer:before{content: ""; display:block; width:0; height:0; position: absolute; left:50%; bottom:-11px; margin-left:-6px; border: 6px solid transparent; border-top:6px solid #616161;}\
 				.' + cssPrefix + 'scaleLine{position: absolute; top: 0; left: 0; right: 0; height: 1px; background-color: #ccc; }\
 				.' + cssPrefix + 'scaleText{display: inline-block; position: absolute; top: 0; left: 0; font-size: 12px; color: #999; line-height: 10%; text-align:right; }\
@@ -138,6 +139,8 @@
 									document.body.appendChild(m.currentHover);
 								} else {
 									m.currentHover.style.display = '';
+									m.currentHover.style.opacity = 1;
+									clearTimeout(m.currentHover.delayHide);
 								}
 
 								if (point.slice) {
@@ -210,7 +213,10 @@
 						}
 						if (!show) {
 							if (m.currentHover) {
-								m.currentHover.style.display = 'none';
+								m.currentHover.style.opacity = 0;
+								m.currentHover.delayHide = setTimeout(function(){
+									m.currentHover.display = '';
+								}, 200);
 
 								if (point.slice) {
 									point.slice.style.transform = 'translate3d(0, 0, 0) scale(1)';

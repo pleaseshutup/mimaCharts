@@ -305,7 +305,8 @@ var types = ['line','bar','donut','pie','dial'],
 	customColors = ['red','blue','green','#00cc00', 'orange', 'navy', 'pink'];
 
 // two random charts
-var genRandomDataSegment = function(){
+var config = sessionConfig(),
+	genRandomDataSegment = function(){
 	var data = [],
 		numZeros = Math.random() * 10;
 
@@ -346,8 +347,9 @@ charts.forEach(function(chart) {
 	var sec = document.createElement('section'),
 		chartDOM = mimaCharts(chart.config, chart.data).chart;
 
-	sec.style.cssText = 'display:inline-block;box-sizing:border-box;width:400px;max-width:100%;padding:0 1%';
+	sec.style.cssText = 'display:'+(config[chart.config.type] === false ? 'none' : 'inline-block')+';box-sizing:border-box;width:400px;max-width:100%;padding:0 1%';
 	sec.innerHTML = '<h2>' + chart.title + '</h2>';
+	sec.setAttribute('data-chart', chart.config.type);
 	sec.appendChild(chartDOM);
 	document.body.appendChild(sec);
 });
@@ -367,3 +369,45 @@ var mimaInstance = mimaCharts(),
 	colorSec.appendChild(colors);
 });
 document.body.appendChild(colorSec);
+
+['Line', 'Bar', 'Pie', 'Donut', 'Dial'].forEach(function(chart){
+	var confChart = chart.toLowerCase();
+	var label = document.createElement('label');
+	label.style.display = 'inline-block';
+	label.style.padding = '4px 4px 4px 0';
+	var cb = document.createElement('input');
+	cb.type = 'checkbox';
+	cb.checked = config[confChart] === false ? false : true;
+	cb.addEventListener('change', function(e){
+		[].slice.call(document.querySelectorAll('section[data-chart="'+confChart+'"]')).forEach(function(sec){
+			sec.style.display = e.target.checked ? 'inline-block' : 'none';
+		});
+		config[confChart] = e.target.checked;
+		sessionConfig(config);
+	});
+	label.appendChild(cb);
+	var sp = document.createElement('span');
+	sp.textContent = chart;
+	label.appendChild(sp);
+	document.querySelector('section').appendChild(label);
+});
+
+function sessionConfig(set){
+	var conf = sessionStorage.getItem('mima-config');
+	if(conf){
+		try{
+			conf = JSON.parse(conf);
+		} catch(e){
+			conf = {};
+		}
+	} else {
+		conf = {};
+	}
+	if(set){
+		for(var k in set){
+			conf[k] = set[k];
+		}
+		sessionStorage.setItem('mima-config', JSON.stringify(conf));
+	}
+	return conf;
+}
