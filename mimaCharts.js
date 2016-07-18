@@ -677,6 +677,16 @@
 			m.chart.addEventListener('mouseover', m.hover);
 			m.chart.addEventListener('mousemove', m.hover);
 			m.chart.addEventListener('mouseout', m.hover);
+
+			var cleanupMima = function(){
+				if(!document.contains(m.chart)){
+					if(m.currentHover){
+						m.currentHover.style.display = 'none';
+					}
+				}
+			}
+			window.setInterval(cleanupMima, 1000);
+
 			if (config.scale && (config.type1 === 'l' || config.type1 === 'b')) {
 				generateScale();
 			}
