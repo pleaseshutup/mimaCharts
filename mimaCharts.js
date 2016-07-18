@@ -300,8 +300,8 @@
 						summaryInfo(this.info, ar);
 					}
 
-					if(!point.l && config.blankText){
-						point.l = config.blankText;
+					if(!point.l && config.defaultLabel){
+						point.l = config.defaultLabel;
 					}
 
 					if(config.onclick){
