@@ -75,6 +75,32 @@
 		// this is the function exposed
 		mimaChart = function(config, data) {
 
+			if(!window.__mimaData){
+				window.__mimaData = {
+					charts: [],
+					listeners: []
+				};
+				window.__mimaEvents = function(e){
+					var ignoreIndex;
+					if(typeof e.target.__mimaIndex !== 'undefined'){
+						ignoreIndex = e.target.__mimaIndex;
+						window.__mimaData.listeners[e.target.__mimaIndex](e);
+					}
+					if(e.type === 'mouseout'){
+						clearTimeout(window._mimaCleanup);
+						window.__mimaCleanup = setTimeout(function(){
+							window.__mimaData.listeners.forEach(function(func, i){
+								if(i !== ignoreIndex){
+									func(e);
+								}
+							});
+						}, 100);
+					}
+				}
+				window.addEventListener('mouseover', window.__mimaEvents);
+				window.addEventListener('mousemove', window.__mimaEvents);
+				window.addEventListener('mouseout', window.__mimaEvents);
+			}
 			// alows us to accept just data and use default config
 			data = typeof data !== 'object' ? config : data;
 			data = typeof data !== 'object' ? [] : data;
@@ -123,12 +149,13 @@
 						return color;
 					},
 					hover: function(e) {
+						if(typeof e.target.__mimaPoint != 'number'){ return false; }
+
 						var point,
-							pointID = e.target ? e.target.getAttribute('data-point') : null,
-							point = m.dataref[pointID * 1],
+							point = m.dataref[e.target.__mimaPoint],
 							show = e.type === 'mouseover' || e.type === 'mousemove';
 
-						if (pointID && point && show) {
+						if (point && show) {
 							var x = (e.pageX),
 								y = (e.pageY);
 
@@ -207,47 +234,49 @@
 
 							}
 						} else {
-							if (!point) {
-								console.error('No dataref to id', pointID);
-							}
-						}
-						if (!show) {
 							if (m.currentHover) {
 								m.currentHover.style.opacity = 0;
 								m.currentHover.delayHide = setTimeout(function(){
 									m.currentHover.display = '';
 								}, 200);
 
-								if (point.slice) {
-									point.slice.style.transform = 'translate3d(0, 0, 0) scale(1)';
-									if (point.percent_decimal < 1) {
-										point.slice.setAttribute('stroke', '#fff');
+								if(point){
+									if (point.slice) {
+										point.slice.style.transform = 'translate3d(0, 0, 0) scale(1)';
+										if (point.percent_decimal < 1) {
+											point.slice.setAttribute('stroke', '#fff');
+										}
+										point.slice.setAttribute('filter', '');
+										point.legend.style.opacity = '';
+										point.legend.style.fontWeight = '';
+										[].slice.call(m.chart.getElementsByClassName(cssPrefix + 'legend')).forEach(function(el) {
+											el.style.opacity = 1;
+										});
+										point.legendColor.style.width = '';
+										point.legendColor.style.height = '';
+										point.legendColor.style.transform = 'translate3d(0, 0 , 0)';
 									}
-									point.slice.setAttribute('filter', '');
-									point.legend.style.opacity = '';
-									point.legend.style.fontWeight = '';
-									[].slice.call(m.chart.getElementsByClassName(cssPrefix + 'legend')).forEach(function(el) {
-										el.style.opacity = 1;
-									});
-									point.legendColor.style.width = '';
-									point.legendColor.style.height = '';
-									point.legendColor.style.transform = 'translate3d(0, 0 , 0)';
-								}
-								if (point.bar) {
-									point.bar.style.transform = 'scale(1)';
-									point.bar.boxShadow = '';
-								}
-								if (point.dot) {
-									point.dot.style.transform = 'scale(1)';
-								}
-								if (point.line) {
-									point.line.style.transform = 'scale(1)';
-									point.line.setAttribute('filter', '');
+									if (point.bar) {
+										point.bar.style.transform = 'scale(1)';
+										point.bar.boxShadow = '';
+									}
+									if (point.dot) {
+										point.dot.style.transform = 'scale(1)';
+									}
+									if (point.line) {
+										point.line.style.transform = 'scale(1)';
+										point.line.setAttribute('filter', '');
+									}
 								}
 
 							}
 						}
 					}
+				},
+
+				setPointEvents = function(m, node, point){
+					node.__mimaPoint = point.id;
+					node.__mimaIndex = m.chartIndex;
 				},
 
 				// simplify the initialization of the info setting for the top level and each data segment
@@ -378,7 +407,7 @@
 							'min-height': '1px',
 							height: point.percent_scale + '%'
 						});
-						point.bar.setAttribute('data-point', point.id);
+						setPointEvents(m, point.bar, point);
 						point.node.appendChild(point.bar);
 					}
 
@@ -410,13 +439,13 @@
 							top: y + '%',
 							'background-color': point.color.value
 						});
-						point.dot.setAttribute('data-point', point.id);
+						setPointEvents(m, point.dot, point);
 						m.node.appendChild(point.dot);
 
 						if (p > 0) {
 							point.line = document.createElementNS(svgNS, 'path');
 							point.line.setAttribute('class', cssPrefix + 'pe');
-							point.line.setAttribute('data-point', point.id);
+							setPointEvents(m, point.line, point);
 							point.line.setAttribute('d', 'M' + this.info.lastPoint.x + ',' + (this.info.lastPoint.y * m.config.ratio) + ' ' + x + ',' + (y * m.config.ratio));
 							point.line.setAttribute('stroke', point.color.value);
 							point.line.setAttribute('stroke-width', '1%');
@@ -492,7 +521,7 @@
 						point.slice.setAttribute('stroke', '#fff');
 					}
 					point.slice.setAttribute('stroke-width', 0.2);
-					point.slice.setAttribute('data-point', point.id);
+					setPointEvents(m, point.slice, point);
 					point.hoverContent = (point.l || '') + ' ' + Math.round(point.v) + ' (' + Math.round(point.percent_series) + '%)';
 					m.svg.appendChild(point.slice);
 
@@ -513,7 +542,7 @@
 					point.legendValue.style.float = 'right';
 					point.legend.appendChild(point.legendValue);
 					point.legend.className = cssPrefix + 'legend ' + cssPrefix + 'pe';
-					point.legend.setAttribute('data-point', point.id);
+					setPointEvents(m, point.legend, point);
 					m.legend.appendChild(point.legend);
 
 					point.legendMinus = 36 + point.legendValue.offsetWidth;
@@ -655,6 +684,9 @@
 			});
 			document.body.appendChild(shadowDom);
 
+			m.chartIndex = window.__mimaData.charts.push(m) - 1;
+			m.chart.__mimaIndex = m.chartIndex;
+
 			initLegend();
 
 			if (m.data) {
@@ -674,9 +706,7 @@
 
 			}
 
-			m.chart.addEventListener('mouseover', m.hover);
-			m.chart.addEventListener('mousemove', m.hover);
-			m.chart.addEventListener('mouseout', m.hover);
+			window.__mimaData.listeners.push(m.hover); // this push needs to match the chartIndex push above to keep indexes equal
 
 			var cleanupMima = function(){
 				if(!document.contains(m.chart)){
@@ -695,12 +725,6 @@
 			return m;
 		};
 
-	// *could* be used in a server-side dom situation but I doubt it. Just throwing it here in case
-	// it is to be modularized in the future somehow
-	if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
-		module.exports = mimaCharts;
-	} else {
 		window.mimaCharts = mimaChart;
-	}
 
 })();
