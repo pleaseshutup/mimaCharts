@@ -75,23 +75,23 @@
 		// this is the function exposed
 		mimaChart = function(config, data) {
 
-			if(!window.__mimaData){
+			if (!window.__mimaEvents) {
 				window.__mimaData = {
-					charts: [],
-					listeners: []
-				};
-				window.__mimaEvents = function(e){
+					atomic: 0,
+					listeners: {}
+				}
+				window.__mimaEvents = function(e) {
 					var ignoreIndex;
-					if(typeof e.target.__mimaIndex !== 'undefined'){
+					if (typeof e.target.__mimaIndex !== 'undefined') {
 						ignoreIndex = e.target.__mimaIndex;
 						window.__mimaData.listeners[e.target.__mimaIndex](e);
 					}
-					if(e.type === 'mouseout'){
-						clearTimeout(window._mimaCleanup);
-						window.__mimaCleanup = setTimeout(function(){
-							window.__mimaData.listeners.forEach(function(func, i){
-								if(i !== ignoreIndex){
-									func(e);
+					if (e.type === 'mouseout') {
+						clearTimeout(window.__mimaCleanup);
+						window.__mimaCleanup = setTimeout(function() {
+							Object.keys(window.__mimaData.listeners).forEach(function(atomicIndex) {
+								if (i !== ignoreIndex) {
+									//window.__mimaData.listeners[atomicIndex](e);
 								}
 							});
 						}, 100);
@@ -101,6 +101,7 @@
 				window.addEventListener('mousemove', window.__mimaEvents);
 				window.addEventListener('mouseout', window.__mimaEvents);
 			}
+
 			// alows us to accept just data and use default config
 			data = typeof data !== 'object' ? config : data;
 			data = typeof data !== 'object' ? [] : data;
@@ -148,18 +149,66 @@
 						}
 						return color;
 					},
-					hover: function(e) {
-						if(typeof e.target.__mimaPoint != 'number'){ return false; }
+					killHover: function(e){
+						m.currentHover = window.__mimaData.currentHover;
+						if (m.currentHover) {
+							m.currentHover.style.opacity = 0;
+							m.currentHover.delayHide = setTimeout(function() {
+								m.currentHover.display = '';
+							}, 200);
 
-						var point,
-							point = m.dataref[e.target.__mimaPoint],
+							var point = m.currentHover.point;
+
+							if (point) {
+
+								point.showing = false;
+
+								if (point.slice) {
+									point.slice.style.transform = 'translate3d(0, 0, 0) scale(1)';
+									if (point.percent_decimal < 1) {
+										point.slice.setAttribute('stroke', '#fff');
+									}
+									point.slice.setAttribute('filter', '');
+									point.legend.style.opacity = '';
+									point.legend.style.fontWeight = '';
+									[].slice.call(m.chart.getElementsByClassName(cssPrefix + 'legend')).forEach(function(el) {
+										el.style.opacity = 1;
+									});
+									point.legendColor.style.width = '';
+									point.legendColor.style.height = '';
+									point.legendColor.style.transform = 'translate3d(0, 0 , 0)';
+								}
+								if (point.bar) {
+									point.bar.style.transform = 'scale(1)';
+									point.bar.boxShadow = '';
+								}
+								if (point.dot) {
+									point.dot.style.transform = 'scale(1)';
+								}
+								if (point.line) {
+									point.line.style.transform = 'scale(1)';
+									point.line.setAttribute('filter', '');
+								}
+							}
+
+						}
+					},
+
+					hover: function(e) {
+
+						var point = m.dataref[e.target.__mimaPoint],
 							show = e.type === 'mouseover' || e.type === 'mousemove';
 
 						if (point && show) {
-							var x = (e.pageX),
-								y = (e.pageY);
+							if (!point.showing) {
 
-							if (e.type !== 'mousemove') {
+								m.killHover(e);
+
+								point.showing = true;
+
+								var x = (e.pageX),
+									y = (e.pageY);
+
 								if (!m.currentHover) {
 									m.currentHover = document.createElement('div');
 									m.currentHover.className = cssPrefix + 'hoverContainer';
@@ -169,6 +218,9 @@
 									m.currentHover.style.opacity = 1;
 									clearTimeout(m.currentHover.delayHide);
 								}
+
+								m.currentHover.point = point;
+								window.__mimaData.currentHover = m.currentHover;
 
 								if (point.slice) {
 									point.slice.parentNode.appendChild(point.slice);
@@ -223,7 +275,7 @@
 									m.currentHover.style.top = y + 'px';
 
 									setTimeout(function() {
-										ox = (m.currentHover.offsetWidth*0.5);
+										ox = (m.currentHover.offsetWidth * 0.5);
 										if (x - ox < 10) {
 											ox = (ox - (ox - x)) - 10;
 										}
@@ -234,49 +286,14 @@
 
 							}
 						} else {
-							if (m.currentHover) {
-								m.currentHover.style.opacity = 0;
-								m.currentHover.delayHide = setTimeout(function(){
-									m.currentHover.display = '';
-								}, 200);
-
-								if(point){
-									if (point.slice) {
-										point.slice.style.transform = 'translate3d(0, 0, 0) scale(1)';
-										if (point.percent_decimal < 1) {
-											point.slice.setAttribute('stroke', '#fff');
-										}
-										point.slice.setAttribute('filter', '');
-										point.legend.style.opacity = '';
-										point.legend.style.fontWeight = '';
-										[].slice.call(m.chart.getElementsByClassName(cssPrefix + 'legend')).forEach(function(el) {
-											el.style.opacity = 1;
-										});
-										point.legendColor.style.width = '';
-										point.legendColor.style.height = '';
-										point.legendColor.style.transform = 'translate3d(0, 0 , 0)';
-									}
-									if (point.bar) {
-										point.bar.style.transform = 'scale(1)';
-										point.bar.boxShadow = '';
-									}
-									if (point.dot) {
-										point.dot.style.transform = 'scale(1)';
-									}
-									if (point.line) {
-										point.line.style.transform = 'scale(1)';
-										point.line.setAttribute('filter', '');
-									}
-								}
-
-							}
+							m.killHover(e);
 						}
 					}
 				},
 
-				setPointEvents = function(m, node, point){
+				setPointEvents = function(m, node, point) {
 					node.__mimaPoint = point.id;
-					node.__mimaIndex = m.chartIndex;
+					node.__mimaIndex = m.__mimaIndex;
 				},
 
 				// simplify the initialization of the info setting for the top level and each data segment
@@ -329,21 +346,21 @@
 						summaryInfo(this.info, ar);
 					}
 
-					if(!point.l && config.defaultLabel){
+					if (!point.l && config.defaultLabel) {
 						point.l = config.defaultLabel;
 					}
 
-					if(config.onclick){
-						point.onclick = function onclickPoint(e){
-							if(typeof config.onclick === 'function'){
+					if (config.onclick) {
+						point.onclick = function onclickPoint(e) {
+							if (typeof config.onclick === 'function') {
 								m.hover(e);
 								config.onclick(e, point, m);
-							} else if(typeof config.onclick === 'string'){
-								if(typeof window[config.onclick] === 'function'){
+							} else if (typeof config.onclick === 'string') {
+								if (typeof window[config.onclick] === 'function') {
 									m.hover(e);
 									window[config.onclick](e, point, m);
 								} else {
-									console.error('could not find function '+config.onclick+' in global/window');
+									console.error('could not find function ' + config.onclick + ' in global/window');
 								}
 							} else {
 								console.error('invalid click type', config.onclick);
@@ -495,12 +512,12 @@
 						point.p1a = xyRadius(this.info.cx, this.info.cy, this.info.i_rad, point.deg_to * 0.5);
 
 						point.d = 'M' + point.p1.x + ',' + point.p1.y +
-						' L' + point.p2.x + ',' + point.p2.y +
-						' A' + this.info.o_rad + ',' + this.info.o_rad + ' ' + point.o_sweep + ' ' + point.p3a.x + ',' + point.p3a.y +
-						' A' + this.info.o_rad + ',' + this.info.o_rad + ' ' + point.o_sweep + ' ' + point.p3.x + ',' + point.p3.y +
-						' L' + point.p4.x + ',' + point.p4.y +
-						' A' + this.info.i_rad + ',' + this.info.i_rad + ' ' + point.i_sweep + ' ' + point.p1a.x + ',' + point.p1a.y +
-						' A' + this.info.i_rad + ',' + this.info.i_rad + ' ' + point.i_sweep + ' ' + point.p1.x + ',' + point.p1.y;
+							' L' + point.p2.x + ',' + point.p2.y +
+							' A' + this.info.o_rad + ',' + this.info.o_rad + ' ' + point.o_sweep + ' ' + point.p3a.x + ',' + point.p3a.y +
+							' A' + this.info.o_rad + ',' + this.info.o_rad + ' ' + point.o_sweep + ' ' + point.p3.x + ',' + point.p3.y +
+							' L' + point.p4.x + ',' + point.p4.y +
+							' A' + this.info.i_rad + ',' + this.info.i_rad + ' ' + point.i_sweep + ' ' + point.p1a.x + ',' + point.p1a.y +
+							' A' + this.info.i_rad + ',' + this.info.i_rad + ' ' + point.i_sweep + ' ' + point.p1.x + ',' + point.p1.y;
 					} else {
 						if (config.type1 !== 'd') {
 							point.d = 'M' + this.info.cx + ',' + this.info.cy +
@@ -508,10 +525,10 @@
 								' A' + this.info.o_rad + ',' + this.info.o_rad + ' ' + point.o_sweep + ' ' + point.p3.x + ',' + point.p3.y + 'Z';
 						} else {
 							point.d = 'M' + point.p1.x + ',' + point.p1.y +
-							' L' + point.p2.x + ',' + point.p2.y +
-							' A' + this.info.o_rad + ',' + this.info.o_rad + ' ' + point.o_sweep + ' ' + point.p3.x + ',' + point.p3.y +
-							' L' + point.p4.x + ',' + point.p4.y +
-							' A' + this.info.i_rad + ',' + this.info.i_rad + ' ' + point.i_sweep + ' ' + point.p1.x + ',' + point.p1.y;
+								' L' + point.p2.x + ',' + point.p2.y +
+								' A' + this.info.o_rad + ',' + this.info.o_rad + ' ' + point.o_sweep + ' ' + point.p3.x + ',' + point.p3.y +
+								' L' + point.p4.x + ',' + point.p4.y +
+								' A' + this.info.i_rad + ',' + this.info.i_rad + ' ' + point.i_sweep + ' ' + point.p1.x + ',' + point.p1.y;
 						}
 					}
 					point.slice.setAttribute('d', point.d);
@@ -548,7 +565,7 @@
 					point.legendMinus = 36 + point.legendValue.offsetWidth;
 					point.legendText.style.maxWidth = 'calc(100% - ' + point.legendMinus + 'px)';
 
-					if(point.onclick){
+					if (point.onclick) {
 						point.slice.addEventListener('click', point.onclick);
 						point.legend.addEventListener('click', point.onclick);
 					}
@@ -684,8 +701,8 @@
 			});
 			document.body.appendChild(shadowDom);
 
-			m.chartIndex = window.__mimaData.charts.push(m) - 1;
-			m.chart.__mimaIndex = m.chartIndex;
+			m.__mimaIndex = window.__mimaData.atomic * 1;
+			window.__mimaData.atomic++;
 
 			initLegend();
 
@@ -706,11 +723,13 @@
 
 			}
 
-			window.__mimaData.listeners.push(m.hover); // this push needs to match the chartIndex push above to keep indexes equal
+			m.chart.__mimaIndex = m.__mimaIndex;
+			window.__mimaData.listeners[m.__mimaIndex] = m.hover;
 
-			var cleanupMima = function(){
-				if(!document.contains(m.chart)){
-					if(m.currentHover){
+			var cleanupMima = function() {
+				if (!document.contains(m.chart)) {
+					if (m.currentHover) {
+						delete window.__mimaData.listeners[m.chart.__mimaIndex];
 						m.currentHover.style.display = 'none';
 					}
 				}
@@ -725,6 +744,6 @@
 			return m;
 		};
 
-		window.mimaCharts = mimaChart;
+	window.mimaCharts = mimaChart;
 
 })();
