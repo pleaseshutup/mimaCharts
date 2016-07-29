@@ -138,7 +138,6 @@
 						return color;
 					},
 					killHover: function(e) {
-						console.log('exec kill');
 						m.currentHover = window.__mimaData.currentHover;
 						if (m.currentHover) {
 							m.currentHover.style.opacity = 0;
@@ -193,7 +192,6 @@
 							if (point && show) {
 								if (!point.showing) {
 
-									console.log('exec kill', 'new showing');
 									m.killHover(e);
 
 									point.showing = true;
@@ -278,7 +276,6 @@
 
 								}
 							} else {
-								console.log('exec kill', 'no point or show', e);
 								m.killHover(e);
 							}
 
