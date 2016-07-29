@@ -149,7 +149,7 @@
 						}
 						return color;
 					},
-					killHover: function(e){
+					killHover: function(e) {
 						m.currentHover = window.__mimaData.currentHover;
 						if (m.currentHover) {
 							m.currentHover.style.opacity = 0;
@@ -195,99 +195,104 @@
 					},
 
 					hover: function(e) {
+						clearTimeout(window.__mimaData.hoverTimer);
+						window.__mimaData.hoverTimer = setTimeout(function() {
 
-						var point = m.dataref[e.target.__mimaPoint],
-							show = e.type === 'mouseover' || e.type === 'mousemove';
+							var point = m.dataref[e.target.__mimaPoint],
+								show = e.type === 'mouseover' || e.type === 'mousemove';
 
-						if (point && show) {
-							if (!point.showing) {
+							if (point && show) {
+								if (!point.showing) {
 
-								m.killHover(e);
 
-								point.showing = true;
+									m.killHover(e);
 
-								var x = (e.pageX),
-									y = (e.pageY);
+									point.showing = true;
 
-								if (!m.currentHover) {
-									m.currentHover = document.createElement('div');
-									m.currentHover.className = cssPrefix + 'hoverContainer';
-									document.body.appendChild(m.currentHover);
-								} else {
-									m.currentHover.style.display = '';
-									m.currentHover.style.opacity = 1;
-									clearTimeout(m.currentHover.delayHide);
-								}
+									var x = (e.pageX),
+										y = (e.pageY);
 
-								m.currentHover.point = point;
-								window.__mimaData.currentHover = m.currentHover;
-
-								if (point.slice) {
-									point.slice.parentNode.appendChild(point.slice);
-									point.slice.setAttribute('stroke', point.color.value);
-									setTimeout(function() {
-										point.slice.style.transform = 'translate3d(0, 0, 0) scale(1.05)';
-									}, 10);
-
-									point.slice.setAttribute('filter', 'url(#' + cssPrefix + 'material-shadow-1)');
-									if (m.legend) {
-										m.legend.scrollTop = point.legend.offsetTop;
-									}
-									[].slice.call(m.chart.getElementsByClassName(cssPrefix + 'legend')).forEach(function(el) {
-										if (el != point.legend) {
-											el.style.opacity = 0.5;
-										}
-									});
-									point.legend.style.opacity = 1;
-									point.legendColor.style.width = '12px';
-									point.legendColor.style.height = '12px';
-									point.legendColor.style.transform = 'translate3d(-2px, 0 , 0)';
-								}
-								if (point.bar) {
-									point.bar.style.transform = 'translate3d(0, 0, 0) scale(1.05)';
-									point.bar.style.boxShadow = materialShadow1;
-								}
-								if (point.dot) {
-									point.dot.style.transform = 'scale(1.2)';
-								}
-
-								if (!point.hoverContent) {
-									show = false;
-								} else {
-									m.currentHover.innerHTML = point.hoverContent || '';
-								}
-
-								if (point.hoverAnchor) {
-									m.currentHover.style.opacity = 0;
-									point.hoverAnchor.box = point.hoverAnchor.node.getBoundingClientRect();
-									var st = (document.body.scrollTop || document.documentElement.scrollTop),
-										sl = (document.body.scrollLeft || document.documentElement.scrollLeft),
-										ox = 0,
-										x = (point.hoverAnchor.box.left + sl + (point.hoverAnchor.box.width * 0.5)),
-										y = (point.hoverAnchor.box.top + st);
-
-									y -= 10;
-
-									if (x < 0) {
-										x = 0;
-									}
-									m.currentHover.style.left = x + 'px';
-									m.currentHover.style.top = y + 'px';
-
-									setTimeout(function() {
-										ox = (m.currentHover.offsetWidth * 0.5);
-										if (x - ox < 10) {
-											ox = (ox - (ox - x)) - 10;
-										}
-										m.currentHover.style.transform = 'translate3d(-' + ox + 'px, -' + m.currentHover.offsetHeight + 'px, 0)';
+									if (!m.currentHover) {
+										m.currentHover = document.createElement('div');
+										m.currentHover.className = cssPrefix + 'hoverContainer';
+										document.body.appendChild(m.currentHover);
+									} else {
+										m.currentHover.style.display = '';
 										m.currentHover.style.opacity = 1;
-									}, 10);
-								}
+										clearTimeout(m.currentHover.delayHide);
+									}
 
+									m.currentHover.point = point;
+									window.__mimaData.currentHover = m.currentHover;
+
+									if (point.slice) {
+										point.slice.parentNode.appendChild(point.slice);
+										point.slice.setAttribute('stroke', point.color.value);
+										setTimeout(function() {
+											point.slice.style.transform = 'translate3d(0, 0, 0) scale(1.05)';
+										}, 10);
+
+										point.slice.setAttribute('filter', 'url(#' + cssPrefix + 'material-shadow-1)');
+										if (m.legend) {
+											m.legend.scrollTop = point.legend.offsetTop;
+										}
+										[].slice.call(m.chart.getElementsByClassName(cssPrefix + 'legend')).forEach(function(el) {
+											if (el != point.legend) {
+												el.style.opacity = 0.5;
+											}
+										});
+										point.legend.style.opacity = 1;
+										point.legendColor.style.width = '12px';
+										point.legendColor.style.height = '12px';
+										point.legendColor.style.transform = 'translate3d(-2px, 0 , 0)';
+									}
+									if (point.bar) {
+										point.bar.style.transform = 'translate3d(0, 0, 0) scale(1.05)';
+										point.bar.style.boxShadow = materialShadow1;
+									}
+									if (point.dot) {
+										point.dot.style.transform = 'scale(1.2)';
+									}
+
+									if (!point.hoverContent) {
+										show = false;
+									} else {
+										m.currentHover.innerHTML = point.hoverContent || '';
+									}
+
+									if (point.hoverAnchor) {
+										m.currentHover.style.opacity = 0;
+										point.hoverAnchor.box = point.hoverAnchor.node.getBoundingClientRect();
+										var st = (document.body.scrollTop || document.documentElement.scrollTop),
+											sl = (document.body.scrollLeft || document.documentElement.scrollLeft),
+											ox = 0,
+											x = (point.hoverAnchor.box.left + sl + (point.hoverAnchor.box.width * 0.5)),
+											y = (point.hoverAnchor.box.top + st);
+
+										y -= 10;
+
+										if (x < 0) {
+											x = 0;
+										}
+										m.currentHover.style.left = x + 'px';
+										m.currentHover.style.top = y + 'px';
+
+										setTimeout(function() {
+											ox = (m.currentHover.offsetWidth * 0.5);
+											if (x - ox < 10) {
+												ox = (ox - (ox - x)) - 10;
+											}
+											m.currentHover.style.transform = 'translate3d(-' + ox + 'px, -' + m.currentHover.offsetHeight + 'px, 0)';
+											m.currentHover.style.opacity = 1;
+										}, 10);
+									}
+
+								}
+							} else {
+								m.killHover(e);
 							}
-						} else {
-							m.killHover(e);
-						}
+
+						}, 4);
 					}
 				},
 
