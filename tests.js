@@ -343,16 +343,31 @@ for(var i=0; i<5; i++){
 	charts.push(dataItem);
 }
 
-charts.forEach(function(chart) {
-	var sec = document.createElement('section'),
-		chartDOM = mimaCharts(chart.config, chart.data).chart;
+function genCharts(){
+	[].slice.call(document.querySelectorAll('section')).forEach(function(sec,i){
+		if(i > 0){
+			sec.parentNode.removeChild(sec);
+		}
+	});
+	[].slice.call(document.querySelectorAll('input[type="checkbox"]')).forEach(function(checkbox){
+		var event = document.createEvent('HTMLEvents');
+		event.initEvent('change', true, false);
+		checkbox.dispatchEvent(event);
+	});
 
-	sec.style.cssText = 'display:'+(config[chart.config.type] === false ? 'none' : 'inline-block')+';box-sizing:border-box;width:400px;max-width:100%;padding:0 1%';
-	sec.innerHTML = '<h2>' + chart.title + '</h2>';
-	sec.setAttribute('data-chart', chart.config.type);
-	sec.appendChild(chartDOM);
-	document.body.appendChild(sec);
-});
+	charts.forEach(function(chart) {
+		var sec = document.createElement('section'),
+			chartDOM = mimaCharts(chart.config, chart.data).chart;
+
+		sec.style.cssText = 'display:'+(config[chart.config.type] === false ? 'none' : 'inline-block')+';box-sizing:border-box;width:400px;max-width:100%;padding:0 1%';
+		sec.innerHTML = '<h2>' + chart.title + '</h2>';
+		sec.setAttribute('data-chart', chart.config.type);
+		sec.appendChild(chartDOM);
+		document.body.appendChild(sec);
+	});
+	document.body.appendChild(colorSec);
+}
+
 
 var mimaInstance = mimaCharts(),
 	colorSec = document.createElement('div');
@@ -368,7 +383,9 @@ var mimaInstance = mimaCharts(),
 	}
 	colorSec.appendChild(colors);
 });
-document.body.appendChild(colorSec);
+
+genCharts();
+
 
 ['Line', 'Bar', 'Pie', 'Donut', 'Dial'].forEach(function(chart){
 	var confChart = chart.toLowerCase();
@@ -391,6 +408,15 @@ document.body.appendChild(colorSec);
 	label.appendChild(sp);
 	document.querySelector('section').appendChild(label);
 });
+
+var reAddCharts = document.createElement('a');
+reAddCharts.textContent = 'Re-Add Charts';
+reAddCharts.href = '#';
+reAddCharts.addEventListener('click', function(e){
+	e.preventDefault();
+	genCharts();
+});
+document.querySelector('section').appendChild(reAddCharts)
 
 function sessionConfig(set){
 	var conf = sessionStorage.getItem('mima-config');

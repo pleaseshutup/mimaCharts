@@ -138,6 +138,7 @@
 						return color;
 					},
 					killHover: function(e) {
+						console.log('exec kill');
 						m.currentHover = window.__mimaData.currentHover;
 						if (m.currentHover) {
 							m.currentHover.style.opacity = 0;
@@ -192,7 +193,7 @@
 							if (point && show) {
 								if (!point.showing) {
 
-
+									console.log('exec kill', 'new showing');
 									m.killHover(e);
 
 									point.showing = true;
@@ -277,6 +278,7 @@
 
 								}
 							} else {
+								console.log('exec kill', 'no point or show', e);
 								m.killHover(e);
 							}
 
@@ -718,16 +720,6 @@
 
 			m.chart.__mimaIndex = m.__mimaIndex;
 			window.__mimaData.listeners[m.__mimaIndex] = m.hover;
-
-			var cleanupMima = function() {
-				if (!document.contains(m.chart)) {
-					if (m.currentHover) {
-						delete window.__mimaData.listeners[m.chart.__mimaIndex];
-						m.currentHover.style.display = 'none';
-					}
-				}
-			}
-			window.setInterval(cleanupMima, 1000);
 
 			if (config.scale && (config.type1 === 'l' || config.type1 === 'b')) {
 				generateScale();
