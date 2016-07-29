@@ -81,20 +81,8 @@
 					listeners: {}
 				}
 				window.__mimaEvents = function(e) {
-					var ignoreIndex;
 					if (typeof e.target.__mimaIndex !== 'undefined') {
-						ignoreIndex = e.target.__mimaIndex;
 						window.__mimaData.listeners[e.target.__mimaIndex](e);
-					}
-					if (e.type === 'mouseout') {
-						clearTimeout(window.__mimaCleanup);
-						window.__mimaCleanup = setTimeout(function() {
-							Object.keys(window.__mimaData.listeners).forEach(function(atomicIndex) {
-								if (i !== ignoreIndex) {
-									//window.__mimaData.listeners[atomicIndex](e);
-								}
-							});
-						}, 100);
 					}
 				}
 				window.addEventListener('mouseover', window.__mimaEvents);
