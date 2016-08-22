@@ -1,9 +1,33 @@
 {
   "name": "mimacharts",
+  "description": "a minimal vanilla javascript library to provide extendable material design charts",
+  "keywords": [
+    "charts",
+    "material",
+    "pie",
+    "donut",
+    "line",
+    "bar"
+  ],
+  "homepage": "https://github.com/pleaseshutup/mimacharts",
+  "license": "MIT",
+  "main": "mimaCharts.js",
+  "author": {
+    "name": "Dan Williams",
+    "email": "pleaseshutup@gmail.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pleaseshutup/mimacharts"
+  },
+  "bugs": {
+    "url": "https://github.com/pleaseshutup/mimacharts/issues",
+    "email": "pleaseshutup@gmail.com"
+  },
   "devDependencies": {
     "uglifyjs": "latest"
   },
   "scripts": {
-    "build": "uglifyjs mimaCharts.js -c -m -o mimaCharts.min.js; gzip < mimaCharts.min.js > mimaCharts.min.js.gz; stat --printf=\"%s\" mimaCharts.min.js.gz; echo \" bytes\""
+    "build": "uglifyjs mimaCharts.js -c -m -o dist/mimaCharts.min.js; gzip < dist/mimaCharts.min.js > dist/mimaCharts.min.js.gz; stat --printf=\"%s\" dist/mimaCharts.min.js.gz; echo \" bytes\""
   }
 }
