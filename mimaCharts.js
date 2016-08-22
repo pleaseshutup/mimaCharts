@@ -681,10 +681,13 @@
 
 				initInfo(m, 0);
 
-				if (!m.chart) {
-					m.chart = document.createElement('div');
+				if (!m.chart && !config.element) {
+					m.chart = document.createElement('mimachart');
 					shadowDom.appendChild(m.chart);
+				} else {
+					m.chart = config.element;
 				}
+				console.log('chart into', m.chart);
 				m.chart.innerHTML = '<div style="padding-top:' + (config.ratio * 100) + '%;pointer-events:none"></div>';
 				m.chart.style.cssText = objectCSS({
 					position: 'relative',
@@ -748,13 +751,21 @@
 
 	window.mimaCharts = mimaChart;
 	// attaches mimachart to any <mimachart> html element using the innerText as the json config and any data-attribute values as additional config settings
-	window.initMimaCharts = function(){
-		[].slice.call(document.getElementsByTagName('mimacharts')).forEach(function(el) {
+	window.initMimaCharts = function(callback){
+		[].slice.call(document.getElementsByTagName('mimachart')).forEach(function(el) {
 			if (!el.getAttribute('data-mima-init')) {
-				var it = el.innerText;
-				var dat = it ? JSON.parse(it) || {} : {};
+
+				var it = (el.querySelector('json') || {}).innerText || '',
+					dat = {};
+				if(it){
+					try{
+						dat = JSON.parse(it) || {}
+					} catch(e){
+						dat = {config:{}};
+					}
+				}
+				if(!dat.config){ dat.config = {}; }
 				el.innerText = '';
-				el.setAttribute('data-mima-init', '1');
 
 				[].slice.call(el.attributes).forEach(function(attribute) {
 					if (attribute.name.substr(0, 5) === 'data-') {
@@ -765,9 +776,17 @@
 						}
 					}
 				});
-				el.mimachart = mimaCharts(dat.config, dat.data)
+
+				el.setAttribute('data-mima-init', '1');
+				dat.config.element = el;
+				el.mimachart = mimaChart(dat.config, dat.data)
+				console.log('init mima', dat, el.mimachart);
+			}
+			if(callback){
+				callback(el.mimachart);
 			}
 		})
 	}
-	window.initMimaCharts()
+	console.log('yo','lo', 2);
+	initMimaCharts()
 })();

@@ -16,7 +16,7 @@ var data = [];
 
 ### Usage Web Component Style
 ``` html
-<mimachart><span style="display:none">{ "type": "donut" }</span></mimachart>
+<mimachart><span style="display:inline-block;padding-top:50%"></span><span style="display:none">{ "type": "donut", data: [{"l":"slice","v":10}] }</span></mimachart>
 <script src="mimaCharts.min.js"></script>
 ```
 
