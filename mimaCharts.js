@@ -48,6 +48,9 @@
 				.' + cssPrefix + 'legend{font-size: 12px; color: #666; padding: 2px; transition: opacity 0.15s ease-in-out}\
 				.' + cssPrefix + 'legend span{display: inline-block; vertical-align:middle; pointer-events:none; }\
 				.' + cssPrefix + 'legendColor{ border-radius: 50%; width: 8px; height: 8px; margin-right: 4px; transform: width 0.15s ' + bouncy + ', height 0.15s ' + bouncy + '; }\
+				.' + cssPrefix + 'settings{ position:absolute; left:0; top:0; width:32px; height:32px; opacity: 0; transition: opacity 0.15s ease-in-out; cursor: pointer; }\
+				mimachart:hover .' + cssPrefix + 'settings{ display:block; opacity: 1 }\
+				.' + cssPrefix + 'settings:before{ content:""; display:block; width:100%; height: 100%; background-size: contain; background-image:url(\'data:image/svg+xml;charset=utf-8,<svg%20fill%3D"%23000000"%20height%3D"24"%20viewBox%3D"0%200%2024%2024"%20width%3D"24"%20xmlns%3D"http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg"><path%20d%3D"M0%200h24v24H0z"%20fill%3D"none"%2F><path%20d%3D"M19.43%2012.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49%201c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46%202.18%2014.25%202%2014%202h-4c-.25%200-.46.18-.49.42l-.38%202.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.09-.49%200-.61.22l-2%203.46c-.13.22-.07.49.12.64l2.11%201.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11%201.65c-.19.15-.24.42-.12.64l2%203.46c.12.22.39.3.61.22l2.49-1c.52.4%201.08.73%201.69.98l.38%202.65c.03.24.24.42.49.42h4c.25%200%20.46-.18.49-.42l.38-2.65c.61-.25%201.17-.59%201.69-.98l2.49%201c.23.09.49%200%20.61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.65zM12%2015.5c-1.93%200-3.5-1.57-3.5-3.5s1.57-3.5%203.5-3.5%203.5%201.57%203.5%203.5-1.57%203.5-3.5%203.5z"%2F><%2Fsvg>\') }\
 				'));
 				document.head.appendChild(style);
 			}
@@ -195,6 +198,7 @@
 							if (point && show) {
 								if (e.type === 'click' && point.onclick) {
 									point.onclick(e);
+									return;
 								}
 								if (!point.showing) {
 
@@ -357,11 +361,9 @@
 					if (config.onclick) {
 						point.onclick = function onclickPoint(e) {
 							if (typeof config.onclick === 'function') {
-								m.hover(e);
 								config.onclick(e, point, m);
 							} else if (typeof config.onclick === 'string') {
 								if (typeof window[config.onclick] === 'function') {
-									m.hover(e);
 									window[config.onclick](e, point, m);
 								} else {
 									console.error('could not find function ' + config.onclick + ' in global/window');
@@ -687,7 +689,7 @@
 				} else {
 					m.chart = config.element;
 				}
-				console.log('chart into', m.chart);
+
 				m.chart.innerHTML = '<div style="padding-top:' + (config.ratio * 100) + '%;pointer-events:none"></div>';
 				m.chart.style.cssText = objectCSS({
 					position: 'relative',
@@ -713,6 +715,9 @@
 				m.node.className = cssPrefix + 'abs';
 				m.chart.appendChild(m.node);
 
+				m.settings = document.createElement('span');
+				m.settings.className  = cssPrefix+'settings';
+				m.chart.appendChild(m.settings);
 
 				initLegend();
 
@@ -780,13 +785,11 @@
 				el.setAttribute('data-mima-init', '1');
 				dat.config.element = el;
 				el.mimachart = mimaChart(dat.config, dat.data)
-				console.log('init mima', dat, el.mimachart);
 			}
 			if(callback){
 				callback(el.mimachart);
 			}
 		})
 	}
-	console.log('yo','lo', 2);
 	initMimaCharts()
 })();
