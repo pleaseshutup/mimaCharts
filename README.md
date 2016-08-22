@@ -14,7 +14,10 @@ var config = {
 };
 var data = [];
 
-mimaChart(config, data);
+### Usage Web Component Style
+``` html
+<mimachart><span style="display:none">{ "type": "donut" }</span></mimachart>
+<script src="mimaCharts.min.js"></script>
 ```
 
 #### Config

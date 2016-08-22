@@ -88,12 +88,14 @@
 				window.addEventListener('mouseover', window.__mimaEvents);
 				window.addEventListener('mousemove', window.__mimaEvents);
 				window.addEventListener('mouseout', window.__mimaEvents);
+				window.addEventListener('click', window.__mimaEvents);
 			}
 
 			// alows us to accept just data and use default config
 			data = typeof data !== 'object' ? config : data;
 			data = typeof data !== 'object' ? [] : data;
 			config = typeof config !== 'object' ? {} : config;
+			if(config.data){ data = config.data }
 
 			config.type1 = (config.type || '')[0] || '';
 			if (config.type1 === 'b' || config.type1 === 'l') {
@@ -164,6 +166,7 @@
 									});
 									point.legendColor.style.width = '';
 									point.legendColor.style.height = '';
+									point.legendColor.style.pointerEvents = 'fill'
 									point.legendColor.style.transform = 'translate3d(0, 0 , 0)';
 								}
 								if (point.bar) {
@@ -187,9 +190,12 @@
 						window.__mimaData.hoverTimer = setTimeout(function() {
 
 							var point = m.dataref[e.target.__mimaPoint],
-								show = e.type === 'mouseover' || e.type === 'mousemove';
+								show = e.type === 'mouseover' || e.type === 'mousemove' || e.type === 'click';
 
 							if (point && show) {
+								if (e.type === 'click' && point.onclick) {
+									point.onclick(e);
+								}
 								if (!point.showing) {
 
 									m.killHover(e);
@@ -320,6 +326,12 @@
 					if (!point.v) {
 						point.v = 0;
 					}
+					if (point.disabled) {
+						point._v = point.v;
+						point.v = 0;
+					} else if (point.disabled === false) {
+						point.v = point._v;
+					}
 
 					initInfo(point, this.info.level + 1);
 
@@ -357,8 +369,8 @@
 							} else {
 								console.error('invalid click type', config.onclick);
 							}
-						};
-					}
+						}
+					};
 				},
 
 				//second pass after we know the highest/lowest values (scale stuff) we can set the percent relative here
@@ -477,6 +489,7 @@
 
 				// pie / donut slices only render the first series of points
 				generateSlices = function(point, p, ar) {
+
 					point.color = m.getColor(point, p, ar.length, this.color ? this.color : false);
 
 					point.percent_decimal = point.percent_series ? point.percent_series / 100 : 0;
@@ -541,6 +554,7 @@
 					if (config.type1 === 'p') {
 						point.legendColor.style.backgroundColor = point.color.value;
 					}
+
 					point.legend.appendChild(point.legendColor);
 					point.legendText = document.createElement('span');
 					point.legendText.className = cssPrefix + 'ellipsis';
@@ -556,11 +570,6 @@
 
 					point.legendMinus = 36 + point.legendValue.offsetWidth;
 					point.legendText.style.maxWidth = 'calc(100% - ' + point.legendMinus + 'px)';
-
-					if (point.onclick) {
-						point.slice.addEventListener('click', point.onclick);
-						point.legend.addEventListener('click', point.onclick);
-					}
 
 				},
 
@@ -654,35 +663,6 @@
 				}
 			}
 
-			initInfo(m, 0);
-
-			m.chart = document.createElement('div');
-			m.chart.innerHTML = '<div style="padding-top:' + (config.ratio * 100) + '%;pointer-events:none"></div>';
-			m.chart.style.cssText = objectCSS({
-				position: 'relative',
-				display: 'inline-block',
-				'box-sizing': 'border-box',
-				width: '100%',
-				'max-width': '100%',
-				height: config.height + 'px'
-			});
-			shadowDom.appendChild(m.chart);
-
-			m.svg = document.createElementNS(svgNS, 'svg');
-			m.svg.setAttribute('viewBox', '0 0 100 ' + (100 * m.config.ratio));
-			m.svg.setAttribute('width', '100%');
-			m.svg.setAttribute('height', '100%');
-			m.svg.setAttribute('class', cssPrefix + 'abs');
-			m.chart.appendChild(m.svg);
-			m.filter = document.createElementNS(svgNS, 'filter');
-			m.filter.id = cssPrefix + 'material-shadow-1';
-			m.filter.innerHTML = '<feGaussianBlur in="SourceAlpha" stdDeviation="0.5"/><feOffset dx="0" dy="0" result="offsetblur"/><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>';
-			m.svg.appendChild(m.filter);
-
-			m.node = document.createElement('div');
-			m.node.className = cssPrefix + 'abs';
-			m.chart.appendChild(m.node);
-
 			// ok so we're going to put this div on the window so we can still get calculations of sizes of things
 			// we'll hide it so that it isn't available until the user appends it somewhere. This should not require paints.
 
@@ -696,36 +676,98 @@
 			m.__mimaIndex = window.__mimaData.atomic * 1;
 			window.__mimaData.atomic++;
 
-			initLegend();
 
-			if (m.data) {
-				if (config.sort !== false) {
-					typeof config.sort !== 'function' ? m.data.sort(sortValues) : m.data.sort(config.sort);
-				}
-				m.data.forEach(gatherInfo1, m);
-				m.data.forEach(gatherInfo2, m);
+			m.renderChart = function() {
 
-				var generatorFunc = generateBars;
-				if (config.type1 === 'l') {
-					generatorFunc = generateLines;
-				} else if (config.type1 === 'p' || config.type1 === 'd') {
-					generatorFunc = generateSlices;
+				initInfo(m, 0);
+
+				if (!m.chart) {
+					m.chart = document.createElement('div');
+					shadowDom.appendChild(m.chart);
 				}
-				m.data.forEach(generatorFunc, m);
+				m.chart.innerHTML = '<div style="padding-top:' + (config.ratio * 100) + '%;pointer-events:none"></div>';
+				m.chart.style.cssText = objectCSS({
+					position: 'relative',
+					display: 'inline-block',
+					'box-sizing': 'border-box',
+					width: '100%',
+					'max-width': '100%',
+					height: config.height + 'px'
+				});
+
+				m.svg = document.createElementNS(svgNS, 'svg');
+				m.svg.setAttribute('viewBox', '0 0 100 ' + (100 * m.config.ratio));
+				m.svg.setAttribute('width', '100%');
+				m.svg.setAttribute('height', '100%');
+				m.svg.setAttribute('class', cssPrefix + 'abs');
+				m.chart.appendChild(m.svg);
+				m.filter = document.createElementNS(svgNS, 'filter');
+				m.filter.id = cssPrefix + 'material-shadow-1';
+				m.filter.innerHTML = '<feGaussianBlur in="SourceAlpha" stdDeviation="0.5"/><feOffset dx="0" dy="0" result="offsetblur"/><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>';
+				m.svg.appendChild(m.filter);
+
+				m.node = document.createElement('div');
+				m.node.className = cssPrefix + 'abs';
+				m.chart.appendChild(m.node);
+
+
+				initLegend();
+
+				if (m.data) {
+					if (config.sort !== false) {
+						typeof config.sort !== 'function' ? m.data.sort(sortValues) : m.data.sort(config.sort);
+					}
+					m.data.forEach(gatherInfo1, m);
+					m.data.forEach(gatherInfo2, m);
+
+					var generatorFunc = generateBars;
+					if (config.type1 === 'l') {
+						generatorFunc = generateLines;
+					} else if (config.type1 === 'p' || config.type1 === 'd') {
+						generatorFunc = generateSlices;
+					}
+					m.data.forEach(generatorFunc, m);
+
+				}
+
+				if (config.scale && (config.type1 === 'l' || config.type1 === 'b')) {
+					generateScale();
+				}
 
 			}
+
+			m.renderChart();
 
 			m.chart.__mimaIndex = m.__mimaIndex;
 			window.__mimaData.listeners[m.__mimaIndex] = m.hover;
 
-			if (config.scale && (config.type1 === 'l' || config.type1 === 'b')) {
-				generateScale();
-			}
 
 			setStyleSheet();
 			return m;
 		};
 
 	window.mimaCharts = mimaChart;
+	// attaches mimachart to any <mimachart> html element using the innerText as the json config and any data-attribute values as additional config settings
+	window.initMimaCharts = function(){
+		[].slice.call(document.getElementsByTagName('mimacharts')).forEach(function(el) {
+			if (!el.getAttribute('data-mima-init')) {
+				var it = el.innerText;
+				var dat = it ? JSON.parse(it) || {} : {};
+				el.innerText = '';
+				el.setAttribute('data-mima-init', '1');
 
+				[].slice.call(el.attributes).forEach(function(attribute) {
+					if (attribute.name.substr(0, 5) === 'data-') {
+						try {
+							dat.config[attribute.name.substr(5)] = JSON.parse(attribute.value);
+						} catch (e) {
+							dat.config[attribute.name.substr(5)] = attribute.value;
+						}
+					}
+				});
+				el.mimachart = mimaCharts(dat.config, dat.data)
+			}
+		})
+	}
+	window.initMimaCharts()
 })();
