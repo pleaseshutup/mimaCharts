@@ -48,9 +48,12 @@
 				.' + cssPrefix + 'legend{font-size: 12px; color: #666; padding: 2px; transition: opacity 0.15s ease-in-out}\
 				.' + cssPrefix + 'legend span{display: inline-block; vertical-align:middle; pointer-events:none; }\
 				.' + cssPrefix + 'legendColor{ border-radius: 50%; width: 8px; height: 8px; margin-right: 4px; transform: width 0.15s ' + bouncy + ', height 0.15s ' + bouncy + '; }\
-				.' + cssPrefix + 'settings{ position:absolute; left:0; top:0; width:32px; height:32px; opacity: 0; transition: opacity 0.15s ease-in-out; cursor: pointer; }\
-				mimachart:hover .' + cssPrefix + 'settings{ display:block; opacity: 1 }\
-				.' + cssPrefix + 'settings:before{ content:""; display:block; width:100%; height: 100%; background-size: contain; background-image:url(\'data:image/svg+xml;charset=utf-8,<svg%20fill%3D"%23000000"%20height%3D"24"%20viewBox%3D"0%200%2024%2024"%20width%3D"24"%20xmlns%3D"http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg"><path%20d%3D"M0%200h24v24H0z"%20fill%3D"none"%2F><path%20d%3D"M19.43%2012.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49%201c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46%202.18%2014.25%202%2014%202h-4c-.25%200-.46.18-.49.42l-.38%202.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.09-.49%200-.61.22l-2%203.46c-.13.22-.07.49.12.64l2.11%201.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11%201.65c-.19.15-.24.42-.12.64l2%203.46c.12.22.39.3.61.22l2.49-1c.52.4%201.08.73%201.69.98l.38%202.65c.03.24.24.42.49.42h4c.25%200%20.46-.18.49-.42l.38-2.65c.61-.25%201.17-.59%201.69-.98l2.49%201c.23.09.49%200%20.61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.65zM12%2015.5c-1.93%200-3.5-1.57-3.5-3.5s1.57-3.5%203.5-3.5%203.5%201.57%203.5%203.5-1.57%203.5-3.5%203.5z"%2F><%2Fsvg>\') }\
+				.' + cssPrefix + 'settingsButton{ position:absolute; left:0; top:0; width:32px; height:32px; text-align:center; border-radius:50%; opacity: 0; transition: opacity 0.15s ease-in-out, box-shadow 0.15s ease-in-out, width 0.15s ease-in-out, height 0.15s ease-in-out, border-radius 0.15s ease-in-out; cursor: pointer; }\
+				mimachart:hover .' + cssPrefix + 'settingsButton{ opacity: 1;  box-shadow: ' + materialShadow1 + ' }\
+				.' + cssPrefix + 'settingsButton:before{ content:""; display:inline-block; vertical-align:middle; width:20px; height:20px; background-size:cover; background-image:url(\'data:image/svg+xml;charset=utf-8,<svg%20fill%3D"%23000000"%20height%3D"24"%20viewBox%3D"0%200%2024%2024"%20width%3D"24"%20xmlns%3D"http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg"><path%20d%3D"M0%200h24v24H0z"%20fill%3D"none"%2F><path%20d%3D"M19.43%2012.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49%201c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46%202.18%2014.25%202%2014%202h-4c-.25%200-.46.18-.49.42l-.38%202.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.09-.49%200-.61.22l-2%203.46c-.13.22-.07.49.12.64l2.11%201.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11%201.65c-.19.15-.24.42-.12.64l2%203.46c.12.22.39.3.61.22l2.49-1c.52.4%201.08.73%201.69.98l.38%202.65c.03.24.24.42.49.42h4c.25%200%20.46-.18.49-.42l.38-2.65c.61-.25%201.17-.59%201.69-.98l2.49%201c.23.09.49%200%20.61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.65zM12%2015.5c-1.93%200-3.5-1.57-3.5-3.5s1.57-3.5%203.5-3.5%203.5%201.57%203.5%203.5-1.57%203.5-3.5%203.5z"%2F><%2Fsvg>\') }\
+				.' + cssPrefix + 'settingsButton:after{ content:""; display:inline-block; vertical-align:middle; height:100%; }\
+				.' + cssPrefix + 'settings{ display:none; background-color:#fff }\
+				.' + cssPrefix + 'settings[data-open="1"]{ display:block;  }\
 				'));
 				document.head.appendChild(style);
 			}
@@ -98,7 +101,9 @@
 			data = typeof data !== 'object' ? config : data;
 			data = typeof data !== 'object' ? [] : data;
 			config = typeof config !== 'object' ? {} : config;
-			if(config.data){ data = config.data }
+			if (config.data) {
+				data = config.data
+			}
 
 			config.type1 = (config.type || '')[0] || '';
 			if (config.type1 === 'b' || config.type1 === 'l') {
@@ -110,6 +115,7 @@
 					config: config,
 					data: data,
 					dataref: {},
+					points: [],
 					series: 0,
 					getColorValue: function(color) {
 						return 'hsla(' + color.h + ',' + color.s + ',' + color.l + ',' + color.a + ')';
@@ -573,6 +579,7 @@
 					point.legendMinus = 36 + point.legendValue.offsetWidth;
 					point.legendText.style.maxWidth = 'calc(100% - ' + point.legendMinus + 'px)';
 
+					m.points.push(point);
 				},
 
 				// generate the scale!
@@ -657,6 +664,15 @@
 						setTimeout(checkWidth, 10);
 
 					}
+				},
+
+				displaySettings = function(){
+					m.settings.innerHTML = '';
+					m.points.forEach(function(point){
+						var row = document.createElement('div');
+						row.innerText = point.l
+						m.settings.appendChild(row);
+					})
 				};
 
 			for (k in defaults) {
@@ -715,8 +731,22 @@
 				m.node.className = cssPrefix + 'abs';
 				m.chart.appendChild(m.node);
 
-				m.settings = document.createElement('span');
-				m.settings.className  = cssPrefix+'settings';
+				m.settingsButton = document.createElement('span');
+				m.settingsButton.className = cssPrefix + 'settingsButton';
+				m.settingsButton.addEventListener('click', function(e){
+					if(!m.settings.getAttribute('data-open')){
+						m.settingsButton.classList.add(cssPrefix + 'settingsButtonEffect')
+						setTimeout(function(){
+							displaySettings();
+							m.settings.setAttribute('data-open', '1');
+						}, 250)
+					} else {
+						m.settings.removeAttribute('data-open');
+					}
+				})
+				m.chart.appendChild(m.settingsButton);
+				m.settings = document.createElement('div');
+				m.settings.className = cssPrefix + 'abs ' + cssPrefix + 'settings';
 				m.chart.appendChild(m.settings);
 
 				initLegend();
@@ -756,20 +786,24 @@
 
 	window.mimaCharts = mimaChart;
 	// attaches mimachart to any <mimachart> html element using the innerText as the json config and any data-attribute values as additional config settings
-	window.initMimaCharts = function(callback){
+	window.initMimaCharts = function(callback) {
 		[].slice.call(document.getElementsByTagName('mimachart')).forEach(function(el) {
 			if (!el.getAttribute('data-mima-init')) {
 
 				var it = (el.querySelector('json') || {}).innerText || '',
 					dat = {};
-				if(it){
-					try{
+				if (it) {
+					try {
 						dat = JSON.parse(it) || {}
-					} catch(e){
-						dat = {config:{}};
+					} catch (e) {
+						dat = {
+							config: {}
+						};
 					}
 				}
-				if(!dat.config){ dat.config = {}; }
+				if (!dat.config) {
+					dat.config = {};
+				}
 				el.innerText = '';
 
 				[].slice.call(el.attributes).forEach(function(attribute) {
@@ -786,7 +820,7 @@
 				dat.config.element = el;
 				el.mimachart = mimaChart(dat.config, dat.data)
 			}
-			if(callback){
+			if (callback) {
 				callback(el.mimachart);
 			}
 		})
