@@ -10,6 +10,12 @@
 			return string;
 		},
 
+		safeText = function(text){
+			var t = document.createElement('span');
+			t.innerText = text;
+			return t.innerHTML;
+		},
+
 		// svg name space for convenience
 		svgNS = 'http://www.w3.org/2000/svg',
 		//xlinkNS = 'http://www.w3.org/1999/xlink',
@@ -39,6 +45,7 @@
 				.' + cssPrefix + 'pe{pointer-events: all}\
 				.' + cssPrefix + 'pe{pointer-events: all}\
 				.' + cssPrefix + 'ellipsis{text-overflow: ellipsis; max-width: 100%; white-space: nowrap; overflow: hidden;}\
+				.' + cssPrefix + 'ibb{display:inline-block; box-sizing:border-box; vertical-align:middle}\
 				.' + cssPrefix + 'slice,.' + cssPrefix + 'bar,.' + cssPrefix + 'dot{transition: transform 0.15s ' + bouncy + ', filter 0.15s ' + bouncy + '; transform: translate3d(0,0,0); transform-origin: 50% 50%; }\
 				.' + cssPrefix + 'bar{transform-origin: 50% 100%;}\
 				.' + cssPrefix + 'hoverContainer{z-index:99;pointer-events:none;position:absolute;left:0;top:0; font-size: 12px; border-radius:3px; color:#fff; padding:8px; background-color:#616161;transition: left 0.15s ease-out, top 0.15s ease-out, opacity 0.15s ease-out;}\
@@ -52,8 +59,15 @@
 				mimachart:hover .' + cssPrefix + 'settingsButton{ opacity: 1;  box-shadow: ' + materialShadow1 + ' }\
 				.' + cssPrefix + 'settingsButton:before{ content:""; display:inline-block; vertical-align:middle; width:20px; height:20px; background-size:cover; background-image:url(\'data:image/svg+xml;charset=utf-8,<svg%20fill%3D"%23000000"%20height%3D"24"%20viewBox%3D"0%200%2024%2024"%20width%3D"24"%20xmlns%3D"http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg"><path%20d%3D"M0%200h24v24H0z"%20fill%3D"none"%2F><path%20d%3D"M19.43%2012.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49%201c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46%202.18%2014.25%202%2014%202h-4c-.25%200-.46.18-.49.42l-.38%202.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.09-.49%200-.61.22l-2%203.46c-.13.22-.07.49.12.64l2.11%201.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11%201.65c-.19.15-.24.42-.12.64l2%203.46c.12.22.39.3.61.22l2.49-1c.52.4%201.08.73%201.69.98l.38%202.65c.03.24.24.42.49.42h4c.25%200%20.46-.18.49-.42l.38-2.65c.61-.25%201.17-.59%201.69-.98l2.49%201c.23.09.49%200%20.61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.65zM12%2015.5c-1.93%200-3.5-1.57-3.5-3.5s1.57-3.5%203.5-3.5%203.5%201.57%203.5%203.5-1.57%203.5-3.5%203.5z"%2F><%2Fsvg>\') }\
 				.' + cssPrefix + 'settingsButton:after{ content:""; display:inline-block; vertical-align:middle; height:100%; }\
-				.' + cssPrefix + 'settings{ display:none; background-color:#fff }\
-				.' + cssPrefix + 'settings[data-open="1"]{ display:block;  }\
+				.' + cssPrefix + 'settings{ display:none; opacity:0; transition: opacity 0.15s ease-in }\
+				.' + cssPrefix + 'settings[data-open="1"]{ display:block; background-color:#fff; pointer-events:fill; overflow-y: auto; opacity:1 }\
+				.' + cssPrefix + 'settingsButton[data-open="1"]:before{ content:""; display:inline-block; vertical-align:middle; width:20px; height:20px; background-size:cover; background-image:url(\'data:image/svg+xml;charset=utf-8,'+encodeURIComponent('<svg fill="#000000" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/><path d="M0 0h24v24H0z" fill="none"/></svg>')+'\') }\
+				.' + cssPrefix + 'grow{ position: absolute; left: 16px; top: 16px; background-color:#fff; border-radius:50%; box-shadow: ' + materialShadow1 + '; transform: translate3d(-50%, -50%, 0) scale(0); transition: transform 0.5s ease-in-out; transform-origin: 50% 50%;}\
+				.' + cssPrefix + 'filter{ display:block; font-size:12px; white-space:nowrap; }\
+				.' + cssPrefix + 'checkbox{ position:relative }\
+				mimachart input[type="checkbox"]{ margin:0 4px 0 0; outline: 0 }\
+				mimachart input[type="checkbox"]:before{ content: ""; display:inline-block; width:14px; height:14px; background-size:contain; background:url(\'data:image/svg+xml;charset=utf-8,'+encodeURIComponent('<svg fill="#000000" height="14" viewBox="0 0 24 24" width="14" xmlns="http://www.w3.org/2000/svg"><path d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/><path d="M0 0h24v24H0z" fill="none"/></svg>')+'\')  no-repeat center white }\
+				mimachart input[type="checkbox"]:checked:before{ background:url(\'data:image/svg+xml;charset=utf-8,'+encodeURIComponent('<svg fill="#000000" height="14" viewBox="0 0 24 24" width="14" xmlns="http://www.w3.org/2000/svg"><path d="M0 0h24v24H0z" fill="none"/><path d="M19 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.11 0 2-.9 2-2V5c0-1.1-.89-2-2-2zm-9 14l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>')+'\')  no-repeat center white }\
 				'));
 				document.head.appendChild(style);
 			}
@@ -383,7 +397,6 @@
 
 				//second pass after we know the highest/lowest values (scale stuff) we can set the percent relative here
 				gatherInfo2 = function(point, p, ar) {
-
 					// if point.v is zero or point.v minus lowest is zero just make percent zero to not break math dividing zero by something
 					point.percent_scale = (point.v - this.info.lowest) ? 100 * ((point.v - this.info.lowest) / this.info.highest) : 0;
 					point.percent_series = this.info.sum && point.v ? point.v / this.info.sum * 100 : 0;
@@ -497,7 +510,7 @@
 
 				// pie / donut slices only render the first series of points
 				generateSlices = function(point, p, ar) {
-
+					if(point.disabled){ return false; }
 					point.color = m.getColor(point, p, ar.length, this.color ? this.color : false);
 
 					point.percent_decimal = point.percent_series ? point.percent_series / 100 : 0;
@@ -579,7 +592,9 @@
 					point.legendMinus = 36 + point.legendValue.offsetWidth;
 					point.legendText.style.maxWidth = 'calc(100% - ' + point.legendMinus + 'px)';
 
-					m.points.push(point);
+					if(m.firstRender){
+						m.points.push(point);
+					}
 				},
 
 				// generate the scale!
@@ -666,12 +681,33 @@
 					}
 				},
 
-				displaySettings = function(){
-					m.settings.innerHTML = '';
-					m.points.forEach(function(point){
-						var row = document.createElement('div');
-						row.innerText = point.l
-						m.settings.appendChild(row);
+				displaySettings = function(e) {
+					m.killHover(e);
+					m.settings.innerHTML = '\
+					<div style="white-space:nowrap">\
+						<div class="'+cssPrefix+'ibb '+cssPrefix+'col1" style="width:40%;padding:10px;vertical-align:top;white-space:normal"></div>\
+						<div class="'+cssPrefix+'ibb '+cssPrefix+'col2" style="width:60%;padding:10px;vertical-align:top;white-space:normal"></div>\
+					</div>';
+					var col1 = m.settings.querySelector('.'+cssPrefix+'col1')
+					var col2 = m.settings.querySelector('.'+cssPrefix+'col2')
+					m.points.forEach(function(point) {
+						var row = document.createElement('label');
+						row.className = cssPrefix + 'filter'
+						var t = document.createElement('span');
+						t.className = cssPrefix + 'ibb ' + cssPrefix + 'ellipsis';
+						t.style.maxWidth = 'calc(100% - 13px)';
+						t.innerText = point.l;
+						var c = document.createElement('input')
+						c.type = 'checkbox';
+						c.checked = !point.disabled;
+						c.addEventListener('change', function(e){
+							point.disabled = !point.disabled;
+							m.renderChart();
+						})
+						c.className = cssPrefix+'ibb';
+						row.appendChild(c);
+						row.appendChild(t);
+						col2.appendChild(row);
 					})
 				};
 
@@ -702,7 +738,13 @@
 				if (!m.chart && !config.element) {
 					m.chart = document.createElement('mimachart');
 					shadowDom.appendChild(m.chart);
+					config.element = m.chart;
 				} else {
+					if(m.settings){
+						m.settings.lastScrollH = m.settings.scrollTop;
+						shadowDom.appendChild(m.settings);
+						shadowDom.appendChild(m.settingsButton);
+					}
 					m.chart = config.element;
 				}
 
@@ -731,23 +773,50 @@
 				m.node.className = cssPrefix + 'abs';
 				m.chart.appendChild(m.node);
 
-				m.settingsButton = document.createElement('span');
-				m.settingsButton.className = cssPrefix + 'settingsButton';
-				m.settingsButton.addEventListener('click', function(e){
-					if(!m.settings.getAttribute('data-open')){
-						m.settingsButton.classList.add(cssPrefix + 'settingsButtonEffect')
-						setTimeout(function(){
-							displaySettings();
-							m.settings.setAttribute('data-open', '1');
-						}, 250)
-					} else {
-						m.settings.removeAttribute('data-open');
-					}
-				})
-				m.chart.appendChild(m.settingsButton);
-				m.settings = document.createElement('div');
-				m.settings.className = cssPrefix + 'abs ' + cssPrefix + 'settings';
+				if(!m.settings){
+					m.settings = document.createElement('div');
+					m.settings.className = cssPrefix + 'abs ' + cssPrefix + 'settings';
+
+					m.settingsButton = document.createElement('span');
+					m.settingsButton.className = cssPrefix + 'settingsButton';
+					m.settingsButton.addEventListener('click', function(e) {
+						var growholder = document.createElement('div');
+						growholder.className = cssPrefix + 'abs';
+						growholder.style.overflow = 'hidden';
+						var grow = document.createElement('div');
+						grow.className = cssPrefix+'grow';
+						grow.style.width = (m.chart.clientWidth*3) + 'px';
+						grow.style.height = (m.chart.clientWidth*3) + 'px';
+						growholder.appendChild(grow);
+
+						if (!m.settings.getAttribute('data-open')) {
+							setTimeout(function(){
+								grow.style.transform = 'translate3d(-50%, -50%, 0) scale(1)'
+							}, 10)
+							setTimeout(function() {
+								displaySettings(e);
+								m.settings.setAttribute('data-open', '1');
+								m.settingsButton.setAttribute('data-open', '1');
+								m.chart.removeChild(growholder);
+							}, 510)
+						} else {
+							grow.style.transform = 'translate3d(-50%, -50%, 0) scale(1)'
+							m.settings.removeAttribute('data-open');
+							m.settingsButton.removeAttribute('data-open');
+							setTimeout(function(){
+								grow.style.transform = 'translate3d(-50%, -50%, 0) scale(0)'
+							}, 10)
+							setTimeout(function() {
+								m.chart.removeChild(growholder);
+							}, 510)
+						}
+						m.chart.appendChild(growholder);
+					})
+					m.chart.appendChild(m.settingsButton);
+				}
 				m.chart.appendChild(m.settings);
+				if(m.settings.lastScrollH){ m.settings.scrollTop = m.settings.lastScrollH };
+				m.chart.appendChild(m.settingsButton);
 
 				initLegend();
 
@@ -772,8 +841,11 @@
 					generateScale();
 				}
 
+				m.firstRender = false;
+
 			}
 
+			m.firstRender = true;
 			m.renderChart();
 
 			m.chart.__mimaIndex = m.__mimaIndex;
