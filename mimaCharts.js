@@ -688,7 +688,7 @@
 						for (var i = 0; i < m.config.scale.steps + 1; i++) {
 							num = step * i;
 							percent = num / range;
-							displayNum = (num + m.info.lowest);
+							displayNum = Math.round( (num + m.info.lowest) * 100) / 100;
 							line = document.createElement('div');
 							line.className = cssPrefix + 'scaleLine';
 							line.style.top = (100 - (percent * 100)) + '%';
