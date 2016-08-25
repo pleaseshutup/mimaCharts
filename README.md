@@ -30,7 +30,8 @@ scale: {
     steps: 10, // number of steps in the scale
     roundTo: 100, // round the scale to
     defaultLabel: '', // if no label or a blank label is provided use this default label instead
-    sort: true, // sort by highest value set to "false" to use your own provided sorted order
+    sort: true, // sort by highest value set to "false" to use your own provided sorted order,
+    types: ['bar', 'pie', 'donut', 'line'], // allowed chart types for the viewer to switch between. default is all
 },
 dataLevel: 2 // for line and bar charts, what level of data do you want to stop rendering at?
 

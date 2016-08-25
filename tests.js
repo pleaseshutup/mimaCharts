@@ -5,6 +5,7 @@ var charts = [{
 		onclick: function(e, point){
 			console.log('clicked point', point);
 		},
+		types: ['line'],
 		scale: {
 			lowest: 0,
 			highest: 50
@@ -21,6 +22,7 @@ var charts = [{
 	title: 'Multi Line',
 	config: {
 		type: 'line',
+		types: ['bar', 'line'],
 		onclick: function(e, point){
 			console.log('clicked point', point);
 		}
