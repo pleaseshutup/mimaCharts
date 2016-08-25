@@ -9,11 +9,17 @@
 			}
 			return string;
 		},
-
-		safeText = function(text){
+		safeText = function(text) {
 			var t = document.createElement('span');
-			t.innerText = text;
+			t.innerText = text || '';
 			return t.innerHTML;
+		},
+		raf = function(func, delay) {
+			return delay ? setTimeout(function() {
+				raf(func, false)
+			}, delay) : window.requestAnimationFrame(func) || setTimeout(function() {
+				func()
+			}, 1000 / 60);
 		},
 
 		// svg name space for convenience
@@ -22,7 +28,26 @@
 
 		// constants for convenience
 		materialShadow1 = '0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24)',
-
+		materialShadow2 = '0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23)',
+		materialTransition1 = 'cubic-bezier(.25,.8,.25,1)',
+		icons = {
+			'close': '<path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>',
+			'chart-bar': '<path d="M22,21H2V3H4V19H6V10H10V19H12V6H16V19H18V14H22V21Z" />',
+			'chart-pie': '<path d="M21,11H13V3A8,8 0 0,1 21,11M19,13C19,15.78 17.58,18.23 15.43,19.67L11.58,13H19M11,21C8.22,21 5.77,19.58 4.33,17.43L10.82,13.68L14.56,20.17C13.5,20.7 12.28,21 11,21M3,13A8,8 0 0,1 11,5V12.42L3.83,16.56C3.3,15.5 3,14.28 3,13Z" />',
+			'chart-donut': '<path d="M16.18,19.6L14.17,16.12C15.15,15.4 15.83,14.28 15.97,13H20C19.83,15.76 18.35,18.16 16.18,19.6M13,7.03V3C17.3,3.26 20.74,6.7 21,11H16.97C16.74,8.91 15.09,7.26 13,7.03M7,12.5C7,13.14 7.13,13.75 7.38,14.3L3.9,16.31C3.32,15.16 3,13.87 3,12.5C3,7.97 6.54,4.27 11,4V8.03C8.75,8.28 7,10.18 7,12.5M11.5,21C8.53,21 5.92,19.5 4.4,17.18L7.88,15.17C8.7,16.28 10,17 11.5,17C12.14,17 12.75,16.87 13.3,16.62L15.31,20.1C14.16,20.68 12.87,21 11.5,21Z" />',
+			'chart-line': '<path d="M16,11.78L20.24,4.45L21.97,5.45L16.74,14.5L10.23,10.75L5.46,19H22V21H2V3H4V17.54L9.5,8L16,11.78Z" />',
+			'checkbox-blank-outline': '<path d="M19,3H5C3.89,3 3,3.89 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5C21,3.89 20.1,3 19,3M19,5V19H5V5H19Z" />',
+			'checkbox-marked-outline': '<path d="M19,19H5V5H15V3H5C3.89,3 3,3.89 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V11H19M7.91,10.08L6.5,11.5L11,16L21,6L19.59,4.58L11,13.17L7.91,10.08Z" />',
+			'settings': '<path d="M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.97C19.47,12.65 19.5,12.33 19.5,12C19.5,11.67 19.47,11.34 19.43,11L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.96 19.05,5.05L16.56,6.05C16.04,5.66 15.5,5.32 14.87,5.07L14.5,2.42C14.46,2.18 14.25,2 14,2H10C9.75,2 9.54,2.18 9.5,2.42L9.13,5.07C8.5,5.32 7.96,5.66 7.44,6.05L4.95,5.05C4.73,4.96 4.46,5.05 4.34,5.27L2.34,8.73C2.21,8.95 2.27,9.22 2.46,9.37L4.57,11C4.53,11.34 4.5,11.67 4.5,12C4.5,12.33 4.53,12.65 4.57,12.97L2.46,14.63C2.27,14.78 2.21,15.05 2.34,15.27L4.34,18.73C4.46,18.95 4.73,19.03 4.95,18.95L7.44,17.94C7.96,18.34 8.5,18.68 9.13,18.93L9.5,21.58C9.54,21.82 9.75,22 10,22H14C14.25,22 14.46,21.82 14.5,21.58L14.87,18.93C15.5,18.67 16.04,18.34 16.56,17.94L19.05,18.95C19.27,19.03 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.97Z" />'
+		},
+		getIcon = function(ops){
+			var icon = '<svg viewBox="0 0 24 24" height="'+(ops.s || 24)+'" width="'+(ops.s || 24)+'" fill="'+(ops.fill || '#000')+'" xmlns="http://www.w3.org/2000/svg">'+icons[ops.i || 'chart-bar']+'</svg>';
+			if(ops.uri){
+				return 'url(\'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(icon)+'\')';
+			} else {
+				return icon;
+			}
+		},
 		// all classes will start with this prefix, we threw it into a variable to make changing it easier
 		cssPrefix = '_mima_',
 
@@ -57,17 +82,23 @@
 				.' + cssPrefix + 'legendColor{ border-radius: 50%; width: 8px; height: 8px; margin-right: 4px; transform: width 0.15s ' + bouncy + ', height 0.15s ' + bouncy + '; }\
 				.' + cssPrefix + 'settingsButton{ position:absolute; left:0; top:0; width:32px; height:32px; text-align:center; border-radius:50%; opacity: 0; transition: opacity 0.15s ease-in-out, box-shadow 0.15s ease-in-out, width 0.15s ease-in-out, height 0.15s ease-in-out, border-radius 0.15s ease-in-out; cursor: pointer; }\
 				mimachart:hover .' + cssPrefix + 'settingsButton{ opacity: 1;  box-shadow: ' + materialShadow1 + ' }\
-				.' + cssPrefix + 'settingsButton:before{ content:""; display:inline-block; vertical-align:middle; width:20px; height:20px; background-size:cover; background-image:url(\'data:image/svg+xml;charset=utf-8,<svg%20fill%3D"%23000000"%20height%3D"24"%20viewBox%3D"0%200%2024%2024"%20width%3D"24"%20xmlns%3D"http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg"><path%20d%3D"M0%200h24v24H0z"%20fill%3D"none"%2F><path%20d%3D"M19.43%2012.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49%201c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46%202.18%2014.25%202%2014%202h-4c-.25%200-.46.18-.49.42l-.38%202.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.09-.49%200-.61.22l-2%203.46c-.13.22-.07.49.12.64l2.11%201.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11%201.65c-.19.15-.24.42-.12.64l2%203.46c.12.22.39.3.61.22l2.49-1c.52.4%201.08.73%201.69.98l.38%202.65c.03.24.24.42.49.42h4c.25%200%20.46-.18.49-.42l.38-2.65c.61-.25%201.17-.59%201.69-.98l2.49%201c.23.09.49%200%20.61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.65zM12%2015.5c-1.93%200-3.5-1.57-3.5-3.5s1.57-3.5%203.5-3.5%203.5%201.57%203.5%203.5-1.57%203.5-3.5%203.5z"%2F><%2Fsvg>\') }\
+				.' + cssPrefix + 'settingsButton:before{ content:""; display:inline-block; vertical-align:middle; width:20px; height:20px; background-size:cover; background-image:'+getIcon({i: 'settings', fill: '#000', uri: true })+' }\
 				.' + cssPrefix + 'settingsButton:after{ content:""; display:inline-block; vertical-align:middle; height:100%; }\
+				mimachart.' + cssPrefix + 'settingsButton:hover{ box-shadow:' + materialShadow2 + ' }\
 				.' + cssPrefix + 'settings{ display:none; opacity:0; transition: opacity 0.15s ease-in }\
-				.' + cssPrefix + 'settings[data-open="1"]{ display:block; background-color:#fff; pointer-events:fill; overflow-y: auto; opacity:1 }\
-				.' + cssPrefix + 'settingsButton[data-open="1"]:before{ content:""; display:inline-block; vertical-align:middle; width:20px; height:20px; background-size:cover; background-image:url(\'data:image/svg+xml;charset=utf-8,'+encodeURIComponent('<svg fill="#000000" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/><path d="M0 0h24v24H0z" fill="none"/></svg>')+'\') }\
-				.' + cssPrefix + 'grow{ position: absolute; left: 16px; top: 16px; background-color:#fff; border-radius:50%; box-shadow: ' + materialShadow1 + '; transform: translate3d(-50%, -50%, 0) scale(0); transition: transform 0.5s ease-in-out; transform-origin: 50% 50%;}\
+				mimachart[data-settings-open="1"] .' + cssPrefix + 'settings{ display:block; background-color:#fff; pointer-events:fill; overflow-x: hidden; overflow-y: auto; opacity:1}\
+				mimachart[data-settings-open="1"] .' + cssPrefix + 'settingsButton{ box-shadow:none }\
+				mimachart[data-settings-open="1"] .' + cssPrefix + 'settingsButton:before{ content:""; display:inline-block; vertical-align:middle; width:20px; height:20px; background-size:cover; background-image:'+getIcon({i: 'close', fill: '#000', uri: true })+' }\
+				.' + cssPrefix + 'grow{ position: absolute; left: 16px; top: 16px; background-color:#fff; border-radius:50%; box-shadow: ' + materialShadow1 + '; transform: translate3d(-50%, -50%, 0) scale(0); transition: transform 0.5s ' + materialTransition1 + '; transform-origin: 50% 50%;}\
 				.' + cssPrefix + 'filter{ display:block; font-size:12px; white-space:nowrap; }\
 				.' + cssPrefix + 'checkbox{ position:relative }\
 				mimachart input[type="checkbox"]{ margin:0 4px 0 0; outline: 0 }\
-				mimachart input[type="checkbox"]:before{ content: ""; display:inline-block; width:14px; height:14px; background-size:contain; background:url(\'data:image/svg+xml;charset=utf-8,'+encodeURIComponent('<svg fill="#000000" height="14" viewBox="0 0 24 24" width="14" xmlns="http://www.w3.org/2000/svg"><path d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/><path d="M0 0h24v24H0z" fill="none"/></svg>')+'\')  no-repeat center white }\
-				mimachart input[type="checkbox"]:checked:before{ background:url(\'data:image/svg+xml;charset=utf-8,'+encodeURIComponent('<svg fill="#000000" height="14" viewBox="0 0 24 24" width="14" xmlns="http://www.w3.org/2000/svg"><path d="M0 0h24v24H0z" fill="none"/><path d="M19 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.11 0 2-.9 2-2V5c0-1.1-.89-2-2-2zm-9 14l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>')+'\')  no-repeat center white }\
+				mimachart input[type="checkbox"]:before{ content: ""; display:inline-block; width:14px; height:14px; background-size:contain; background:' + getIcon({i: 'checkbox-blank-outline', s: 14, fill: '#000', uri: true }) + ' no-repeat center white }\
+				mimachart input[type="checkbox"]:checked:before{ background:' + getIcon({i: 'checkbox-marked-outline', s: 14, fill: '#000', uri: true }) + ' no-repeat center white }\
+				.' + cssPrefix + 'selectChart span{ margin-left:4px; font-size:14px; text-transform: capitalize; pointer-events:none }\
+				.' + cssPrefix + 'selectChart i{ pointer-events:none }\
+				.' + cssPrefix + 'selectChart button{ margin-top:4px; cursor: pointer; display:block; border:0; background:none; opacity:0.5 }\
+				.' + cssPrefix + 'selectChart button[data-selected="1"]{ opacity: 1 }\
 				'));
 				document.head.appendChild(style);
 			}
@@ -117,11 +148,6 @@
 			config = typeof config !== 'object' ? {} : config;
 			if (config.data) {
 				data = config.data
-			}
-
-			config.type1 = (config.type || '')[0] || '';
-			if (config.type1 === 'b' || config.type1 === 'l') {
-				config.ratio = 0.5;
 			}
 
 			var k,
@@ -351,7 +377,7 @@
 						point.v = 0;
 					}
 					if (point.disabled) {
-						point._v = point.v;
+						if(typeof point._v === 'undefined'){ point._v = point.v; }
 						point.v = 0;
 					} else if (point.disabled === false) {
 						point.v = point._v;
@@ -435,6 +461,15 @@
 					this.node.appendChild(point.node);
 
 					if (!point.data || this.info.level === m.config.dataLevel) {
+
+						if (m.firstRender) {
+							m.points.push(point);
+						}
+
+						if (point.disabled) {
+							return false;
+						}
+
 						// this generates bars within the parent item only for the lowest level of data available
 						point.bar = document.createElement('div');
 						point.hoverAnchor = {
@@ -464,6 +499,15 @@
 				generateLines = function(point, p, ar) {
 
 					if (!point.data || this.info.level === m.config.dataLevel) {
+
+						if (m.firstRender) {
+							m.points.push(point);
+						}
+
+						if (point.disabled) {
+							return false;
+						}
+
 						// color is same for series and comes from the parent
 						point.color = this.info.color;
 
@@ -510,7 +554,15 @@
 
 				// pie / donut slices only render the first series of points
 				generateSlices = function(point, p, ar) {
-					if(point.disabled){ return false; }
+
+					if (m.firstRender) {
+						m.points.push(point);
+					}
+
+					if (point.disabled) {
+						return false;
+					}
+
 					point.color = m.getColor(point, p, ar.length, this.color ? this.color : false);
 
 					point.percent_decimal = point.percent_series ? point.percent_series / 100 : 0;
@@ -592,9 +644,6 @@
 					point.legendMinus = 36 + point.legendValue.offsetWidth;
 					point.legendText.style.maxWidth = 'calc(100% - ' + point.legendMinus + 'px)';
 
-					if(m.firstRender){
-						m.points.push(point);
-					}
 				},
 
 				// generate the scale!
@@ -683,32 +732,61 @@
 
 				displaySettings = function(e) {
 					m.killHover(e);
+
+					var uncheckall = 'checked',
+						markup = '';
+
+					m.points.forEach(function(point, p) {
+						var chkd = 'checked';
+						if(point.disabled){ uncheckall = ''; chkd = ''; }
+						markup += '<label class="' + cssPrefix + 'filter" data-point="' + p + '">\
+							<input type="checkbox" data-point="' + p + '" ' + chkd + ' />\
+							<span class="' + cssPrefix + 'ibb ' + cssPrefix + 'ellipsis">' + safeText(point.l) + '</span>\
+						</label>';
+					});
+					markup = '<label class="' + cssPrefix + 'filter">\
+							<input type="checkbox" data-point="all" '+uncheckall+' />\
+							<span class="' + cssPrefix + 'ibb ' + cssPrefix + 'ellipsis">all</span>\
+						</label>' + markup;
+
+					var chartOps = ['bar', 'pie', 'donut', 'line'];
+					var chartMarkup = '';
+					chartOps.forEach(function(type){
+						chartMarkup += '<button data-type="'+type+'" '+(config.type === type ? 'data-selected="1"' : '')+'><i class="'+cssPrefix+'ibb">'+getIcon({i: 'chart-'+type})+'</i><span class="'+cssPrefix+'ibb">'+type+'</span></button>';
+					});
 					m.settings.innerHTML = '\
 					<div style="white-space:nowrap">\
-						<div class="'+cssPrefix+'ibb '+cssPrefix+'col1" style="width:40%;padding:10px;vertical-align:top;white-space:normal"></div>\
-						<div class="'+cssPrefix+'ibb '+cssPrefix+'col2" style="width:60%;padding:10px;vertical-align:top;white-space:normal"></div>\
+						<div class="' + cssPrefix + 'ibb ' + cssPrefix + 'selectChart" style="width:40%;padding:10px;vertical-align:top;margin-top:24px;">\
+							'+chartMarkup+'\
+						</div>\
+						<div class="' + cssPrefix + 'ibb" style="width:60%;padding:10px;vertical-align:top;white-space:normal">' + markup + '</div>\
 					</div>';
-					var col1 = m.settings.querySelector('.'+cssPrefix+'col1')
-					var col2 = m.settings.querySelector('.'+cssPrefix+'col2')
-					m.points.forEach(function(point) {
-						var row = document.createElement('label');
-						row.className = cssPrefix + 'filter'
-						var t = document.createElement('span');
-						t.className = cssPrefix + 'ibb ' + cssPrefix + 'ellipsis';
-						t.style.maxWidth = 'calc(100% - 13px)';
-						t.innerText = point.l;
-						var c = document.createElement('input')
-						c.type = 'checkbox';
-						c.checked = !point.disabled;
-						c.addEventListener('change', function(e){
-							point.disabled = !point.disabled;
+
+					m.settings.addEventListener('click', function(e) {
+						if(e.target.nodeName === 'BUTTON'){
+							[].slice.call(m.settings.getElementsByTagName('button')).forEach(function(button){
+								button.removeAttribute('data-selected')
+							})
+							e.target.setAttribute('data-selected', '1');
+							config.type = e.target.getAttribute('data-type');
 							m.renderChart();
-						})
-						c.className = cssPrefix+'ibb';
-						row.appendChild(c);
-						row.appendChild(t);
-						col2.appendChild(row);
-					})
+						}
+					});
+					m.settings.addEventListener('change', function(e) {
+						var gp = e.target.getAttribute('data-point');
+						if (gp === 'all') {
+							[].slice.call(m.settings.querySelectorAll('input')).forEach(function(cb, i) {
+								cb.checked = e.target.checked;
+								if (i > 0) {
+									m.points[i - 1].disabled = !cb.checked;
+								}
+							})
+						} else {
+							m.points[gp].disabled = !e.target.checked
+						}
+						m.renderChart();
+					});
+
 				};
 
 			for (k in defaults) {
@@ -733,6 +811,11 @@
 
 			m.renderChart = function() {
 
+				config.type1 = (config.type || '')[0] || '';
+				if (config.type1 === 'b' || config.type1 === 'l') {
+					config.ratio = 0.5;
+				}
+
 				initInfo(m, 0);
 
 				if (!m.chart && !config.element) {
@@ -740,7 +823,7 @@
 					shadowDom.appendChild(m.chart);
 					config.element = m.chart;
 				} else {
-					if(m.settings){
+					if (m.settings) {
 						m.settings.lastScrollH = m.settings.scrollTop;
 						shadowDom.appendChild(m.settings);
 						shadowDom.appendChild(m.settingsButton);
@@ -773,7 +856,7 @@
 				m.node.className = cssPrefix + 'abs';
 				m.chart.appendChild(m.node);
 
-				if(!m.settings){
+				if (!m.settings) {
 					m.settings = document.createElement('div');
 					m.settings.className = cssPrefix + 'abs ' + cssPrefix + 'settings';
 
@@ -784,38 +867,40 @@
 						growholder.className = cssPrefix + 'abs';
 						growholder.style.overflow = 'hidden';
 						var grow = document.createElement('div');
-						grow.className = cssPrefix+'grow';
-						grow.style.width = (m.chart.clientWidth*3) + 'px';
-						grow.style.height = (m.chart.clientWidth*3) + 'px';
+						grow.className = cssPrefix + 'grow';
+						grow.style.width = (m.chart.clientWidth * 3) + 'px';
+						grow.style.height = (m.chart.clientWidth * 3) + 'px';
 						growholder.appendChild(grow);
 
-						if (!m.settings.getAttribute('data-open')) {
-							setTimeout(function(){
+						if (!m.chart.getAttribute('data-settings-open')) {
+							raf(function() {
+								m.settingsButton.style.boxShadow = 'none';
 								grow.style.transform = 'translate3d(-50%, -50%, 0) scale(1)'
-							}, 10)
-							setTimeout(function() {
-								displaySettings(e);
-								m.settings.setAttribute('data-open', '1');
-								m.settingsButton.setAttribute('data-open', '1');
-								m.chart.removeChild(growholder);
-							}, 510)
+								raf(function() {
+									displaySettings(e);
+									m.chart.setAttribute('data-settings-open', '1');
+									m.chart.removeChild(growholder);
+									m.settingsButton.style.boxShadow = '';
+								}, 310)
+							})
 						} else {
 							grow.style.transform = 'translate3d(-50%, -50%, 0) scale(1)'
-							m.settings.removeAttribute('data-open');
-							m.settingsButton.removeAttribute('data-open');
-							setTimeout(function(){
+							m.chart.removeAttribute('data-settings-open');
+							raf(function() {
 								grow.style.transform = 'translate3d(-50%, -50%, 0) scale(0)'
+								raf(function() {
+									m.chart.removeChild(growholder);
+								}, 310)
 							}, 10)
-							setTimeout(function() {
-								m.chart.removeChild(growholder);
-							}, 510)
 						}
 						m.chart.appendChild(growholder);
 					})
 					m.chart.appendChild(m.settingsButton);
 				}
 				m.chart.appendChild(m.settings);
-				if(m.settings.lastScrollH){ m.settings.scrollTop = m.settings.lastScrollH };
+				if (m.settings.lastScrollH) {
+					m.settings.scrollTop = m.settings.lastScrollH
+				};
 				m.chart.appendChild(m.settingsButton);
 
 				initLegend();
