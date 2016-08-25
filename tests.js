@@ -81,7 +81,7 @@ var charts = [{
 		}
 	},
 	data: [{
-		v: 0,
+		v: 1,
 		l: 'First Item'
 	}, {
 		v: 1,

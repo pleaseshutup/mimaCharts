@@ -25,7 +25,7 @@ var data = [];
 
 type: 'line' // options are line, bar, pie, donut, dial. Default is donut
 scale: {
-    lowest: 0, // set the lowest value on the scale, leave undefined for automatic
+    lowest: 0, // set the lowest value on the scale, default is zero, set to "auto" to be automatic
     highest: 100, // set the highest value on the scale, leave undefined for automatic
     steps: 10, // number of steps in the scale
     roundTo: 100, // round the scale to

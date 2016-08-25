@@ -366,7 +366,7 @@
 				initInfo = function(point, level) {
 					point.info = {
 						level: level,
-						lowest: config.scale.lowest,
+						lowest: config.scale.lowest === 'auto' ? undefined : config.scale.lowest || 0,
 						highest: config.scale.highest,
 						sum: 0,
 						average: 0,
