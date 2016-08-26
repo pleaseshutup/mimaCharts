@@ -933,7 +933,8 @@
 				initLegend();
 
 				if (m.data) {
-					if (config.sort !== false) {
+					// auto sort by highest value excep for line charts or when config.sort is false
+					if (config.sort !== false && config.type1 !== 'l') {
 						typeof config.sort !== 'function' ? m.data.sort(sortValues) : m.data.sort(config.sort);
 					}
 					m.data.forEach(gatherInfo1, m);

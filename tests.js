@@ -1,5 +1,5 @@
 var charts = [{
-	title: 'Line. Scale 10 to 50',
+	title: 'Line: Scale 10 to 50',
 	config: {
 		type: 'line',
 		onclick: function(e, point){
@@ -7,15 +7,18 @@ var charts = [{
 		},
 		types: ['line'],
 		scale: {
-			lowest: 0,
+			lowest: 10,
 			highest: 50
 		}
 	},
 	data: [{
+		l: 'Mark 1',
 		v: 10
 	}, {
+		l: 'Mark 2',
 		v: 20
 	}, {
+		l: 'Mark 3',
 		v: 15
 	}]
 }, {
