@@ -475,10 +475,20 @@
 						position: 'absolute',
 						width: ((100 - this.info.gap_less) / ar.length) + '%',
 						top: 0,
-						bottom: 0,
+						bottom: '20px',
 						left: (this.info.gap * (p + 1)) + (((100 - this.info.gap_less) / ar.length) * p) + '%'
 					});
+					point.legend = document.createElement('div');
+					point.legend.style.cssText = objectCSS({
+						position: 'absolute',
+						'text-align': 'center',
+						width: 'calc(100% + 30px)',
+						bottom: '-20px',
+						left: '-15px'
+						
+					});
 					this.node.appendChild(point.node);
+					this.node.appendChild(point.legend);
 
 					if (!point.data || this.info.level === m.config.dataLevel) {
 
@@ -506,6 +516,17 @@
 						});
 						setPointEvents(m, point.bar, point);
 						point.node.appendChild(point.bar);
+
+						point.legendText = document.createElement('span');
+						point.legendText.className = cssPrefix + 'ellipsis';
+						point.legendText.textContent = (point.l || '');
+						point.legend.appendChild(point.legendText);
+						point.legend.className = cssPrefix + 'legend ' + cssPrefix + 'pe';
+						setPointEvents(m, point.legend, point);
+
+						point.node.appendChild(point.legend);
+
+
 					}
 
 					point.hoverContent = (point.l || '') + ' ' + Math.round(point.v);
@@ -669,48 +690,56 @@
 				// generate the scale!
 				generateScale = function() {
 
-					m.scale = document.createElement('div');
-					m.scale.className = cssPrefix + 'abs';
-					m.chart.insertBefore(m.scale, m.chart.firstChild);
+					m.config.scale.width = 0;
+					if (config.scale && (config.type1 === 'l' || config.type1 === 'b')) {
+					
+						m.scale = document.createElement('div');
+						m.scale.className = cssPrefix + 'abs';
+						m.chart.insertBefore(m.scale, m.chart.firstChild);
 
-					if (typeof m.config.scale.steps != 'number') {
-						m.config.scale.steps = 5;
-					}
-					if (m.config.scale.steps > 0) {
-						var num, percent,
-							range = (m.info.highest - m.info.lowest),
-							step = (range / m.config.scale.steps),
-							displayNum, line, text,
-							w = 0,
-							lines = [],
-							texts = [];
+						if(m.config.type1 === 'b'){
+							console.log('yea scale bar')
+							m.scale.style.bottom = '20px';
+							m.scale.style.height = 'auto';
+						}
 
-						for (var i = 0; i < m.config.scale.steps + 1; i++) {
-							num = step * i;
-							percent = num / range;
-							displayNum = Math.round( (num + m.info.lowest) * 100) / 100;
-							line = document.createElement('div');
-							line.className = cssPrefix + 'scaleLine';
-							line.style.top = (100 - (percent * 100)) + '%';
-							m.scale.appendChild(line);
-							lines.push(line);
+						if (typeof m.config.scale.steps != 'number') {
+							m.config.scale.steps = 5;
+						}
+						if (m.config.scale.steps > 0) {
+							var num, percent,
+								range = (m.info.highest - m.info.lowest),
+								step = (range / m.config.scale.steps),
+								displayNum, line, text,
+								lines = [],
+								texts = [];
 
-							text = document.createElement('span');
-							text.textContent = displayNum;
-							text.className = cssPrefix + 'scaleText';
-							text.style.top = (100 - (percent * 100)) + '%';
-							m.scale.appendChild(text);
-							texts.push(text);
-							if (text.offsetWidth > w) {
-								w = text.offsetWidth * 1;
+							for (var i = 0; i < m.config.scale.steps + 1; i++) {
+								num = step * i;
+								percent = num / range;
+								displayNum = Math.round( (num + m.info.lowest) * 100) / 100;
+								line = document.createElement('div');
+								line.className = cssPrefix + 'scaleLine';
+								line.style.top = (100 - (percent * 100)) + '%';
+								m.scale.appendChild(line);
+								lines.push(line);
+
+								text = document.createElement('span');
+								text.textContent = displayNum;
+								text.className = cssPrefix + 'scaleText';
+								text.style.top = (100 - (percent * 100)) + '%';
+								m.scale.appendChild(text);
+								texts.push(text);
+								if (text.offsetWidth > m.config.scale.width) {
+									m.config.scale.width = text.offsetWidth * 1;
+								}
+
 							}
-
+							for (var i = 0; i < m.config.scale.steps + 1; i++) {
+								lines[i].style.left = (m.config.scale.width + 4) + 'px';
+								texts[i].style.width = m.config.scale.width + 'px';
+							}
 						}
-						for (var i = 0; i < m.config.scale.steps + 1; i++) {
-							lines[i].style.left = (w + 4) + 'px';
-							texts[i].style.width = w + 'px';
-						}
-
 					}
 				},
 
@@ -950,8 +979,11 @@
 
 				}
 
-				if (config.scale && (config.type1 === 'l' || config.type1 === 'b')) {
-					generateScale();
+				generateScale();
+				if(m.config.type1 === 'b'){
+					m.node.style.left = m.config.scale.width + 'px';
+					m.node.style.width = 'auto';
+					m.node.style.right = 0;
 				}
 
 				m.firstRender = false;
