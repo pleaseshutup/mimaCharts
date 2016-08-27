@@ -29,7 +29,6 @@
 		// constants for convenience
 		materialShadow1 = '0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24)',
 		materialShadow2 = '0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23)',
-		materialTransition1 = 'cubic-bezier(.25,.8,.25,1)',
 		icons = {
 			'close': '<path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>',
 			'chart-bar': '<path d="M22,21H2V3H4V19H6V10H10V19H12V6H16V19H18V14H22V21Z" />',
@@ -61,7 +60,9 @@
 		setStyleSheet = function() {
 			if (!document.getElementById(cssPrefix + 'sheet')) {
 				var style = document.createElement('style'),
-					bouncy = 'cubic-bezier(0.25, 0.25, 0.65, 2.57)';
+					bouncy = 'cubic-bezier(0.25, 0.25, 0.65, 2.57)',
+					smooth = 'cubic-bezier(.25,.8,.25,1)';
+
 				style.id = cssPrefix + 'sheet';
 				style.appendChild(document.createTextNode('\
 				.' + cssPrefix + 'abs{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none}\
@@ -72,7 +73,7 @@
 				.' + cssPrefix + 'ellipsis{text-overflow: ellipsis; max-width: 100%; white-space: nowrap; overflow: hidden;}\
 				.' + cssPrefix + 'ibb{display:inline-block; box-sizing:border-box; vertical-align:middle}\
 				.' + cssPrefix + 'slice,.' + cssPrefix + 'bar,.' + cssPrefix + 'dot{transition: transform 0.15s ' + bouncy + ', filter 0.15s ' + bouncy + '; transform: translate3d(0,0,0); transform-origin: 50% 50%; }\
-				.' + cssPrefix + 'bar{transform-origin: 50% 100%;}\
+				.' + cssPrefix + 'bar{transform-origin: 50% 100%; box-shadow:'+materialShadow1+' }\
 				.' + cssPrefix + 'hoverContainer{z-index:99;pointer-events:none;position:absolute;left:0;top:0; font-size: 12px; border-radius:3px; color:#fff; padding:8px; background-color:#616161;transition: left 0.15s ease-out, top 0.15s ease-out, opacity 0.15s ease-out;}\
 				.' + cssPrefix + 'hoverContainer:before{content: ""; display:block; width:0; height:0; position: absolute; left:50%; bottom:-11px; margin-left:-6px; border: 6px solid transparent; border-top:6px solid #616161;}\
 				.' + cssPrefix + 'scaleLine{position: absolute; top: 0; left: 0; right: 0; height: 1px; background-color: #ccc; }\
@@ -97,7 +98,7 @@
 					fill: '#000',
 					uri: true
 				}) + ' }\
-				.' + cssPrefix + 'grow{ position: absolute; left: 16px; top: 16px; background-color:#fff; border-radius:50%; box-shadow: ' + materialShadow1 + '; transform: translate3d(-50%, -50%, 0) scale(0); transition: transform 0.5s ' + materialTransition1 + '; transform-origin: 50% 50%;}\
+				.' + cssPrefix + 'grow{ position: absolute; left: 16px; top: 16px; background-color:#fff; border-radius:50%; box-shadow: ' + materialShadow1 + '; transform: translate3d(-50%, -50%, 0) scale(0); transition: transform 0.5s ' + smooth + '; transform-origin: 50% 50%;}\
 				.' + cssPrefix + 'filter{ display:block; font-size:12px; white-space:nowrap; }\
 				.' + cssPrefix + 'checkbox{ position:relative }\
 				mimachart input[type="checkbox"]{ margin:0 4px 0 0; outline: 0 }\
@@ -407,11 +408,19 @@
 
 					this.info.sum += point.v;
 
+					//series high/low
 					if (point.v > this.info.highest || typeof this.info.highest === 'undefined') {
 						this.info.highest = point.v;
 					}
 					if (point.v < this.info.lowest || typeof this.info.lowest === 'undefined') {
 						this.info.lowest = point.v;
+					}
+					//overall high/low
+					if (point.v > m.info.highest || typeof m.info.highest === 'undefined') {
+						m.info.highest = point.v;
+					}
+					if (point.v < m.info.lowest || typeof m.info.lowest === 'undefined') {
+						m.info.lowest = point.v;
 					}
 					if (point.data) {
 						point.data.forEach(gatherInfo1, point);
@@ -444,7 +453,7 @@
 				//second pass after we know the highest/lowest values (scale stuff) we can set the percent relative here
 				gatherInfo2 = function(point, p, ar) {
 					// if point.v is zero or point.v minus lowest is zero just make percent zero to not break math dividing zero by something
-					point.percent_scale = (point.v - this.info.lowest) ? 100 * ((point.v - this.info.lowest) / this.info.highest) : 0;
+					point.percent_scale = (point.v - m.info.lowest) ? 100 * ((point.v - m.info.lowest) / m.info.highest) : 0;
 					point.percent_series = this.info.sum && point.v ? point.v / this.info.sum * 100 : 0;
 
 					if (point.data) {
@@ -475,16 +484,16 @@
 						position: 'absolute',
 						width: ((100 - this.info.gap_less) / ar.length) + '%',
 						top: 0,
-						bottom: '20px',
+						bottom: this.info.level < 1 ? '20px' : 0,
 						left: (this.info.gap * (p + 1)) + (((100 - this.info.gap_less) / ar.length) * p) + '%'
 					});
 					point.legend = document.createElement('div');
 					point.legend.style.cssText = objectCSS({
 						position: 'absolute',
 						'text-align': 'center',
-						width: 'calc(100% + 30px)',
+						width: 'calc(100% + 30%)',
 						bottom: '-20px',
-						left: '-15px'
+						left: '-15%'
 						
 					});
 					this.node.appendChild(point.node);
@@ -698,7 +707,6 @@
 						m.chart.insertBefore(m.scale, m.chart.firstChild);
 
 						if(m.config.type1 === 'b'){
-							console.log('yea scale bar')
 							m.scale.style.bottom = '20px';
 							m.scale.style.height = 'auto';
 						}
