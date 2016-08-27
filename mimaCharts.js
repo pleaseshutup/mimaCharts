@@ -67,12 +67,14 @@
 				style.appendChild(document.createTextNode('\
 				.' + cssPrefix + 'abs{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none}\
 				.' + cssPrefix + 'sq:before{content:"";display:block;padding-top: 100%;}\
-				.' + cssPrefix + 'dot{position:absolute;margin:-1.5% 0 0 -1.5%;border-radius:50%;width:3%}\
+				.' + cssPrefix + 'dot{position:absolute;margin:-1% 0 0 -1%;border-radius:50%;width:2%}\
 				.' + cssPrefix + 'pe{pointer-events: all}\
 				.' + cssPrefix + 'pe{pointer-events: all}\
 				.' + cssPrefix + 'ellipsis{text-overflow: ellipsis; max-width: 100%; white-space: nowrap; overflow: hidden;}\
 				.' + cssPrefix + 'ibb{display:inline-block; box-sizing:border-box; vertical-align:middle}\
 				.' + cssPrefix + 'slice,.' + cssPrefix + 'bar,.' + cssPrefix + 'dot{transition: transform 0.15s ' + bouncy + ', filter 0.15s ' + bouncy + '; transform: translate3d(0,0,0); transform-origin: 50% 50%; }\
+				.' + cssPrefix + 'pieshadow{position: absolute; border-radius: 50%; overflow: hidden; box-shadow:'+materialShadow1+'}\
+				.' + cssPrefix + 'pieshadow:before{content: ""; padding-top:100%; display:block; }\
 				.' + cssPrefix + 'bar{transform-origin: 50% 100%; box-shadow:'+materialShadow1+' }\
 				.' + cssPrefix + 'hoverContainer{z-index:99;pointer-events:none;position:absolute;left:0;top:0; font-size: 12px; border-radius:3px; color:#fff; padding:8px; background-color:#616161;transition: left 0.15s ease-out, top 0.15s ease-out, opacity 0.15s ease-out;}\
 				.' + cssPrefix + 'hoverContainer:before{content: ""; display:block; width:0; height:0; position: absolute; left:50%; bottom:-11px; margin-left:-6px; border: 6px solid transparent; border-top:6px solid #616161;}\
@@ -310,7 +312,7 @@
 									}
 									if (point.bar) {
 										point.bar.style.transform = 'translate3d(0, 0, 0) scale(1.05)';
-										point.bar.style.boxShadow = materialShadow1;
+										point.bar.style.boxShadow = materialShadow2;
 									}
 									if (point.dot) {
 										point.dot.style.transform = 'scale(1.2)';
@@ -477,6 +479,15 @@
 
 				// bar chart bars
 				generateBars = function(point, p, ar) {
+
+					if (m.firstRender) {
+						m.points.push(point);
+					}
+
+					if (point.disabled) {
+						return false;
+					}
+
 					point.color = m.getColor(point, p, ar.length, this.color ? this.color : false);
 
 					point.node = document.createElement('div');
@@ -501,13 +512,6 @@
 
 					if (!point.data || this.info.level === m.config.dataLevel) {
 
-						if (m.firstRender) {
-							m.points.push(point);
-						}
-
-						if (point.disabled) {
-							return false;
-						}
 
 						// this generates bars within the parent item only for the lowest level of data available
 						point.bar = document.createElement('div');
@@ -548,15 +552,15 @@
 				// line chart lines
 				generateLines = function(point, p, ar) {
 
+					if (m.firstRender) {
+						m.points.push(point);
+					}
+
+					if (point.disabled) {
+						return false;
+					}
+
 					if (!point.data || this.info.level === m.config.dataLevel) {
-
-						if (m.firstRender) {
-							m.points.push(point);
-						}
-
-						if (point.disabled) {
-							return false;
-						}
 
 						// color is same for series and comes from the parent
 						point.color = this.info.color;
@@ -608,10 +612,10 @@
 					if (m.firstRender) {
 						m.points.push(point);
 					}
-
 					if (point.disabled) {
 						return false;
 					}
+
 
 					point.color = m.getColor(point, p, ar.length, this.color ? this.color : false);
 
