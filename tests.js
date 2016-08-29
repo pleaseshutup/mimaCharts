@@ -357,22 +357,21 @@ for (var i = 0; i < 5; i++) {
 }
 
 function genCharts() {
+	console.log(config);
 	[].slice.call(document.querySelectorAll('section')).forEach(function(sec, i) {
 		if (i > 0) {
 			sec.parentNode.removeChild(sec);
 		}
 	});
-	[].slice.call(document.querySelectorAll('input[type="checkbox"]')).forEach(function(checkbox) {
-		var event = document.createEvent('HTMLEvents');
-		event.initEvent('change', true, false);
-		checkbox.dispatchEvent(event);
-	});
-
 	charts.forEach(function(chart) {
 		var sec = document.createElement('section'),
 			chartDOM = mimaCharts(chart.config, chart.data).chart;
 
-		sec.style.cssText = 'display:' + (config[chart.config.type] === false ? 'none' : 'inline-block') + ';box-sizing:border-box;width:' + (200 + (400 * Math.random())) + 'px;max-width:100%;padding:0 1%';
+		sec.style.display = config[chart.config.type] || typeof config[chart.config.type] === 'undefined' ? '' : 'none';
+
+
+		var width = config['random sizes'] ? (200 + (400 * Math.random())) : 400
+		sec.style.cssText = 'display:' + (config[chart.config.type] === false ? 'none' : 'inline-block') + ';box-sizing:border-box;width:' + width + 'px;max-width:100%;padding:0 1%';
 		sec.innerHTML = '<h2>' + chart.title + '</h2>';
 		sec.setAttribute('data-chart', chart.config.type);
 		sec.appendChild(chartDOM);
@@ -400,7 +399,7 @@ var mimaInstance = mimaCharts(),
 genCharts();
 
 
-['Line', 'Bar', 'Pie', 'Donut', 'Dial'].forEach(function(chart) {
+['Line', 'Bar', 'Pie', 'Donut', 'Dial', 'Random Sizes'].forEach(function(chart) {
 	var confChart = chart.toLowerCase();
 	var label = document.createElement('label');
 	label.style.display = 'inline-block';
@@ -409,10 +408,15 @@ genCharts();
 	cb.type = 'checkbox';
 	cb.checked = config[confChart] === false ? false : true;
 	cb.addEventListener('change', function(e) {
-		[].slice.call(document.querySelectorAll('section[data-chart="' + confChart + '"]')).forEach(function(sec) {
-			sec.style.display = e.target.checked ? 'inline-block' : 'none';
-		});
 		config[confChart] = e.target.checked;
+		var targs = [].slice.call(document.querySelectorAll('section[data-chart="' + confChart + '"]'));
+		if(targs.length){
+			targs.forEach(function(sec) {
+				sec.style.display = e.target.checked ? 'inline-block' : 'none';
+			});
+		} else {
+			genCharts();
+		}
 		sessionConfig(config);
 	});
 	label.appendChild(cb);
@@ -423,7 +427,7 @@ genCharts();
 });
 
 var reAddCharts = document.createElement('a');
-reAddCharts.textContent = 'Re-Add Charts';
+reAddCharts.textContent = 'Re-Gen Charts';
 reAddCharts.href = '#';
 reAddCharts.addEventListener('click', function(e) {
 	e.preventDefault();

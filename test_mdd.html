@@ -1,0 +1,57 @@
+<html>
+	<title>Mini Dan Dom - dom manipulation</title>
+<body>
+
+<span>item 1</span>
+<span>item 2</span>
+<span>item 3</span>
+
+<script>
+var dom = document.createElement.bind(document);
+Node.prototype.appendTo = function(target){
+	target.appendChild(this);
+	return this;
+}
+Node.prototype.append = function(el){
+	this.appendChild(el);
+	return this;
+}
+Node.prototype.text = function(text){
+	this.textContent = text || '';
+	return this;
+}
+Node.prototype.html = function(html){
+	this.innerHTML = html || '';
+	return this;
+}
+Node.prototype.css = function(css){
+	for(var k in css){ this.style.setProperty(k, css[k]); }
+	return this;
+}
+Node.prototype.attr = function(attr){
+	for(var k in attr){ !attr[k] && attr[k] !== 0 ? this.removeAttribute(k) : typeof attr[k] === 'boolean' ? this[k] = attr[k] : this.setAttribute(k, attr[k]); }
+	return this;
+}
+Node.prototype.on = function(ev, fn){
+	this.addEventListener(ev, fn);
+	return this;
+}
+NodeList.prototype.__proto__ = Array.prototype;
+['css', 'attr'].forEach(function(method){
+	NodeList.prototype[method] = function(arg1, arg2){
+		this.forEach(function(el){
+			el[method](arg1, arg2);
+		})
+		return this;
+	}
+})
+Node.prototype.find = function(sel){ return this.querySelectorAll(sel); }
+
+dom('div').appendTo(document.body).css({'background-color': 'red', color:'blue'}).text('some text');
+dom('div').attr({'data-attr1': 1}).html('sup html').appendTo(document.body);
+
+document.find('div').css({display: 'inline-block', padding: '10px'}).attr({'data-set': 'yolo'});
+</script>
+
+</body>
+</html>

@@ -1,18 +1,8 @@
 (function mimaCharts() {
 	'use strict';
 
-	var objectCSS = function(obj) {
-			// takes an object and simply converts it into a css string for convenience
-			var string = '';
-			for (var k in obj) {
-				string += k + ':' + obj[k] + ';';
-			}
-			return string;
-		},
-		safeText = function(text) {
-			var t = document.createElement('span');
-			t.innerText = text || '';
-			return t.innerHTML;
+	var safeText = function(text) {
+			return dom('span').text(text).innerHTML;
 		},
 		raf = function(func, delay) {
 			return delay ? setTimeout(function() {
@@ -59,7 +49,7 @@
 		// adds if not already set a stylesheet to the document
 		setStyleSheet = function() {
 			if (!document.getElementById(cssPrefix + 'sheet')) {
-				var style = document.createElement('style'),
+				var style = dom('style'),
 					bouncy = 'cubic-bezier(0.25, 0.25, 0.65, 2.57)',
 					smooth = 'cubic-bezier(.25,.8,.25,1)';
 
@@ -491,7 +481,7 @@
 					point.color = m.getColor(point, p, ar.length, this.color ? this.color : false);
 
 					point.node = document.createElement('div');
-					point.node.style.cssText = objectCSS({
+					point.node.css({
 						position: 'absolute',
 						width: ((100 - this.info.gap_less) / ar.length) + '%',
 						top: 0,
@@ -499,7 +489,7 @@
 						left: (this.info.gap * (p + 1)) + (((100 - this.info.gap_less) / ar.length) * p) + '%'
 					});
 					point.legend = document.createElement('div');
-					point.legend.style.cssText = objectCSS({
+					point.legend.css({
 						position: 'absolute',
 						'text-align': 'center',
 						width: 'calc(100% + 30%)',
@@ -519,7 +509,7 @@
 							node: point.bar
 						};
 						point.bar.className = cssPrefix + 'bar ' + cssPrefix + 'pe';
-						point.bar.style.cssText = objectCSS({
+						point.bar.css({
 							position: 'absolute',
 							'background-color': point.color.value,
 							bottom: 0,
@@ -574,7 +564,7 @@
 						var x = (this.info.gap * (p + 1)) + (((100 - this.info.gap_less) / ar.length) * p),
 							y = 100 - point.percent_scale;
 
-						point.dot.style.cssText = objectCSS({
+						point.dot.css({
 							left: x + '%',
 							top: y + '%',
 							'background-color': point.color.value
@@ -758,24 +748,22 @@
 				// setup the legend depending on the chart type
 				initLegend = function() {
 					if (config.type1 === 'p' || config.type1 === 'd') {
-						m.legendHolder = document.createElement('div');
-						m.legendHolder.style.cssText = objectCSS({
+						m.legendHolder = dom('div').css({
 							position: 'absolute',
 							top: 0,
 							bottom: 0,
 							left: '50%',
 							width: '50%',
 							overflow: 'hidden'
-						});
-						m.legend = document.createElement('div');
-						m.legend.style.cssText = objectCSS({
+						})
+						m.legend = dom('div').css({
 							position: 'absolute',
 							'overflow-x': 'hidden',
 							height: '100%',
 							left: 0,
 							right: 0,
 							'overflow-y': 'scroll'
-						});
+						})
 						m.legendHolder.appendChild(m.legend);
 						m.node.appendChild(m.legendHolder);
 
@@ -866,7 +854,7 @@
 			// ok so we're going to put this div on the window so we can still get calculations of sizes of things
 			// we'll hide it so that it isn't available until the user appends it somewhere. This should not require paints.
 
-			shadowDom.style.cssText = objectCSS({
+			shadowDom.css({
 				position: 'absolute',
 				opacity: 0,
 				left: -10000 + 'px'
@@ -887,8 +875,8 @@
 				initInfo(m, 0);
 
 				if (!m.chart && !config.element) {
-					m.chart = document.createElement('mimachart');
-					shadowDom.appendChild(m.chart);
+					m.chart = dom('mimachart');
+					shadowDom.append(m.chart);
 					config.element = m.chart;
 				} else {
 					if (m.settings) {
@@ -900,7 +888,7 @@
 				}
 
 				m.chart.innerHTML = '<div style="padding-top:' + (config.ratio * 100) + '%;pointer-events:none"></div>';
-				m.chart.style.cssText = objectCSS({
+				m.chart.css({
 					position: 'relative',
 					display: 'inline-block',
 					'box-sizing': 'border-box',
@@ -1013,6 +1001,48 @@
 			return m;
 		};
 
+
+	// dom manipulation made easy made to try to minimize code and make it convenient for chaining
+	var dom = document.createElement.bind(document);
+	Node.prototype.appendTo = function(target){
+		target.appendChild(this);
+		return this;
+	}
+	Node.prototype.append = function(el){
+		this.appendChild(el);
+		return this;
+	}
+	Node.prototype.text = function(text){
+		this.textContent = text || '';
+		return this;
+	}
+	Node.prototype.html = function(html){
+		this.innerHTML = html || '';
+		return this;
+	}
+	Node.prototype.css = function(css){
+		for(var k in css){ this.style.setProperty(k, css[k]); }
+		return this;
+	}
+	Node.prototype.attr = function(attr){
+		for(var k in attr){ !attr[k] && attr[k] !== 0 ? this.removeAttribute(k) : typeof attr[k] === 'boolean' ? this[k] = attr[k] : this.setAttribute(k, attr[k]); }
+		return this;
+	}
+	Node.prototype.on = function(ev, fn){
+		this.addEventListener(ev, fn);
+		return this;
+	}
+	NodeList.prototype.__proto__ = Array.prototype;
+	['css', 'attr'].forEach(function(method){
+		NodeList.prototype[method] = function(arg1, arg2){
+			this.forEach(function(el){
+				el[method](arg1, arg2);
+			})
+			return this;
+		}
+	})
+	Node.prototype.find = function(sel){ return this.querySelectorAll(sel); }
+
 	window.mimaCharts = mimaChart;
 	// attaches mimachart to any <mimachart> html element using the innerText as the json config and any data-attribute values as additional config settings
 	window.initMimaCharts = function(callback) {
@@ -1055,4 +1085,4 @@
 		})
 	}
 	initMimaCharts()
-})();
+})()
