@@ -221,17 +221,18 @@
 									point.slice.setAttribute('filter', '');
 									point.legend.style.opacity = '';
 									point.legend.style.fontWeight = '';
-									[].slice.call(m.chart.getElementsByClassName(cssPrefix + 'legend')).forEach(function(el) {
-										el.style.opacity = 1;
-									});
-									point.legendColor.style.width = '';
-									point.legendColor.style.height = '';
-									point.legendColor.style.pointerEvents = 'fill'
-									point.legendColor.style.transform = 'translate3d(0, 0 , 0)';
+
+									m.chart.getElementsByClassName(cssPrefix + 'legend').css({opacity: 1})
+									point.legendColor.css({
+										width: '',
+										height: '',
+										pointerEvents: 'fill',
+										transform: 'translate3d(0, 0 , 0)'
+									})
 								}
 								if (point.bar) {
 									point.bar.style.transform = 'scale(1)';
-									point.bar.boxShadow = '';
+									point.bar.style.boxShadow = '';
 								}
 								if (point.dot) {
 									point.dot.style.transform = 'scale(1)';
@@ -267,7 +268,7 @@
 										y = (e.pageY);
 
 									if (!m.currentHover) {
-										m.currentHover = document.createElement('div');
+										m.currentHover = dom('div');
 										m.currentHover.className = cssPrefix + 'hoverContainer';
 										document.body.appendChild(m.currentHover);
 									} else {
@@ -428,9 +429,11 @@
 					if (config.onclick) {
 						point.onclick = function onclickPoint(e) {
 							if (typeof config.onclick === 'function') {
+								m.killHover(e);
 								config.onclick(e, point, m);
 							} else if (typeof config.onclick === 'string') {
 								if (typeof window[config.onclick] === 'function') {
+									m.killHover(e);
 									window[config.onclick](e, point, m);
 								} else {
 									console.error('could not find function ' + config.onclick + ' in global/window');
@@ -480,16 +483,14 @@
 
 					point.color = m.getColor(point, p, ar.length, this.color ? this.color : false);
 
-					point.node = document.createElement('div');
-					point.node.css({
+					point.node = dom('div').css({
 						position: 'absolute',
 						width: ((100 - this.info.gap_less) / ar.length) + '%',
 						top: 0,
 						bottom: this.info.level < 1 ? '20px' : 0,
 						left: (this.info.gap * (p + 1)) + (((100 - this.info.gap_less) / ar.length) * p) + '%'
 					});
-					point.legend = document.createElement('div');
-					point.legend.css({
+					point.legend = dom('div').css({
 						position: 'absolute',
 						'text-align': 'center',
 						width: 'calc(100% + 30%)',
@@ -504,12 +505,7 @@
 
 
 						// this generates bars within the parent item only for the lowest level of data available
-						point.bar = document.createElement('div');
-						point.hoverAnchor = {
-							node: point.bar
-						};
-						point.bar.className = cssPrefix + 'bar ' + cssPrefix + 'pe';
-						point.bar.css({
+						point.bar = document.createElement('div').css({
 							position: 'absolute',
 							'background-color': point.color.value,
 							bottom: 0,
@@ -517,6 +513,11 @@
 							'min-height': '1px',
 							height: point.percent_scale + '%'
 						});
+						point.hoverAnchor = {
+							node: point.bar
+						};
+						point.bar.className = cssPrefix + 'bar ' + cssPrefix + 'pe';
+
 						setPointEvents(m, point.bar, point);
 						point.node.appendChild(point.bar);
 
@@ -1004,6 +1005,7 @@
 
 	// dom manipulation made easy made to try to minimize code and make it convenient for chaining
 	var dom = document.createElement.bind(document);
+
 	Node.prototype.appendTo = function(target){
 		target.appendChild(this);
 		return this;
@@ -1033,15 +1035,16 @@
 		return this;
 	}
 	NodeList.prototype.__proto__ = Array.prototype;
-	['css', 'attr'].forEach(function(method){
-		NodeList.prototype[method] = function(arg1, arg2){
-			this.forEach(function(el){
-				el[method](arg1, arg2);
-			})
+	var underdom_methods = ['css', 'attr', 'appendTo', 'append', 'text', 'html', ];
+	underdom_methods.forEach(function(method){
+		NodeList.prototype[method] = HTMLCollection.prototype[method] = function(arg1, arg2){
+			for (var i = this.length - 1; i >= 0; i--) {
+				this[i][method](arg1, arg2);
+			}
 			return this;
 		}
-	})
-	Node.prototype.find = function(sel){ return this.querySelectorAll(sel); }
+	});
+
 
 	window.mimaCharts = mimaChart;
 	// attaches mimachart to any <mimachart> html element using the innerText as the json config and any data-attribute values as additional config settings
