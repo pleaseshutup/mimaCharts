@@ -248,6 +248,11 @@
 
 					hover: function(e) {
 						clearTimeout(window.__mimaData.hoverTimer);
+
+						if(e.type === 'click' && m.dataref[e.target.__mimaPoint] && m.dataref[e.target.__mimaPoint].onclick){
+							m.dataref[e.target.__mimaPoint].onclick();
+						}
+
 						window.__mimaData.hoverTimer = setTimeout(function() {
 
 							var point = m.dataref[e.target.__mimaPoint],
