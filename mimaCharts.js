@@ -802,9 +802,9 @@
 							<span class="' + cssPrefix + 'ibb ' + cssPrefix + 'ellipsis">' + safeText(point.l) + '</span>\
 						</label>';
 					});
-					markup = '<label class="' + cssPrefix + 'filter">\
-							<input type="checkbox" data-point="all" ' + uncheckall + ' />\
-							<span class="' + cssPrefix + 'ibb ' + cssPrefix + 'ellipsis">all</span>\
+					markup = '<label class="' + cssPrefix + 'filter" style="margin-bottom:6px; opacity: 0.5">\
+							<input type="checkbox" class="' + cssPrefix + 'ibb" data-point="all" ' + uncheckall + ' />\
+							<span class="' + cssPrefix + 'ibb ' + cssPrefix + 'ellipsis">All</span>\
 						</label>' + markup;
 
 					var chartOps = ['bar', 'pie', 'donut', 'line'];
