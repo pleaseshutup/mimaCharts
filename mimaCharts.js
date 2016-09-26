@@ -463,7 +463,8 @@
 
 				// this is executed in gatherInfo1 to figure out soley based on data segment length what even spacing should be
 				summaryInfo = function(info, ar) {
-					info.gap = 10;
+					info.gap = 12 - ar.length;
+					if(info.gap < 1){ info.gap = 1; }
 					info.gap_less = info.gap * (ar.length + 1);
 					info.seriesIndex = m.series * 1;
 
@@ -488,13 +489,16 @@
 
 					point.color = m.getColor(point, p, ar.length, this.color ? this.color : false);
 
+					var w = ((100 - this.info.gap_less) / ar.length);
+					if(w < 0.2){ w = 0.2; }
 					point.node = dom('div').css({
 						position: 'absolute',
-						width: ((100 - this.info.gap_less) / ar.length) + '%',
+						width: w + '%',
 						top: 0,
 						bottom: this.info.level < 1 ? '20px' : 0,
 						left: (this.info.gap * (p + 1)) + (((100 - this.info.gap_less) / ar.length) * p) + '%'
 					});
+
 					point.legend = dom('div').css({
 						position: 'absolute',
 						'text-align': 'center',
