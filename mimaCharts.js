@@ -563,6 +563,13 @@
 
 						point.dot = document.createElement('span');
 						point.dot.className = cssPrefix + 'dot ' + cssPrefix + 'sq ' + cssPrefix + 'pe';
+						if(ar.length > 20){
+							point.dot.dotWidth = 2 - (ar.length/100);
+							if(point.dot.style.width < 0.5)
+								point.dot.dotWidth = 0.5;
+
+						}
+						
 
 						point.hoverAnchor = {
 							node: point.dot
