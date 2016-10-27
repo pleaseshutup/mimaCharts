@@ -63,9 +63,9 @@
 				.' + cssPrefix + 'ellipsis{text-overflow: ellipsis; max-width: 100%; white-space: nowrap; overflow: hidden;}\
 				.' + cssPrefix + 'ibb{display:inline-block; box-sizing:border-box; vertical-align:middle}\
 				.' + cssPrefix + 'slice,.' + cssPrefix + 'bar,.' + cssPrefix + 'dot{transition: transform 0.15s ' + bouncy + ', filter 0.15s ' + bouncy + '; transform: translate3d(0,0,0); transform-origin: 50% 50%; }\
-				.' + cssPrefix + 'pieshadow{position: absolute; border-radius: 50%; overflow: hidden; box-shadow:'+materialShadow1+'}\
+				.' + cssPrefix + 'pieshadow{position: absolute; border-radius: 50%; overflow: hidden; box-shadow:' + materialShadow1 + '}\
 				.' + cssPrefix + 'pieshadow:before{content: ""; padding-top:100%; display:block; }\
-				.' + cssPrefix + 'bar{transform-origin: 50% 100%; box-shadow:'+materialShadow1+' }\
+				.' + cssPrefix + 'bar{transform-origin: 50% 100%; box-shadow:' + materialShadow1 + ' }\
 				.' + cssPrefix + 'hoverContainer{z-index:99;pointer-events:none;position:absolute;left:0;top:0; font-size: 12px; border-radius:3px; color:#fff; padding:8px; background-color:#616161;transition: left 0.15s ease-out, top 0.15s ease-out, opacity 0.15s ease-out;}\
 				.' + cssPrefix + 'hoverContainer:before{content: ""; display:block; width:0; height:0; position: absolute; left:50%; bottom:-11px; margin-left:-6px; border: 6px solid transparent; border-top:6px solid #616161;}\
 				.' + cssPrefix + 'scaleLine{position: absolute; top: 0; left: 0; right: 0; height: 1px; background-color: #ccc; }\
@@ -114,7 +114,60 @@
 				document.head.appendChild(style);
 			}
 		},
+		addCommas = function(nStr) {
+			nStr += '';
+			var x = nStr.split('.'),
+				x1 = x[0],
+				x2 = x.length > 1 ? '.' + x[1] : '',
+				rgx = /(\d+)(\d{3})/;
 
+			while (rgx.test(x1)) {
+				x1 = x1.replace(rgx, '$1' + ',' + '$2');
+			}
+			return x1 + x2;
+		},
+		num = function(val) {
+			if (!val) {
+				return 0;
+			}
+			if (typeof val !== 'number') {
+				return val.replace(/[^\d.]+/g, '') * 1;
+			} else {
+				return val;
+			}
+		},
+		number = function(n, format) {
+			if (!n && n !== 0) {
+				return '';
+			}
+			var neg = n < 0,
+				ret = '';
+			if (neg) {
+				n = Math.abs(n);
+			}
+
+			if (n >= 1000000000) {
+				ret = addCommas((Math.round((n / 1000000000) * 10) / 10)) + "b";
+			} else if (n >= 1000000) {
+				ret = addCommas((Math.round((n / 1000000) * 10) / 10)) + "m";
+			} else if (n >= 10000) {
+				ret = addCommas((Math.round((n / 1000) * 10) / 10)) + "k";
+			} else {
+				ret = addCommas((Math.round(n * 10) / 10)) + "";
+			}
+
+			if (ret) {
+				if (format === '%') {
+					ret = ret + '%';
+				} else if (format === "$") {
+					ret = "$" + ret;
+				}
+			}
+			if (neg) {
+				ret = "-" + ret;
+			}
+			return ret;
+		},
 		xyRadius = function(cx, cy, radius, degrees) {
 			//lets have zero be at the top and go clockwise
 			//degrees += Math.PI * 2
@@ -222,7 +275,9 @@
 									point.legend.style.opacity = '';
 									point.legend.style.fontWeight = '';
 
-									m.chart.getElementsByClassName(cssPrefix + 'legend').css({opacity: 1})
+									m.chart.getElementsByClassName(cssPrefix + 'legend').css({
+										opacity: 1
+									})
 									point.legendColor.css({
 										width: '',
 										height: '',
@@ -249,7 +304,7 @@
 					hover: function(e) {
 						clearTimeout(window.__mimaData.hoverTimer);
 
-						if(e.type === 'click' && m.dataref[e.target.__mimaPoint] && m.dataref[e.target.__mimaPoint].onclick){
+						if (e.type === 'click' && m.dataref[e.target.__mimaPoint] && m.dataref[e.target.__mimaPoint].onclick) {
 							m.dataref[e.target.__mimaPoint].onclick();
 						}
 
@@ -464,7 +519,9 @@
 				// this is executed in gatherInfo1 to figure out soley based on data segment length what even spacing should be
 				summaryInfo = function(info, ar) {
 					info.gap = 12 - ar.length;
-					if(info.gap < 1){ info.gap = 1; }
+					if (info.gap < 1) {
+						info.gap = 1;
+					}
 					info.gap_less = info.gap * (ar.length + 1);
 					info.seriesIndex = m.series * 1;
 
@@ -490,7 +547,9 @@
 					point.color = m.getColor(point, p, ar.length, this.color ? this.color : false);
 
 					var w = ((100 - this.info.gap_less) / ar.length);
-					if(w < 0.2){ w = 0.2; }
+					if (w < 0.2) {
+						w = 0.2;
+					}
 					point.node = dom('div').css({
 						position: 'absolute',
 						width: w + '%',
@@ -505,7 +564,7 @@
 						width: 'calc(100% + 30%)',
 						bottom: '-20px',
 						left: '-15%'
-						
+
 					});
 					this.node.appendChild(point.node);
 					this.node.appendChild(point.legend);
@@ -551,7 +610,6 @@
 
 				// line chart lines
 				generateLines = function(point, p, ar) {
-
 					if (m.firstRender) {
 						m.points.push(point);
 					}
@@ -567,18 +625,18 @@
 
 						point.dot = document.createElement('span');
 						point.dot.className = cssPrefix + 'dot ' + cssPrefix + 'sq ' + cssPrefix + 'pe';
-						if(ar.length > 20){
-							point.dot.dotWidth = 2 - (ar.length/100);
-							if(point.dot.style.width < 0.5)
+						if (ar.length > 20) {
+							point.dot.dotWidth = 2 - (ar.length / 100);
+							if (point.dot.style.width < 0.5)
 								point.dot.dotWidth = 0.5;
 
 						}
-						
+
 
 						point.hoverAnchor = {
 							node: point.dot
 						};
-						var x = (this.info.gap * (p + 1)) + (((100 - this.info.gap_less) / ar.length) * p),
+						var x = m.config.scale.widthPercent + ((this.info.gap * (p + 1)) + ((((100 - m.config.scale.widthPercent) - this.info.gap_less) / ar.length) * p)),
 							y = 100 - point.percent_scale;
 
 						point.dot.css({
@@ -711,13 +769,14 @@
 				generateScale = function() {
 
 					m.config.scale.width = 0;
+					m.config.scale.widthPercent = 0;
 					if (config.scale && (config.type1 === 'l' || config.type1 === 'b')) {
-					
+
 						m.scale = document.createElement('div');
 						m.scale.className = cssPrefix + 'abs';
 						m.chart.insertBefore(m.scale, m.chart.firstChild);
 
-						if(m.config.type1 === 'b'){
+						if (m.config.type1 === 'b') {
 							m.scale.style.bottom = '20px';
 							m.scale.style.height = 'auto';
 						}
@@ -736,7 +795,7 @@
 							for (var i = 0; i < m.config.scale.steps + 1; i++) {
 								num = step * i;
 								percent = num / range;
-								displayNum = Math.round( (num + m.info.lowest) * 100) / 100;
+								displayNum = Math.round((num + m.info.lowest) * 100) / 100;
 								line = document.createElement('div');
 								line.className = cssPrefix + 'scaleLine';
 								line.style.top = (100 - (percent * 100)) + '%';
@@ -744,13 +803,15 @@
 								lines.push(line);
 
 								text = document.createElement('span');
-								text.textContent = displayNum;
+								text.textContent = number(displayNum);
 								text.className = cssPrefix + 'scaleText';
 								text.style.top = (100 - (percent * 100)) + '%';
 								m.scale.appendChild(text);
 								texts.push(text);
 								if (text.offsetWidth > m.config.scale.width) {
 									m.config.scale.width = text.offsetWidth * 1;
+									m.config.scale.widthDecimal = m.config.scale.width / m.node.offsetWidth;
+									m.config.scale.widthPercent = 100 * m.config.scale.widthDecimal
 								}
 
 							}
@@ -986,6 +1047,8 @@
 					m.data.forEach(gatherInfo1, m);
 					m.data.forEach(gatherInfo2, m);
 
+					generateScale();
+
 					var generatorFunc = generateBars;
 					if (config.type1 === 'l') {
 						generatorFunc = generateLines;
@@ -996,8 +1059,7 @@
 
 				}
 
-				generateScale();
-				if(m.config.type1 === 'b'){
+				if (m.config.type1 === 'b') {
 					m.node.style.left = m.config.scale.width + 'px';
 					m.node.style.width = 'auto';
 					m.node.style.right = 0;
@@ -1022,38 +1084,42 @@
 	// dom manipulation made easy made to try to minimize code and make it convenient for chaining
 	var dom = document.createElement.bind(document);
 
-	Node.prototype.appendTo = function(target){
+	Node.prototype.appendTo = function(target) {
 		target.appendChild(this);
 		return this;
 	}
-	Node.prototype.append = function(el){
+	Node.prototype.append = function(el) {
 		this.appendChild(el);
 		return this;
 	}
-	Node.prototype.text = function(text){
+	Node.prototype.text = function(text) {
 		this.textContent = text || '';
 		return this;
 	}
-	Node.prototype.html = function(html){
+	Node.prototype.html = function(html) {
 		this.innerHTML = html || '';
 		return this;
 	}
-	Node.prototype.css = function(css){
-		for(var k in css){ this.style.setProperty(k, css[k]); }
+	Node.prototype.css = function(css) {
+		for (var k in css) {
+			this.style.setProperty(k, css[k]);
+		}
 		return this;
 	}
-	Node.prototype.attr = function(attr){
-		for(var k in attr){ !attr[k] && attr[k] !== 0 ? this.removeAttribute(k) : typeof attr[k] === 'boolean' ? this[k] = attr[k] : this.setAttribute(k, attr[k]); }
+	Node.prototype.attr = function(attr) {
+		for (var k in attr) {
+			!attr[k] && attr[k] !== 0 ? this.removeAttribute(k) : typeof attr[k] === 'boolean' ? this[k] = attr[k] : this.setAttribute(k, attr[k]);
+		}
 		return this;
 	}
-	Node.prototype.on = function(ev, fn){
+	Node.prototype.on = function(ev, fn) {
 		this.addEventListener(ev, fn);
 		return this;
 	}
 	NodeList.prototype.__proto__ = Array.prototype;
 	var underdom_methods = ['css', 'attr', 'appendTo', 'append', 'text', 'html', ];
-	underdom_methods.forEach(function(method){
-		NodeList.prototype[method] = HTMLCollection.prototype[method] = function(arg1, arg2){
+	underdom_methods.forEach(function(method) {
+		NodeList.prototype[method] = HTMLCollection.prototype[method] = function(arg1, arg2) {
 			for (var i = this.length - 1; i >= 0; i--) {
 				this[i][method](arg1, arg2);
 			}
