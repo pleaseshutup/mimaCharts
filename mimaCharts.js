@@ -2,7 +2,7 @@
 	'use strict';
 
 	var safeText = function(text) {
-			return dom('span').text(text).innerHTML;
+			return dom('span')._text(text).innerHTML;
 		},
 		raf = function(func, delay) {
 			return delay ? setTimeout(function() {
@@ -11,7 +11,6 @@
 				func()
 			}, 1000 / 60);
 		},
-
 		// svg name space for convenience
 		svgNS = 'http://www.w3.org/2000/svg',
 		//xlinkNS = 'http://www.w3.org/1999/xlink',
@@ -136,7 +135,7 @@
 				return val;
 			}
 		},
-		number = function(n, format) {
+		number = function(n, maxDec, forcedDec, format) {
 			if (!n && n !== 0) {
 				return '';
 			}
@@ -193,17 +192,31 @@
 			if (!window.__mimaEvents) {
 				window.__mimaData = {
 					atomic: 0,
-					listeners: {}
+					listeners: {},
+					resize: {}
 				}
 				window.__mimaEvents = function(e) {
-					if (typeof e.target.__mimaIndex !== 'undefined') {
-						window.__mimaData.listeners[e.target.__mimaIndex](e);
+					if(e.type !== 'resize'){
+						if (typeof e.target.__mimaIndex !== 'undefined') {
+							window.__mimaData.listeners[e.target.__mimaIndex](e);
+						}
+					} else {
+						clearTimeout(window.__mimaResizeTimer);
+						window.__mimaResizeTimer = setTimeout(function(e){
+							raf(function() {
+								var k;
+								for(k in window.__mimaData.resize){
+									window.__mimaData.resize[k](e);
+								}
+							});
+						}, 100);
 					}
 				}
 				window.addEventListener('mouseover', window.__mimaEvents);
 				window.addEventListener('mousemove', window.__mimaEvents);
 				window.addEventListener('mouseout', window.__mimaEvents);
 				window.addEventListener('click', window.__mimaEvents);
+				window.addEventListener('resize', window.__mimaEvents);
 			}
 
 			// alows us to accept just data and use default config
@@ -221,6 +234,8 @@
 					dataref: {},
 					points: [],
 					series: 0,
+					width: 600,
+					height: 300,
 					getColorValue: function(color) {
 						return 'hsla(' + color.h + ',' + color.s + ',' + color.l + ',' + color.a + ')';
 					},
@@ -268,17 +283,17 @@
 
 								if (point.slice) {
 									point.slice.style.transform = 'translate3d(0, 0, 0) scale(1)';
-									if (point.percent_decimal < 1) {
+									if (point.percent_series_decimal < 1) {
 										point.slice.setAttribute('stroke', '#fff');
 									}
 									point.slice.setAttribute('filter', '');
 									point.legend.style.opacity = '';
 									point.legend.style.fontWeight = '';
 
-									m.chart.getElementsByClassName(cssPrefix + 'legend').css({
+									m.chart.getElementsByClassName(cssPrefix + 'legend')._css({
 										opacity: 1
 									})
-									point.legendColor.css({
+									point.legendColor._css({
 										width: '',
 										height: '',
 										pointerEvents: 'fill',
@@ -408,6 +423,16 @@
 							}
 
 						}, 4);
+					},
+					resizeQueue: [],
+					resize: function(e) {
+						if(m.node.offsetWidth && m.node.offsetWidth !== m.width){
+							m.width = m.node.offsetWidth;
+							m.height = m.node.offsetHeight;
+							m.resizeQueue.forEach(function(func){
+								func();
+							})
+						}
 					}
 				},
 
@@ -508,8 +533,10 @@
 				//second pass after we know the highest/lowest values (scale stuff) we can set the percent relative here
 				gatherInfo2 = function(point, p, ar) {
 					// if point.v is zero or point.v minus lowest is zero just make percent zero to not break math dividing zero by something
-					point.percent_scale = (point.v - m.info.lowest) ? 100 * ((point.v - m.info.lowest) / m.info.highest) : 0;
-					point.percent_series = this.info.sum && point.v ? point.v / this.info.sum * 100 : 0;
+					point.percent_scale_decimal = (point.v - m.info.lowest) ? ((point.v - m.info.lowest) / (m.info.highest-m.info.lowest)) : 0;
+					point.percent_scale = 100 * point.percent_scale_decimal;
+					point.percent_series_decimal = this.info.sum && point.v ? point.v / this.info.sum : 0;
+					point.percent_series = point.percent_series * 100;
 
 					if (point.data) {
 						point.data.forEach(gatherInfo2, point);
@@ -550,7 +577,7 @@
 					if (w < 0.2) {
 						w = 0.2;
 					}
-					point.node = dom('div').css({
+					point.node = dom('div')._css({
 						position: 'absolute',
 						width: w + '%',
 						top: 0,
@@ -558,7 +585,7 @@
 						left: (this.info.gap * (p + 1)) + (((100 - this.info.gap_less) / ar.length) * p) + '%'
 					});
 
-					point.legend = dom('div').css({
+					point.legend = dom('div')._css({
 						position: 'absolute',
 						'text-align': 'center',
 						width: 'calc(100% + 30%)',
@@ -573,7 +600,7 @@
 
 
 						// this generates bars within the parent item only for the lowest level of data available
-						point.bar = document.createElement('div').css({
+						point.bar = document.createElement('div')._css({
 							position: 'absolute',
 							'background-color': point.color.value,
 							bottom: 0,
@@ -601,7 +628,7 @@
 
 					}
 
-					point.hoverContent = (point.l || '') + ' ' + Math.round(point.v);
+					point.hoverContent = (point.l || '') + ' ' + number(point.v);
 
 					if (point.data) {
 						point.data.forEach(generateBars, point);
@@ -610,6 +637,7 @@
 
 				// line chart lines
 				generateLines = function(point, p, ar) {
+					var line = this;
 					if (m.firstRender) {
 						m.points.push(point);
 					}
@@ -618,10 +646,10 @@
 						return false;
 					}
 
-					if (!point.data || this.info.level === m.config.dataLevel) {
+					if (!point.data || line.info.level === m.config.dataLevel) {
 
 						// color is same for series and comes from the parent
-						point.color = this.info.color;
+						point.color = line.info.color;
 
 						point.dot = document.createElement('span');
 						point.dot.className = cssPrefix + 'dot ' + cssPrefix + 'sq ' + cssPrefix + 'pe';
@@ -636,33 +664,41 @@
 						point.hoverAnchor = {
 							node: point.dot
 						};
-						var x = m.config.scale.widthPercent + ((this.info.gap * (p + 1)) + ((((100 - m.config.scale.widthPercent) - this.info.gap_less) / ar.length) * p)),
-							y = 100 - point.percent_scale;
 
-						point.dot.css({
-							left: x + '%',
-							top: y + '%',
-							'background-color': point.color.value
-						});
 						setPointEvents(m, point.dot, point);
 						m.node.appendChild(point.dot);
 
 						if (p > 0) {
 							point.line = document.createElementNS(svgNS, 'path');
 							point.line.setAttribute('class', cssPrefix + 'pe');
-							setPointEvents(m, point.line, point);
-							point.line.setAttribute('d', 'M' + this.info.lastPoint.x + ',' + (this.info.lastPoint.y * m.config.ratio) + ' ' + x + ',' + (y * m.config.ratio));
 							point.line.setAttribute('stroke', point.color.value);
 							point.line.setAttribute('stroke-width', '1%');
 							m.svg.appendChild(point.line);
+							setPointEvents(m, point.line, point);
+							point.hoverContent = (point.l || '') + ' ' + number(point.v);
 						}
 
-						point.hoverContent = (point.l || '') + ' ' + Math.round(point.v);
+						m.resizeQueue.push(function generateLinesResize(){
+							// the  - 2 is the gap for the right 
+							var x = m.config.scale.widthPercent + (((100 - m.config.scale.widthPercent - 2) / (ar.length-1)) * p),
+								y = 98 - ((96 * point.percent_scale_decimal));
 
-						this.info.lastPoint = {
-							x: x,
-							y: y
-						};
+							point.dot._css({
+								left: x + '%',
+								top: y + '%',
+								'background-color': point.color.value
+							});
+
+							if (p > 0) {
+								point.line.setAttribute('d', 'M' + line.info.lastPoint.x + ',' + (line.info.lastPoint.y * m.config.ratio) + ' ' + x + ',' + (y * m.config.ratio));
+							}
+
+							line.info.lastPoint = {
+								x: x,
+								y: y
+							};
+
+						})
 
 					}
 
@@ -684,9 +720,8 @@
 
 					point.color = m.getColor(point, p, ar.length, this.color ? this.color : false);
 
-					point.percent_decimal = point.percent_series ? point.percent_series / 100 : 0;
 					point.deg_from = this.info.lastDegTo || 0;
-					point.deg_to = point.deg_from + (360 * point.percent_decimal);
+					point.deg_to = point.deg_from + (360 * point.percent_series_decimal);
 					this.info.lastDegTo = point.deg_to * 1;
 
 					point.p1 = xyRadius(this.info.cx, this.info.cy, this.info.i_rad, point.deg_from);
@@ -702,7 +737,7 @@
 						node: point.slice
 					};
 					point.d = '';
-					if (point.percent_decimal >= 1) {
+					if (point.percent_series_decimal >= 1) {
 
 						// two line hack for cicles
 						point.p3a = xyRadius(this.info.cx, this.info.cy, this.info.o_rad, point.deg_to * 0.5);
@@ -731,12 +766,12 @@
 					point.slice.setAttribute('d', point.d);
 					point.slice.setAttribute('class', cssPrefix + 'slice ' + cssPrefix + 'pe');
 					point.slice.setAttribute('fill', point.color.value);
-					if (point.percent_decimal < 1) {
+					if (point.percent_series_decimal < 1) {
 						point.slice.setAttribute('stroke', '#fff');
 					}
 					point.slice.setAttribute('stroke-width', 0.2);
 					setPointEvents(m, point.slice, point);
-					point.hoverContent = (point.l || '') + ' ' + Math.round(point.v) + ' (' + Math.round(point.percent_series) + '%)';
+					point.hoverContent = (point.l || '') + ' ' + number(point.v) + ' (' + number(point.percent_series) + '%)';
 					m.svg.appendChild(point.slice);
 
 					point.legend = document.createElement('div');
@@ -753,7 +788,7 @@
 					point.legendText.textContent = (point.l || '');
 					point.legend.appendChild(point.legendText);
 					point.legendValue = document.createElement('span');
-					point.legendValue.textContent = Math.round(point.v) + ' (' + Math.round(point.percent_series) + '%)';
+					point.legendValue.textContent = number(point.v) + ' (' + number(point.percent_series) + '%)';
 					point.legendValue.style.float = 'right';
 					point.legend.appendChild(point.legendValue);
 					point.legend.className = cssPrefix + 'legend ' + cssPrefix + 'pe';
@@ -786,6 +821,7 @@
 						}
 						if (m.config.scale.steps > 0) {
 							var num, percent,
+								setPerc,
 								range = (m.info.highest - m.info.lowest),
 								step = (range / m.config.scale.steps),
 								displayNum, line, text,
@@ -795,30 +831,37 @@
 							for (var i = 0; i < m.config.scale.steps + 1; i++) {
 								num = step * i;
 								percent = num / range;
-								displayNum = Math.round((num + m.info.lowest) * 100) / 100;
+								// bar charts go full size, line charts do 2% margin all around
+								setPerc = config.type1 === 'b' ? (100 - (percent * 100)) + '%' : (2 + (96 - (percent * 96))) + '%'
+								displayNum = ((num + m.info.lowest) * 100) / 100;
 								line = document.createElement('div');
 								line.className = cssPrefix + 'scaleLine';
-								line.style.top = (100 - (percent * 100)) + '%';
+								line.style.top = setPerc;
 								m.scale.appendChild(line);
 								lines.push(line);
 
 								text = document.createElement('span');
-								text.textContent = number(displayNum);
+								text.textContent = number(displayNum, 1, 0);
 								text.className = cssPrefix + 'scaleText';
-								text.style.top = (100 - (percent * 100)) + '%';
+								text.style.top = setPerc;
 								m.scale.appendChild(text);
 								texts.push(text);
-								if (text.offsetWidth > m.config.scale.width) {
-									m.config.scale.width = text.offsetWidth * 1;
-									m.config.scale.widthDecimal = m.config.scale.width / m.node.offsetWidth;
-									m.config.scale.widthPercent = 100 * m.config.scale.widthDecimal
-								}
+							}
 
-							}
-							for (var i = 0; i < m.config.scale.steps + 1; i++) {
-								lines[i].style.left = (m.config.scale.width + 4) + 'px';
-								texts[i].style.width = m.config.scale.width + 'px';
-							}
+							m.resizeQueue.push(function generateScaleResize(){
+								m.config.scale.width = 0;
+								for (var i = 0; i < m.config.scale.steps + 1; i++) {
+									if (texts[i].offsetWidth > m.config.scale.width) {
+										m.config.scale.width = texts[i].offsetWidth * 1 || 20;
+										m.config.scale.widthDecimal = m.config.scale.width / m.width;
+										m.config.scale.widthPercent = 100 * m.config.scale.widthDecimal + 2
+									}
+								}
+								for (var i = 0; i < m.config.scale.steps + 1; i++) {
+									lines[i].style.left = (m.config.scale.width + 4) + 'px';
+									texts[i].style.width = m.config.scale.width + 'px';
+								}
+							})
 						}
 					}
 				},
@@ -826,7 +869,7 @@
 				// setup the legend depending on the chart type
 				initLegend = function() {
 					if (config.type1 === 'p' || config.type1 === 'd') {
-						m.legendHolder = dom('div').css({
+						m.legendHolder = dom('div')._css({
 							position: 'absolute',
 							top: 0,
 							bottom: 0,
@@ -834,7 +877,7 @@
 							width: '50%',
 							overflow: 'hidden'
 						})
-						m.legend = dom('div').css({
+						m.legend = dom('div')._css({
 							position: 'absolute',
 							'overflow-x': 'hidden',
 							height: '100%',
@@ -845,15 +888,12 @@
 						m.legendHolder.appendChild(m.legend);
 						m.node.appendChild(m.legendHolder);
 
-						var checkWidth = function() {
+						m.resizeQueue.push(function(){
 							var r = '-' + (m.legend.offsetWidth - m.legend.clientWidth) + 'px';
 							if (m.legend.style.right !== r) {
 								m.legend.style.right = r;
 							}
-						};
-						checkWidth();
-						setTimeout(checkWidth, 10);
-
+						})
 					}
 				},
 
@@ -932,9 +972,11 @@
 			// ok so we're going to put this div on the window so we can still get calculations of sizes of things
 			// we'll hide it so that it isn't available until the user appends it somewhere. This should not require paints.
 
-			shadowDom.css({
+			shadowDom._css({
 				position: 'absolute',
 				opacity: 0,
+				width: 600 + 'px',
+				height: 300 + 'px',
 				left: -10000 + 'px'
 			});
 			document.body.appendChild(shadowDom);
@@ -945,6 +987,8 @@
 
 			m.renderChart = function() {
 
+				m.resizeQueue = []; // reset the queue
+
 				config.type1 = (config.type || '')[0] || '';
 				if (config.type1 === 'b' || config.type1 === 'l') {
 					config.ratio = 0.5;
@@ -954,7 +998,7 @@
 
 				if (!m.chart && !config.element) {
 					m.chart = dom('mimachart');
-					shadowDom.append(m.chart);
+					shadowDom._append(m.chart);
 					config.element = m.chart;
 				} else {
 					if (m.settings) {
@@ -966,7 +1010,7 @@
 				}
 
 				m.chart.innerHTML = '<div style="padding-top:' + (config.ratio * 100) + '%;pointer-events:none"></div>';
-				m.chart.css({
+				m.chart._css({
 					position: 'relative',
 					display: 'inline-block',
 					'box-sizing': 'border-box',
@@ -1042,7 +1086,20 @@
 				if (m.data) {
 					// auto sort by highest value excep for line charts or when config.sort is false
 					if (config.sort !== false && config.type1 !== 'l') {
+						m.data.forEach(function(item, i){
+							item._ogindex = i;
+						});
 						typeof config.sort !== 'function' ? m.data.sort(sortValues) : m.data.sort(config.sort);
+						m._data_sorted = true;
+					} else {
+						// if data is sorted it has to be restored if viewing in line chart form
+						if(m._data_sorted){
+							m.data.sort(function(a,b){
+								return a._ogindex - b._ogindex;
+							})
+							m._data_sorted = false;
+						}
+						
 					}
 					m.data.forEach(gatherInfo1, m);
 					m.data.forEach(gatherInfo2, m);
@@ -1073,8 +1130,20 @@
 			m.renderChart();
 
 			m.chart.__mimaIndex = m.__mimaIndex;
+			window.__mimaData.resize[m.__mimaIndex] = m.resize;
 			window.__mimaData.listeners[m.__mimaIndex] = m.hover;
 
+			// execute resize after the chart exists in the dom
+			var checkIfInDom = function(multiplier){
+				if(document.contains(m.chart)){
+					m.resize();
+				} else {
+					setTimeout(function(){
+						checkIfInDom(multiplier + 1);
+					}, Math.pow(multiplier, 2))
+				}
+			}
+			setTimeout(checkIfInDom);
 
 			setStyleSheet();
 			return m;
@@ -1084,42 +1153,37 @@
 	// dom manipulation made easy made to try to minimize code and make it convenient for chaining
 	var dom = document.createElement.bind(document);
 
-	Node.prototype.appendTo = function(target) {
-		target.appendChild(this);
+	Node.prototype._css = function(css){
+		for(var k in css){ this.style.setProperty(k, css[k]); }
 		return this;
 	}
-	Node.prototype.append = function(el) {
-		this.appendChild(el);
+	Node.prototype._attr = function(attr){
+		for(var k in attr){ !attr[k] && attr[k] !== 0 ? this.removeAttribute(k) : typeof attr[k] === 'boolean' ? this[k] = attr[k] : this.setAttribute(k, attr[k]); }
 		return this;
 	}
-	Node.prototype.text = function(text) {
+	Node.prototype._text = function(text){
 		this.textContent = text || '';
 		return this;
 	}
-	Node.prototype.html = function(html) {
+	Node.prototype._html = function(html){
 		this.innerHTML = html || '';
 		return this;
 	}
-	Node.prototype.css = function(css) {
-		for (var k in css) {
-			this.style.setProperty(k, css[k]);
-		}
+	Node.prototype._appendTo = function(target){
+		return target.appendChild(this);
+	}
+	Node.prototype._append = function(el){
+		this.appendChild(el);
 		return this;
 	}
-	Node.prototype.attr = function(attr) {
-		for (var k in attr) {
-			!attr[k] && attr[k] !== 0 ? this.removeAttribute(k) : typeof attr[k] === 'boolean' ? this[k] = attr[k] : this.setAttribute(k, attr[k]);
-		}
-		return this;
-	}
-	Node.prototype.on = function(ev, fn) {
+	Node.prototype._on = function(ev, fn){
 		this.addEventListener(ev, fn);
 		return this;
 	}
 	NodeList.prototype.__proto__ = Array.prototype;
-	var underdom_methods = ['css', 'attr', 'appendTo', 'append', 'text', 'html', ];
-	underdom_methods.forEach(function(method) {
-		NodeList.prototype[method] = HTMLCollection.prototype[method] = function(arg1, arg2) {
+	var underdom_methods = ['_css', '_attr', '_text', '_html', ')appendTo', ')append', '_on'];
+	underdom_methods.forEach(function(method){
+		NodeList.prototype[method] = HTMLCollection.prototype[method] = function(arg1, arg2){
 			for (var i = this.length - 1; i >= 0; i--) {
 				this[i][method](arg1, arg2);
 			}
