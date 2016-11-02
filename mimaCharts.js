@@ -312,7 +312,6 @@
 									point.dot.style.transform = 'scale(1)';
 								}
 								if (point.line) {
-									console.log(point.line);
 									point.line.style.transform = 'scale(1)';
 									point.line.setAttribute('filter', '');
 								}
