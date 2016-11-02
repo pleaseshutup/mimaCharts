@@ -196,16 +196,16 @@
 					resize: {}
 				}
 				window.__mimaEvents = function(e) {
-					if(e.type !== 'resize'){
+					if (e.type !== 'resize') {
 						if (typeof e.target.__mimaIndex !== 'undefined') {
 							window.__mimaData.listeners[e.target.__mimaIndex](e);
 						}
 					} else {
 						clearTimeout(window.__mimaResizeTimer);
-						window.__mimaResizeTimer = setTimeout(function(e){
+						window.__mimaResizeTimer = setTimeout(function(e) {
 							raf(function() {
 								var k;
-								for(k in window.__mimaData.resize){
+								for (k in window.__mimaData.resize) {
 									window.__mimaData.resize[k](e);
 								}
 							});
@@ -225,6 +225,10 @@
 			config = typeof config !== 'object' ? {} : config;
 			if (config.data) {
 				data = config.data
+			}
+
+			if (typeof config.dataLevel === 'number') {
+				config.useDataLevel = true;
 			}
 
 			var k,
@@ -308,6 +312,7 @@
 									point.dot.style.transform = 'scale(1)';
 								}
 								if (point.line) {
+									console.log(point.line);
 									point.line.style.transform = 'scale(1)';
 									point.line.setAttribute('filter', '');
 								}
@@ -426,10 +431,10 @@
 					},
 					resizeQueue: [],
 					resize: function(e) {
-						if(m.node.offsetWidth && m.node.offsetWidth !== m.width){
+						if (m.node.offsetWidth && m.node.offsetWidth !== m.width) {
 							m.width = m.node.offsetWidth;
 							m.height = m.node.offsetHeight;
-							m.resizeQueue.forEach(function(func){
+							m.resizeQueue.forEach(function(func) {
 								func();
 							})
 						}
@@ -500,7 +505,7 @@
 					if (point.v < m.info.lowest || typeof m.info.lowest === 'undefined') {
 						m.info.lowest = point.v;
 					}
-					if (point.data) {
+					if (point.data && (!m.config.useDataLevel || this.info.level < m.config.dataLevel)) {
 						point.data.forEach(gatherInfo1, point);
 					}
 					if (p === ar.length - 1) {
@@ -533,12 +538,12 @@
 				//second pass after we know the highest/lowest values (scale stuff) we can set the percent relative here
 				gatherInfo2 = function(point, p, ar) {
 					// if point.v is zero or point.v minus lowest is zero just make percent zero to not break math dividing zero by something
-					point.percent_scale_decimal = (point.v - m.info.lowest) ? ((point.v - m.info.lowest) / (m.info.highest-m.info.lowest)) : 0;
+					point.percent_scale_decimal = (point.v - m.info.lowest) ? ((point.v - m.info.lowest) / (m.info.highest - m.info.lowest)) : 0;
 					point.percent_scale = 100 * point.percent_scale_decimal;
 					point.percent_series_decimal = this.info.sum && point.v ? point.v / this.info.sum : 0;
 					point.percent_series = point.percent_series * 100;
 
-					if (point.data) {
+					if (point.data && (!m.config.useDataLevel || this.info.level < m.config.dataLevel)) {
 						point.data.forEach(gatherInfo2, point);
 					}
 				},
@@ -624,13 +629,11 @@
 						setPointEvents(m, point.legend, point);
 
 						point.node.appendChild(point.legend);
-
-
 					}
 
 					point.hoverContent = (point.l || '') + ' ' + number(point.v);
 
-					if (point.data) {
+					if (point.data && (!m.config.useDataLevel || this.info.level < m.config.dataLevel)) {
 						point.data.forEach(generateBars, point);
 					}
 				},
@@ -678,9 +681,9 @@
 							point.hoverContent = (point.l || '') + ' ' + number(point.v);
 						}
 
-						m.resizeQueue.push(function generateLinesResize(){
+						m.resizeQueue.push(function generateLinesResize() {
 							// the  - 2 is the gap for the right 
-							var x = m.config.scale.widthPercent + (((100 - m.config.scale.widthPercent - 2) / (ar.length-1)) * p),
+							var x = m.config.scale.widthPercent + (((100 - m.config.scale.widthPercent - 2) / (ar.length - 1)) * p),
 								y = 98 - ((96 * point.percent_scale_decimal));
 
 							point.dot._css({
@@ -702,7 +705,7 @@
 
 					}
 
-					if (point.data) {
+					if (point.data && (!m.config.useDataLevel || this.info.level < m.config.dataLevel)) {
 						point.data.forEach(generateLines, point);
 					}
 				},
@@ -848,7 +851,7 @@
 								texts.push(text);
 							}
 
-							m.resizeQueue.push(function generateScaleResize(){
+							m.resizeQueue.push(function generateScaleResize() {
 								m.config.scale.width = 0;
 								for (var i = 0; i < m.config.scale.steps + 1; i++) {
 									if (texts[i].offsetWidth > m.config.scale.width) {
@@ -888,7 +891,7 @@
 						m.legendHolder.appendChild(m.legend);
 						m.node.appendChild(m.legendHolder);
 
-						m.resizeQueue.push(function(){
+						m.resizeQueue.push(function() {
 							var r = '-' + (m.legend.offsetWidth - m.legend.clientWidth) + 'px';
 							if (m.legend.style.right !== r) {
 								m.legend.style.right = r;
@@ -1086,20 +1089,20 @@
 				if (m.data) {
 					// auto sort by highest value excep for line charts or when config.sort is false
 					if (config.sort !== false && config.type1 !== 'l') {
-						m.data.forEach(function(item, i){
+						m.data.forEach(function(item, i) {
 							item._ogindex = i;
 						});
 						typeof config.sort !== 'function' ? m.data.sort(sortValues) : m.data.sort(config.sort);
 						m._data_sorted = true;
 					} else {
 						// if data is sorted it has to be restored if viewing in line chart form
-						if(m._data_sorted){
-							m.data.sort(function(a,b){
+						if (m._data_sorted) {
+							m.data.sort(function(a, b) {
 								return a._ogindex - b._ogindex;
 							})
 							m._data_sorted = false;
 						}
-						
+
 					}
 					m.data.forEach(gatherInfo1, m);
 					m.data.forEach(gatherInfo2, m);
@@ -1134,11 +1137,11 @@
 			window.__mimaData.listeners[m.__mimaIndex] = m.hover;
 
 			// execute resize after the chart exists in the dom
-			var checkIfInDom = function(multiplier){
-				if(document.contains(m.chart)){
+			var checkIfInDom = function(multiplier) {
+				if (document.contains(m.chart)) {
 					m.resize();
 				} else {
-					setTimeout(function(){
+					setTimeout(function() {
 						checkIfInDom(multiplier + 1);
 					}, Math.pow(multiplier, 2))
 				}
@@ -1153,37 +1156,41 @@
 	// dom manipulation made easy made to try to minimize code and make it convenient for chaining
 	var dom = document.createElement.bind(document);
 
-	Node.prototype._css = function(css){
-		for(var k in css){ this.style.setProperty(k, css[k]); }
+	Node.prototype._css = function(css) {
+		for (var k in css) {
+			this.style.setProperty(k, css[k]);
+		}
 		return this;
 	}
-	Node.prototype._attr = function(attr){
-		for(var k in attr){ !attr[k] && attr[k] !== 0 ? this.removeAttribute(k) : typeof attr[k] === 'boolean' ? this[k] = attr[k] : this.setAttribute(k, attr[k]); }
+	Node.prototype._attr = function(attr) {
+		for (var k in attr) {
+			!attr[k] && attr[k] !== 0 ? this.removeAttribute(k) : typeof attr[k] === 'boolean' ? this[k] = attr[k] : this.setAttribute(k, attr[k]);
+		}
 		return this;
 	}
-	Node.prototype._text = function(text){
+	Node.prototype._text = function(text) {
 		this.textContent = text || '';
 		return this;
 	}
-	Node.prototype._html = function(html){
+	Node.prototype._html = function(html) {
 		this.innerHTML = html || '';
 		return this;
 	}
-	Node.prototype._appendTo = function(target){
+	Node.prototype._appendTo = function(target) {
 		return target.appendChild(this);
 	}
-	Node.prototype._append = function(el){
+	Node.prototype._append = function(el) {
 		this.appendChild(el);
 		return this;
 	}
-	Node.prototype._on = function(ev, fn){
+	Node.prototype._on = function(ev, fn) {
 		this.addEventListener(ev, fn);
 		return this;
 	}
 	NodeList.prototype.__proto__ = Array.prototype;
 	var underdom_methods = ['_css', '_attr', '_text', '_html', ')appendTo', ')append', '_on'];
-	underdom_methods.forEach(function(method){
-		NodeList.prototype[method] = HTMLCollection.prototype[method] = function(arg1, arg2){
+	underdom_methods.forEach(function(method) {
+		NodeList.prototype[method] = HTMLCollection.prototype[method] = function(arg1, arg2) {
 			for (var i = this.length - 1; i >= 0; i--) {
 				this[i][method](arg1, arg2);
 			}
