@@ -474,8 +474,14 @@
 					m.info.id++;
 
 					// we'll assume blank/undefined as zero to not break any math
+					if(typeof point.v !== 'number'){
+						point._novalue = true;
+					}
+
 					if (!point.v) {
 						point.v = 0;
+					} else {
+						point.v = num(point.v);
 					}
 					if (point.disabled) {
 						if (typeof point._v === 'undefined') {
@@ -491,17 +497,17 @@
 					this.info.sum += point.v;
 
 					//series high/low
-					if (point.v > this.info.highest || typeof this.info.highest === 'undefined') {
+					if (!point._novalue && (point.v > this.info.highest || typeof this.info.highest === 'undefined')) {
 						this.info.highest = point.v;
 					}
-					if (point.v < this.info.lowest || typeof this.info.lowest === 'undefined') {
+					if (!point._novalue && (point.v < this.info.lowest || typeof this.info.lowest === 'undefined')) {
 						this.info.lowest = point.v;
 					}
 					//overall high/low
-					if (point.v > m.info.highest || typeof m.info.highest === 'undefined') {
+					if (!point._novalue && (point.v > m.info.highest || typeof m.info.highest === 'undefined')) {
 						m.info.highest = point.v;
 					}
-					if (point.v < m.info.lowest || typeof m.info.lowest === 'undefined') {
+					if (!point._novalue && (point.v < m.info.lowest || typeof m.info.lowest === 'undefined')) {
 						m.info.lowest = point.v;
 					}
 					if (point.data && (!m.config.useDataLevel || this.info.level < m.config.dataLevel)) {
@@ -1036,7 +1042,7 @@
 				m.node.className = cssPrefix + 'abs';
 				m.chart.appendChild(m.node);
 
-				if (!m.settings) {
+				if (!m.settings && !m.config.disableSettings) {
 					m.settings = document.createElement('div');
 					m.settings.className = cssPrefix + 'abs ' + cssPrefix + 'settings';
 
@@ -1077,11 +1083,13 @@
 					})
 					m.chart.appendChild(m.settingsButton);
 				}
-				m.chart.appendChild(m.settings);
-				if (m.settings.lastScrollH) {
-					m.settings.scrollTop = m.settings.lastScrollH
-				};
-				m.chart.appendChild(m.settingsButton);
+				if(!m.config.disableSettings){
+					m.chart.appendChild(m.settings);
+					if (m.settings.lastScrollH) {
+						m.settings.scrollTop = m.settings.lastScrollH
+					};
+					m.chart.appendChild(m.settingsButton);
+				}
 
 				initLegend();
 
