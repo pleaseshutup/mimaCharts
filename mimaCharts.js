@@ -457,7 +457,9 @@
 						cx: 25,
 						cy: 25,
 						o_rad: 22,
-						i_rad: 17
+						i_rad: 17,
+						curIndex: 0, // this is the index of the item considering ignored/disabled items
+						length: 0 // this is the length of the array for the segment considering ignored/disabled items
 					};
 					if (level === 0) {
 						point.info.id = 0;
@@ -494,6 +496,12 @@
 					}
 
 					initInfo(point, this.info.level + 1);
+
+					if(!point.disabled){
+						point.info.index = this.info.curIndex
+						this.info.curIndex++;
+						this.info.length++;
+					}
 
 					this.info.sum += point.v;
 
@@ -555,11 +563,11 @@
 
 					if (!m.levels[this.info.level]) {
 						m.levels[this.info.level] = {};
-						if (!m.levels[this.info.level].items) {
-							m.levels[this.info.level].items = 0;
+						if (!m.levels[this.info.level].length) {
+							m.levels[this.info.level].length = 0;
 						}
 					}
-					m.levels[this.info.level].items++;
+					m.levels[this.info.level].length++;
 
 					if (!point.info.lowestLevel) {
 						point.data.forEach(gatherInfo2, point);
@@ -610,9 +618,9 @@
 
 					if (point.info.lowestLevel) {
 						var gap = 20;
-						if (m.levels[bar.info.level] < 3) {
+						if (m.levels[bar.info.level].length < 3) {
 							gap = 60;
-						} else if (m.levels[bar.info.level] < 6) {
+						} else if (m.levels[bar.info.level].length < 6) {
 							gap = 40;
 						}
 
@@ -649,16 +657,15 @@
 							left = 0;
 
 						if (bar.info.level < 1) {
-							width = ((100 - m.config.scale.widthPercent) / ar.length);
-							left = m.config.scale.widthPercent + (width * p)
+							width = ((100 - m.config.scale.widthPercent) / bar.info.length);
+							left = m.config.scale.widthPercent + (width * point.info.index)
 						} else {
-							width = (100 / ar.length);
-							left = width * p;
+							width = (100 / bar.info.length);
+							left = width * point.info.index;
 						}
 						if (width < 0.2) {
 							width = 0.2;
 						}
-
 						point.node._css({
 							width: width + '%',
 							left: left + '%'
