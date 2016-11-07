@@ -240,6 +240,7 @@
 					series: 0,
 					width: 600,
 					height: 300,
+					levels: {},
 					getColorValue: function(color) {
 						return 'hsla(' + color.h + ',' + color.s + ',' + color.l + ',' + color.a + ')';
 					},
@@ -474,7 +475,7 @@
 					m.info.id++;
 
 					// we'll assume blank/undefined as zero to not break any math
-					if(typeof point.v !== 'number'){
+					if (typeof point.v !== 'number') {
 						point._novalue = true;
 					}
 
@@ -510,9 +511,13 @@
 					if (!point._novalue && (point.v < m.info.lowest || typeof m.info.lowest === 'undefined')) {
 						m.info.lowest = point.v;
 					}
+
 					if (point.data && (!m.config.useDataLevel || this.info.level < m.config.dataLevel)) {
 						point.data.forEach(gatherInfo1, point);
+					} else {
+						point.info.lowestLevel = true;
 					}
+
 					if (p === ar.length - 1) {
 						summaryInfo(this.info, ar);
 					}
@@ -548,18 +553,21 @@
 					point.percent_series_decimal = this.info.sum && point.v ? point.v / this.info.sum : 0;
 					point.percent_series = point.percent_series * 100;
 
-					if (point.data && (!m.config.useDataLevel || this.info.level < m.config.dataLevel)) {
+					if (!m.levels[this.info.level]) {
+						m.levels[this.info.level] = {};
+						if (!m.levels[this.info.level].items) {
+							m.levels[this.info.level].items = 0;
+						}
+					}
+					m.levels[this.info.level].items++;
+
+					if (!point.info.lowestLevel) {
 						point.data.forEach(gatherInfo2, point);
 					}
 				},
 
 				// this is executed in gatherInfo1 to figure out soley based on data segment length what even spacing should be
 				summaryInfo = function(info, ar) {
-					info.gap = 12 - ar.length;
-					if (info.gap < 1) {
-						info.gap = 1;
-					}
-					info.gap_less = info.gap * (ar.length + 1);
 					info.seriesIndex = m.series * 1;
 
 					info.average = info.sum ? info.sum / ar.length : 0;
@@ -572,7 +580,7 @@
 
 				// bar chart bars
 				generateBars = function(point, p, ar) {
-
+					var bar = this;
 					if (m.firstRender) {
 						m.points.push(point);
 					}
@@ -583,38 +591,38 @@
 
 					point.color = m.getColor(point, p, ar.length, this.color ? this.color : false);
 
-					var w = ((100 - this.info.gap_less) / ar.length);
-					if (w < 0.2) {
-						w = 0.2;
-					}
 					point.node = dom('div')._css({
 						position: 'absolute',
-						width: w + '%',
 						top: 0,
-						bottom: this.info.level < 1 ? '20px' : 0,
-						left: (this.info.gap * (p + 1)) + (((100 - this.info.gap_less) / ar.length) * p) + '%'
+						bottom: bar.info.level < 1 ? '20px' : 0
 					});
 
 					point.legend = dom('div')._css({
 						position: 'absolute',
 						'text-align': 'center',
-						width: 'calc(100% + 30%)',
+						width: 'calc(100%)',
 						bottom: '-20px',
-						left: '-15%'
+						left: 0
 
 					});
 					this.node.appendChild(point.node);
 					this.node.appendChild(point.legend);
 
-					if (!point.data || this.info.level === m.config.dataLevel) {
-
+					if (point.info.lowestLevel) {
+						var gap = 20;
+						if (m.levels[bar.info.level] < 3) {
+							gap = 60;
+						} else if (m.levels[bar.info.level] < 6) {
+							gap = 40;
+						}
 
 						// this generates bars within the parent item only for the lowest level of data available
 						point.bar = document.createElement('div')._css({
 							position: 'absolute',
 							'background-color': point.color.value,
 							bottom: 0,
-							width: '100%',
+							left: (gap * 0.5) + '%',
+							width: (100 - gap) + '%',
 							'min-height': '1px',
 							height: point.percent_scale + '%'
 						});
@@ -626,7 +634,7 @@
 						setPointEvents(m, point.bar, point);
 						point.node.appendChild(point.bar);
 
-						point.legendText = document.createElement('span');
+						point.legendText = document.createElement('div');
 						point.legendText.className = cssPrefix + 'ellipsis';
 						point.legendText.textContent = (point.l || '');
 						point.legend.appendChild(point.legendText);
@@ -636,9 +644,37 @@
 						point.node.appendChild(point.legend);
 					}
 
+					point.setLeftWidth = function() {
+						var width = 0,
+							left = 0;
+
+						if (bar.info.level < 1) {
+							width = ((100 - m.config.scale.widthPercent) / ar.length);
+							left = m.config.scale.widthPercent + (width * p)
+						} else {
+							width = (100 / ar.length);
+							left = width * p;
+						}
+						if (width < 0.2) {
+							width = 0.2;
+						}
+
+						point.node._css({
+							width: width + '%',
+							left: left + '%'
+						});
+					}
+
+					point.setLeftWidth();
+
+					m.resizeQueue.push(function generateLinesResize() {
+						point.setLeftWidth();
+					});
+
+
 					point.hoverContent = (point.l || '') + ' ' + number(point.v);
 
-					if (point.data && (!m.config.useDataLevel || this.info.level < m.config.dataLevel)) {
+					if (!point.info.lowestLevel) {
 						point.data.forEach(generateBars, point);
 					}
 				},
@@ -654,7 +690,7 @@
 						return false;
 					}
 
-					if (!point.data || line.info.level === m.config.dataLevel) {
+					if (point.info.lowestLevel) {
 
 						// color is same for series and comes from the parent
 						point.color = line.info.color;
@@ -710,7 +746,7 @@
 
 					}
 
-					if (point.data && (!m.config.useDataLevel || this.info.level < m.config.dataLevel)) {
+					if (!point.info.lowestLevel) {
 						point.data.forEach(generateLines, point);
 					}
 				},
@@ -1083,7 +1119,7 @@
 					})
 					m.chart.appendChild(m.settingsButton);
 				}
-				if(!m.config.disableSettings){
+				if (!m.config.disableSettings) {
 					m.chart.appendChild(m.settings);
 					if (m.settings.lastScrollH) {
 						m.settings.scrollTop = m.settings.lastScrollH
