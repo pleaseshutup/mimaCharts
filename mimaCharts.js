@@ -325,7 +325,7 @@
 						clearTimeout(window.__mimaData.hoverTimer);
 
 						if (e.type === 'click' && m.dataref[e.target.__mimaPoint] && m.dataref[e.target.__mimaPoint].onclick) {
-							m.dataref[e.target.__mimaPoint].onclick();
+							m.dataref[e.target.__mimaPoint].onclick(e);
 						}
 
 						window.__mimaData.hoverTimer = setTimeout(function() {
@@ -558,7 +558,7 @@
 					point.percent_scale_decimal = (point.v - m.info.lowest) ? ((point.v - m.info.lowest) / (m.info.highest - m.info.lowest)) : 0;
 					point.percent_scale = 100 * point.percent_scale_decimal;
 					point.percent_series_decimal = this.info.sum && point.v ? point.v / this.info.sum : 0;
-					point.percent_series = point.percent_series * 100;
+					point.percent_series = point.percent_series_decimal * 100;
 
 					if (!m.levels[this.info.level]) {
 						m.levels[this.info.level] = {};
