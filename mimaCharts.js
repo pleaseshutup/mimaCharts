@@ -335,7 +335,6 @@
 
 							if (point && show) {
 								if (e.type === 'click' && point.onclick) {
-									point.onclick(e);
 									return;
 								}
 								if (!point.showing) {
