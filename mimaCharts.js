@@ -561,10 +561,10 @@
 					point.percent_series = point.percent_series_decimal * 100;
 
 					if (!m.levels[this.info.level]) {
-						m.levels[this.info.level] = {};
-						if (!m.levels[this.info.level].length) {
-							m.levels[this.info.level].length = 0;
-						}
+						m.levels[this.info.level] = {
+							length: 0
+						};
+						if(!m.levels.num){ m.levels.num = 1; } else { m.levels.num++; }
 					}
 					m.levels[this.info.level].length++;
 
@@ -601,19 +601,19 @@
 					point.node = dom('div')._css({
 						position: 'absolute',
 						top: 0,
-						bottom: bar.info.level < 1 ? '20px' : 0
+						bottom: this.info.level < 1 ? ((m.levels.num)*20) + 'px' : 0
 					});
 
 					point.legend = dom('div')._css({
 						position: 'absolute',
 						'text-align': 'center',
-						width: 'calc(100%)',
-						bottom: '-20px',
+						width: '100%',
+						bottom:  0 - ((m.levels.num - this.info.level) * 20) + 'px',
 						left: 0
-
 					});
+
 					this.node.appendChild(point.node);
-					this.node.appendChild(point.legend);
+					point.node.appendChild(point.legend);
 
 					if (point.info.lowestLevel) {
 						var gap = 20;
@@ -641,14 +641,24 @@
 						setPointEvents(m, point.bar, point);
 						point.node.appendChild(point.bar);
 
-						point.legendText = document.createElement('div');
-						point.legendText.className = cssPrefix + 'ellipsis';
-						point.legendText.textContent = (point.l || '');
-						point.legend.appendChild(point.legendText);
-						point.legend.className = cssPrefix + 'legend ' + cssPrefix + 'pe';
-						setPointEvents(m, point.legend, point);
+						if(point.l){
+							point.legendText = document.createElement('div');
+							point.legendText.className = cssPrefix + 'ellipsis';
+							point.legendText.textContent = point.l;
+							point.legend.appendChild(point.legendText);
+							point.legend.className = cssPrefix + 'legend ' + cssPrefix + 'pe';
+							setPointEvents(m, point.legend, point);
+						}
 
 						point.node.appendChild(point.legend);
+					} else {
+						if(point.l){
+							point.legendText = document.createElement('div');
+							point.legendText.className = cssPrefix + 'ellipsis';
+							point.legendText.textContent = point.l;
+							point.legend.appendChild(point.legendText);
+							point.legend.className = cssPrefix + 'legend ' + cssPrefix + 'pe';
+						}
 					}
 
 					point.setLeftWidth = function() {
@@ -862,7 +872,7 @@
 						m.chart.insertBefore(m.scale, m.chart.firstChild);
 
 						if (m.config.type1 === 'b') {
-							m.scale.style.bottom = '20px';
+							m.scale.style.bottom = ((m.levels.num) * 20) + 'px';
 							m.scale.style.height = 'auto';
 						}
 

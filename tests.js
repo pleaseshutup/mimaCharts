@@ -22,9 +22,50 @@ var charts = [{
 		v: 15
 	}]
 }, {
+	title: 'Bar Chart Label Depth',
+	config: {
+		type: 'bar',
+		types: ['bar']
+	},
+	data: [{
+		l: 'G 1',
+		v: 10,
+		data: [{
+			l: 'G 1-1',
+			v: 10,
+			data: [{
+				l: 'G 1-1-1',
+				v: 10,
+				data: [{
+					l: 'G 1-1-1-1',
+					v: 10
+				}, {
+					l: 'G 1-1-1-2',
+					v: 10
+				}, {
+					l: 'G 1-1-1-3',
+					v: 10
+				}]
+			}, {
+				l: 'G 1-1-2',
+				v: 10
+			}, {
+				l: 'G 1-1-3',
+				v: 10
+			}]
+		}, {
+			l: 'G 1-2',
+			v: 10
+		}, {
+			l: 'G 1-3',
+			v: 10
+		}]
+	}]
+}, {
 	title: 'Multi Line',
 	config: {
-		type: 'line',
+		type: 'bar',
+		defaultLabel: 'No Label',
 		types: ['bar', 'line'],
 		onclick: function(e, point) {
 			console.log('clicked point', point);
@@ -32,6 +73,7 @@ var charts = [{
 	},
 	data: [{
 		v: 0,
+		l: 'Segment 1',
 		data: [{
 			v: 0
 		}, {
@@ -43,6 +85,7 @@ var charts = [{
 		}]
 	}, {
 		v: 1,
+		l: 'Segment 2',
 		data: [{
 			v: 1
 		}, {
@@ -54,6 +97,7 @@ var charts = [{
 		}]
 	}, {
 		v: 5,
+		l: 'Segment 3',
 		data: [{
 			v: 5
 		}, {
@@ -65,6 +109,7 @@ var charts = [{
 		}]
 	}, {
 		v: 2.45343,
+		l: 'Segment 4',
 		data: [{
 			v: 5
 		}, {
@@ -357,27 +402,35 @@ for (var i = 0; i < 5; i++) {
 }
 
 function genCharts() {
-	console.log(config);
 	[].slice.call(document.querySelectorAll('section')).forEach(function(sec, i) {
 		if (i > 0) {
 			sec.parentNode.removeChild(sec);
 		}
 	});
-	charts.forEach(function(chart) {
-		var sec = document.createElement('section'),
-			chartDOM = mimaCharts(chart.config, chart.data).chart;
+	charts.forEach(function(chart, i) {
+		if (i === config.isolateChart || typeof config.isolateChart === 'undefined') {
+			var sec = document.createElement('section'),
+				chartDOM = mimaCharts(chart.config, chart.data).chart;
 
-		sec.style.display = config[chart.config.type] || typeof config[chart.config.type] === 'undefined' ? '' : 'none';
+			sec.addEventListener('click', function(e) {
+				config.isolateChart = i;
+				genCharts();
+				sessionConfig(config);
+			})
+			sec.style.display = config[chart.config.type] || typeof config[chart.config.type] === 'undefined' ? '' : 'none';
 
 
-		var width = config['random sizes'] ? (200 + (400 * Math.random())) : 400
-		sec.style.cssText = 'display:' + (config[chart.config.type] === false ? 'none' : 'inline-block') + ';box-sizing:border-box;width:' + width + 'px;max-width:100%;padding:0 1%';
-		sec.innerHTML = '<h2>' + chart.title + '</h2>';
-		sec.setAttribute('data-chart', chart.config.type);
-		sec.appendChild(chartDOM);
-		document.body.appendChild(sec);
+			var width = config['random sizes'] ? (200 + (400 * Math.random())) : 400
+			sec.style.cssText = 'display:' + (config[chart.config.type] === false ? 'none' : 'inline-block') + ';box-sizing:border-box;width:' + width + 'px;max-width:100%;padding:0 1%';
+			sec.innerHTML = '<h2>' + chart.title + '</h2>';
+			sec.setAttribute('data-chart', chart.config.type);
+			sec.appendChild(chartDOM);
+			document.body.appendChild(sec);
+		}
 	});
-	document.body.appendChild(colorSec);
+	if (config.isolateChart === 'undefined') {
+		document.body.appendChild(colorSec);
+	}
 }
 
 
@@ -410,7 +463,7 @@ genCharts();
 	cb.addEventListener('change', function(e) {
 		config[confChart] = e.target.checked;
 		var targs = [].slice.call(document.querySelectorAll('section[data-chart="' + confChart + '"]'));
-		if(targs.length){
+		if (targs.length) {
 			targs.forEach(function(sec) {
 				sec.style.display = e.target.checked ? 'inline-block' : 'none';
 			});
@@ -430,6 +483,8 @@ var reAddCharts = document.createElement('a');
 reAddCharts.textContent = 'Re-Gen Charts';
 reAddCharts.href = '#';
 reAddCharts.addEventListener('click', function(e) {
+	delete config.isolateChart
+	sessionConfig(config);
 	e.preventDefault();
 	genCharts();
 });
@@ -440,7 +495,7 @@ function sessionConfig(set) {
 	if (conf) {
 		try {
 			conf = JSON.parse(conf);
-		} catch ( e ) {
+		} catch (e) {
 			conf = {};
 		}
 	} else {
