@@ -502,10 +502,7 @@ function sessionConfig(set) {
 		conf = {};
 	}
 	if (set) {
-		for (var k in set) {
-			conf[k] = set[k];
-		}
-		sessionStorage.setItem('mima-config', JSON.stringify(conf));
+		sessionStorage.setItem('mima-config', JSON.stringify(set));
 	}
 	return conf;
 }
