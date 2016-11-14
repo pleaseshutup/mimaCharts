@@ -496,7 +496,7 @@
 
 					initInfo(point, this.info.level + 1);
 
-					if(!point.disabled){
+					if (!point.disabled) {
 						point.info.index = this.info.curIndex
 						this.info.curIndex++;
 						this.info.length++;
@@ -511,6 +511,7 @@
 					if (!point._novalue && (point.v < this.info.lowest || typeof this.info.lowest === 'undefined')) {
 						this.info.lowest = point.v;
 					}
+
 					//overall high/low
 					if (!point._novalue && (point.v > m.info.highest || typeof m.info.highest === 'undefined')) {
 						m.info.highest = point.v;
@@ -564,7 +565,11 @@
 						m.levels[this.info.level] = {
 							length: 0
 						};
-						if(!m.levels.num){ m.levels.num = 1; } else { m.levels.num++; }
+						if (!m.levels.num) {
+							m.levels.num = 1;
+						} else {
+							m.levels.num++;
+						}
 					}
 					m.levels[this.info.level].length++;
 
@@ -601,14 +606,14 @@
 					point.node = dom('div')._css({
 						position: 'absolute',
 						top: 0,
-						bottom: this.info.level < 1 ? ((m.levels.num)*20) + 'px' : 0
+						bottom: this.info.level < 1 ? ((m.levels.num) * 20) + 'px' : 0
 					});
 
 					point.legend = dom('div')._css({
 						position: 'absolute',
 						'text-align': 'center',
 						width: '100%',
-						bottom:  0 - ((m.levels.num - this.info.level) * 20) + 'px',
+						bottom: 0 - ((m.levels.num - this.info.level) * 20) + 'px',
 						left: 0
 					});
 
@@ -641,7 +646,7 @@
 						setPointEvents(m, point.bar, point);
 						point.node.appendChild(point.bar);
 
-						if(point.l){
+						if (point.l) {
 							point.legendText = document.createElement('div');
 							point.legendText.className = cssPrefix + 'ellipsis';
 							point.legendText.textContent = point.l;
@@ -652,7 +657,7 @@
 
 						point.node.appendChild(point.legend);
 					} else {
-						if(point.l){
+						if (point.l) {
 							point.legendText = document.createElement('div');
 							point.legendText.className = cssPrefix + 'ellipsis';
 							point.legendText.textContent = point.l;
