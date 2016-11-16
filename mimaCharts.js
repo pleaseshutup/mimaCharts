@@ -713,8 +713,11 @@
 
 					if (point.info.lowestLevel) {
 
-						// color is same for series and comes from the parent
+						// color is same for series and comes from the parent or is set by the individaul point manually 
 						point.color = line.info.color;
+						if(point.c){
+							point.color = m.getColor(point, p, ar.length, this.color ? this.color : false);
+						}
 
 						point.dot = document.createElement('span');
 						point.dot.className = cssPrefix + 'dot ' + cssPrefix + 'sq ' + cssPrefix + 'pe';
