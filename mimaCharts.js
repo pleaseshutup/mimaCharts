@@ -241,6 +241,17 @@
 					width: 600,
 					height: 300,
 					levels: {},
+					onchange: function(type) {
+						if (typeof config.onchange === 'function') {
+							config.onchange(type, config, m);
+						} else if (typeof config.onchange === 'string') {
+							if (typeof window[config.onchange] === 'function') {
+								window[config.onchange](type, config, m);
+							} else {
+								console.error('could not find function ' + config.onchange + ' in global/window');
+							}
+						}
+					},
 					getColorValue: function(color) {
 						return 'hsla(' + color.h + ',' + color.s + ',' + color.l + ',' + color.a + ')';
 					},
@@ -1012,6 +1023,7 @@
 							e.target.setAttribute('data-selected', '1');
 							config.type = e.target.getAttribute('data-type');
 							m.renderChart();
+							m.onchange('type', config, m);
 						}
 					});
 					m.settings.addEventListener('change', function(e) {
@@ -1027,6 +1039,7 @@
 							m.points[gp].disabled = !e.target.checked
 						}
 						m.renderChart();
+						m.onchange('filter', config, m);
 					});
 
 				};

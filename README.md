@@ -3,18 +3,23 @@ mimaCharts ia a minimal vanilla javascript library to provide extendable materia
 ###### The guiding principles:
  - **Minimal:** vanilla javascript code to keep a tiny footprint so front-end sites can be as fast as possible.
  - **Material:** follow material design guidelines.
- - **Responsive:** Assume every chart may be used in a table cell or television.
+ - **Responsive:** Every chart can be used on a small phone, a small container on a large page or filling a television screen.
  - **Single Config:** A single & simple configuration for every possible chart so any chart can be changed into another chart (where appropriate).
 
-### Usage
-
+### Usage Javascript
 ``` javascript
-var config = {
-    type: 'donut'
-};
-var data = [];
+mimaChart({
+    type: "donut",
+    data: [{
+        l: "slice", // "l" label
+        v: 10, // "v" value
+    }]
+});
+
+```
 
 ### Usage Web Component Style
+**Only include the mimaCharts.min.js script once per page, include as many <mimachart> tags as you need.**
 ``` html
 <mimachart><span style="display:inline-block;padding-top:50%"></span><span style="display:none">{ "type": "donut", data: [{"l":"slice","v":10}] }</span></mimachart>
 <script src="mimaCharts.min.js"></script>
@@ -33,6 +38,8 @@ scale: {
     sort: true, // sort by highest value set to "false" to use your own provided sorted order,
     types: ['bar', 'pie', 'donut', 'line'], // allowed chart types for the viewer to switch between. default is all
 },
+onclick: function(event, dataPoint, chart) {}, // define the custom click handler for when a data point is clicked,
+onchange: function(changeType, config, chart) {}, // execute this function whenever a chart's config is changed
 dataLevel: 2 // for line and bar charts, what level of data do you want to stop rendering at?
 
 ```
