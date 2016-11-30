@@ -675,8 +675,9 @@
 							point.legendText.className = cssPrefix + 'ellipsis';
 							point.legendText.textContent = point.l;
 							point.legend.appendChild(point.legendText);
-							point.legend.className = cssPrefix + 'legend ' + cssPrefix + 'pe' + (point.info.lowestLevelAll ? ' ' + cssPrefix + 'legendRot' : '');
-							console.log('cls', point.legend.className);
+							//point.legend.className = cssPrefix + 'legend ' + cssPrefix + 'pe' + (point.info.lowestLevelAll ? ' ' + cssPrefix + 'legendRot' : '');
+							point.legend.className = cssPrefix + 'legend ' + cssPrefix + 'pe'
+							//console.log('cls', point.legend.className);
 							setPointEvents(m, point.legend, point);
 						}
 
