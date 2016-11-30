@@ -378,7 +378,7 @@
 										}, 10);
 
 										point.slice.setAttribute('filter', 'url(#' + cssPrefix + 'material-shadow-1)');
-										if (m.legend) {
+										if (m.legend && (e.target && (typeof e.target.className !== 'string' || e.target.className.indexOf('_legend') < 0))) {
 											m.legend.scrollTop = point.legend.offsetTop;
 										}
 										[].slice.call(m.chart.getElementsByClassName(cssPrefix + 'legend')).forEach(function(el) {
