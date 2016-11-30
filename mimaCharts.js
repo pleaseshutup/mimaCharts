@@ -58,7 +58,6 @@
 				.' + cssPrefix + 'sq:before{content:"";display:block;padding-top: 100%;}\
 				.' + cssPrefix + 'dot{position:absolute;margin:-1% 0 0 -1%;border-radius:50%;width:2%}\
 				.' + cssPrefix + 'pe{pointer-events: all}\
-				.' + cssPrefix + 'pe{pointer-events: all}\
 				.' + cssPrefix + 'ellipsis{text-overflow: ellipsis; max-width: 100%; white-space: nowrap; overflow: hidden;}\
 				.' + cssPrefix + 'ibb{display:inline-block; box-sizing:border-box; vertical-align:middle}\
 				.' + cssPrefix + 'slice,.' + cssPrefix + 'bar,.' + cssPrefix + 'dot{transition: transform 0.15s ' + bouncy + ', filter 0.15s ' + bouncy + '; transform: translate3d(0,0,0); transform-origin: 50% 50%; }\
@@ -72,6 +71,7 @@
 				.' + cssPrefix + 'legend{font-size: 12px; color: #666; padding: 2px; transition: opacity 0.15s ease-in-out}\
 				.' + cssPrefix + 'legend span{display: inline-block; vertical-align:middle; pointer-events:none; }\
 				.' + cssPrefix + 'legendColor{ border-radius: 50%; width: 8px; height: 8px; margin-right: 4px; transform: width 0.15s ' + bouncy + ', height 0.15s ' + bouncy + '; }\
+				.' + cssPrefix + 'legendRot{ width: 400% !important; transform: translate(-83%, -32%) rotate(-38deg); transform-origin: right;}\
 				.' + cssPrefix + 'settingsButton{ position:absolute; left:0; top:0; width:32px; height:32px; text-align:center; border-radius:50%; opacity: 0; transition: opacity 0.15s ease-in-out, box-shadow 0.15s ease-in-out, width 0.15s ease-in-out, height 0.15s ease-in-out, border-radius 0.15s ease-in-out; cursor: pointer; }\
 				mimachart:hover .' + cssPrefix + 'settingsButton{ opacity: 1;  box-shadow: ' + materialShadow1 + ' }\
 				.' + cssPrefix + 'settingsButton:before{ content:""; display:inline-block; vertical-align:middle; width:20px; height:20px; background-size:cover; background-image:' + getIcon({
@@ -440,8 +440,8 @@
 						}, 4);
 					},
 					resizeQueue: [],
-					resize: function(e) {
-						if (m.node.offsetWidth && m.node.offsetWidth !== m.width) {
+					resize: function(e, force) {
+						if (force || (m.node.offsetWidth && m.node.offsetWidth !== m.width)) {
 							m.width = m.node.offsetWidth;
 							m.height = m.node.offsetHeight;
 							m.resizeQueue.forEach(function(func) {
@@ -583,9 +583,23 @@
 						}
 					}
 					m.levels[this.info.level].length++;
+					if (point.l) {
+						m.levels.hasLabels = true;
+						if (!m.levels.longestLabel || point.l.length > m.levels.longestLabel) {
+							m.levels.longestLabel = point.l.length;
+						}
+						m.levels[this.info.level].hasLabels = true;
+						if (!m.levels[this.info.level].longestLabel || point.l.length > m.levels[this.info.level].longestLabel) {
+							m.levels[this.info.level].longestLabel = point.l.length;
+						}
+					}
 
 					if (!point.info.lowestLevel) {
 						point.data.forEach(gatherInfo2, point);
+					} else {
+						if (point.info.level >= m.levels.num) {
+							point.info.lowestLevelAll = true;
+						}
 					}
 				},
 
@@ -597,7 +611,6 @@
 
 					// sets a color for the series
 					info.color = m.getColor(info, info.seriesIndex, ar.length, false);
-
 					m.series++;
 				},
 
@@ -617,7 +630,7 @@
 					point.node = dom('div')._css({
 						position: 'absolute',
 						top: 0,
-						bottom: this.info.level < 1 ? ((m.levels.num) * 20) + 'px' : 0
+						bottom: this.info.level < 1 ? m.config.bottom + 'px' : 0
 					});
 
 					point.legend = dom('div')._css({
@@ -662,7 +675,8 @@
 							point.legendText.className = cssPrefix + 'ellipsis';
 							point.legendText.textContent = point.l;
 							point.legend.appendChild(point.legendText);
-							point.legend.className = cssPrefix + 'legend ' + cssPrefix + 'pe';
+							point.legend.className = cssPrefix + 'legend ' + cssPrefix + 'pe' + (point.info.lowestLevelAll ? ' ' + cssPrefix + 'legendRot' : '');
+							console.log('cls', point.legend.className);
 							setPointEvents(m, point.legend, point);
 						}
 
@@ -678,6 +692,7 @@
 					}
 
 					point.setLeftWidth = function() {
+						console.log('this point', point);
 						var width = 0,
 							left = 0;
 
@@ -726,7 +741,7 @@
 
 						// color is same for series and comes from the parent or is set by the individaul point manually 
 						point.color = line.info.color;
-						if(point.c){
+						if (point.c) {
 							point.color = m.getColor(point, p, ar.length, this.color ? this.color : false);
 						}
 
@@ -891,7 +906,15 @@
 						m.chart.insertBefore(m.scale, m.chart.firstChild);
 
 						if (m.config.type1 === 'b') {
-							m.scale.style.bottom = ((m.levels.num) * 20) + 'px';
+							var bh = 0;
+							if (m.levels.hasLabels) {
+								bh = 20;
+								if (true) { // logic to determine how many bars would be generated to know if we need rotated text
+									bh += 30;
+								}
+							}
+							m.config.bottom = bh + ((m.levels.num - 1) * 20);
+							m.scale.style.bottom = m.config.bottom + 'px';
 							m.scale.style.height = 'auto';
 						}
 
@@ -1023,6 +1046,7 @@
 							e.target.setAttribute('data-selected', '1');
 							config.type = e.target.getAttribute('data-type');
 							m.renderChart();
+							m.resize({}, true);
 							m.onchange('type', config, m);
 						}
 					});
@@ -1196,7 +1220,6 @@
 						generatorFunc = generateSlices;
 					}
 					m.data.forEach(generatorFunc, m);
-
 				}
 
 				if (m.config.type1 === 'b') {
@@ -1219,7 +1242,7 @@
 			// execute resize after the chart exists in the dom
 			var checkIfInDom = function(multiplier) {
 				if (document.contains(m.chart)) {
-					m.resize();
+					m.resize({}, true);
 				} else {
 					setTimeout(function() {
 						checkIfInDom(multiplier + 1);

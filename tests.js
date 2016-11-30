@@ -412,17 +412,19 @@ function genCharts() {
 			var sec = document.createElement('section'),
 				chartDOM = mimaCharts(chart.config, chart.data).chart;
 
-			sec.addEventListener('click', function(e) {
-				config.isolateChart = i;
-				genCharts();
-				sessionConfig(config);
-			})
 			sec.style.display = config[chart.config.type] || typeof config[chart.config.type] === 'undefined' ? '' : 'none';
 
 
 			var width = config['random sizes'] ? (200 + (400 * Math.random())) : 400
 			sec.style.cssText = 'display:' + (config[chart.config.type] === false ? 'none' : 'inline-block') + ';box-sizing:border-box;width:' + width + 'px;max-width:100%;padding:0 1%';
-			sec.innerHTML = '<h2>' + chart.title + '</h2>';
+			sec.innerHTML = '<h2 style="cursor:pointer">' + chart.title + '</h2>';
+
+			sec.firstChild.addEventListener('click', function(e) {
+				config.isolateChart = i;
+				genCharts();
+				sessionConfig(config);
+			})
+
 			sec.setAttribute('data-chart', chart.config.type);
 			sec.appendChild(chartDOM);
 			document.body.appendChild(sec);
