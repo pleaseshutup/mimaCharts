@@ -693,7 +693,6 @@
 					}
 
 					point.setLeftWidth = function() {
-						console.log('this point', point);
 						var width = 0,
 							left = 0;
 
