@@ -416,7 +416,7 @@ function genCharts() {
 
 
 			var width = config['random sizes'] ? (200 + (400 * Math.random())) : 400
-			sec.style.cssText = 'display:' + (config[chart.config.type] === false ? 'none' : 'inline-block') + ';box-sizing:border-box;width:' + width + 'px;max-width:100%;padding:0 1%';
+			sec.style.cssText = 'display:' + (config[chart.config.type] === false ? 'none' : 'inline-block') + ';box-sizing:border-box;vertical-align:top;width:' + width + 'px;max-width:100%;padding:0 1%';
 			sec.innerHTML = '<h2 style="cursor:pointer">' + chart.title + '</h2>';
 
 			sec.firstChild.addEventListener('click', function(e) {

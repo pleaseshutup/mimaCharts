@@ -54,6 +54,7 @@
 
 				style.id = cssPrefix + 'sheet';
 				style.appendChild(document.createTextNode('\
+				.' + cssPrefix + 'chartHolder{position:relative;}\
 				.' + cssPrefix + 'abs{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none}\
 				.' + cssPrefix + 'sq:before{content:"";display:block;padding-top: 100%;}\
 				.' + cssPrefix + 'dot{position:absolute;margin:-1% 0 0 -1%;border-radius:50%;width:2%}\
@@ -630,11 +631,13 @@
 					point.node = dom('div')._css({
 						position: 'absolute',
 						top: 0,
-						bottom: this.info.level < 1 ? m.config.bottom + 'px' : 0
+						bottom: 0
 					});
 
 					point.legend = dom('div')._css({
-						position: 'absolute',
+						display: 'inline-block',
+						'vertical-align': 'top',
+						'box-sizing': 'border-box',
 						'text-align': 'center',
 						width: '100%',
 						bottom: 0 - ((m.levels.num - this.info.level) * 20) + 'px',
@@ -642,7 +645,11 @@
 					});
 
 					this.node.appendChild(point.node);
-					point.node.appendChild(point.legend);
+					if(this.legend) {
+						this.legend.items.appendChild(point.legend);
+					} else {
+						m.bottomLegend.appendChild(point.legend);
+					}
 
 					if (point.info.lowestLevel) {
 						var gap = 20;
@@ -677,12 +684,14 @@
 							point.legend.appendChild(point.legendText);
 							//point.legend.className = cssPrefix + 'legend ' + cssPrefix + 'pe' + (point.info.lowestLevelAll ? ' ' + cssPrefix + 'legendRot' : '');
 							point.legend.className = cssPrefix + 'legend ' + cssPrefix + 'pe'
-							//console.log('cls', point.legend.className);
+								//console.log('cls', point.legend.className);
 							setPointEvents(m, point.legend, point);
 						}
 
-						point.node.appendChild(point.legend);
 					} else {
+						point.legend.items = document.createElement('div');
+						point.legend.appendChild(point.legend.items);
+
 						if (point.l) {
 							point.legendText = document.createElement('div');
 							point.legendText.className = cssPrefix + 'ellipsis';
@@ -709,6 +718,9 @@
 						point.node._css({
 							width: width + '%',
 							left: left + '%'
+						});
+						point.legend._css({
+							width: (100 / bar.info.length) + '%',
 						});
 					}
 
@@ -902,20 +914,11 @@
 					if (config.scale && (config.type1 === 'l' || config.type1 === 'b')) {
 
 						m.scale = document.createElement('div');
-						m.scale.className = cssPrefix + 'abs';
-						m.chart.insertBefore(m.scale, m.chart.firstChild);
+						m.scale.className = cssPrefix + 'abs ' + cssPrefix + 'scale';
+						m.chartHolder.insertBefore(m.scale, m.chartHolder.firstChild);
 
 						if (m.config.type1 === 'b') {
-							var bh = 0;
-							if (m.levels.hasLabels) {
-								bh = 20;
-								if (true) { // logic to determine how many bars would be generated to know if we need rotated text
-									bh += 30;
-								}
-							}
-							m.config.bottom = bh + ((m.levels.num - 1) * 20);
-							m.scale.style.bottom = m.config.bottom + 'px';
-							m.scale.style.height = 'auto';
+							m.config.bottom = (m.levels.num * 20);
 						}
 
 						if (typeof m.config.scale.steps != 'number') {
@@ -963,6 +966,7 @@
 									lines[i].style.left = (m.config.scale.width + 4) + 'px';
 									texts[i].style.width = m.config.scale.width + 'px';
 								}
+								setBottomLegendHeight(m.config.bottom || 0);
 							})
 						}
 					}
@@ -996,6 +1000,18 @@
 								m.legend.style.right = r;
 							}
 						})
+					} else if (config.type1 === 'b') {
+						m.bottomLegend = document.createElement('div');
+						m.bottomLegend.className = cssPrefix + 'bottomLegend';
+						m.chart.appendChild(m.bottomLegend);
+					}
+				},
+
+				setBottomLegendHeight = function(h) {
+					if(m.bottomLegend) {
+						m.bottomLegend.style.paddingLeft = m.config.scale.widthPercent + '%';
+						m.bottomLegend.style.height = h + 'px';
+						m.ratioDiv.style.paddingTop = 'calc(' + (config.ratio * 100) + '% - ' + h + 'px)';
 					}
 				},
 
@@ -1114,7 +1130,6 @@
 					m.chart = config.element;
 				}
 
-				m.chart.innerHTML = '<div style="padding-top:' + (config.ratio * 100) + '%;pointer-events:none"></div>';
 				m.chart._css({
 					position: 'relative',
 					display: 'inline-block',
@@ -1124,12 +1139,22 @@
 					height: config.height + 'px'
 				});
 
+				m.chartHolder = document.createElement('div');
+				m.chartHolder.className = cssPrefix + 'chartHolder';
+				m.chart.appendChild(m.chartHolder);
+
+				m.ratioDiv = dom('div')._css({
+					'padding-top': (config.ratio * 100) + '%',
+					'pointer-events': 'none'
+				})._appendTo(m.chartHolder);
+
 				m.svg = document.createElementNS(svgNS, 'svg');
 				m.svg.setAttribute('viewBox', '0 0 100 ' + (100 * m.config.ratio));
+				m.svg.setAttribute('preserveAspectRatio', 'none');
 				m.svg.setAttribute('width', '100%');
 				m.svg.setAttribute('height', '100%');
 				m.svg.setAttribute('class', cssPrefix + 'abs');
-				m.chart.appendChild(m.svg);
+				m.chartHolder.appendChild(m.svg);
 				m.filter = document.createElementNS(svgNS, 'filter');
 				m.filter.id = cssPrefix + 'material-shadow-1';
 				m.filter.innerHTML = '<feGaussianBlur in="SourceAlpha" stdDeviation="0.5"/><feOffset dx="0" dy="0" result="offsetblur"/><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>';
@@ -1137,7 +1162,8 @@
 
 				m.node = document.createElement('div');
 				m.node.className = cssPrefix + 'abs';
-				m.chart.appendChild(m.node);
+				m.chartHolder.appendChild(m.node);
+
 
 				if (!m.settings && !m.config.disableSettings) {
 					m.settings = document.createElement('div');
@@ -1212,6 +1238,7 @@
 					m.data.forEach(gatherInfo2, m);
 
 					generateScale();
+
 
 					var generatorFunc = generateBars;
 					if (config.type1 === 'l') {
