@@ -974,13 +974,14 @@
 										m.config.scale.width = texts[i].offsetWidth * 1 || 20;
 										m.config.scale.widthDecimal = m.config.scale.width / m.width;
 										m.config.scale.widthPercent = 100 * m.config.scale.widthDecimal + 2
+										console.log('w percent', m.config.scale.widthPercent);
 									}
 								}
 								for (var i = 0; i < m.config.scale.steps + 1; i++) {
 									lines[i].style.left = (m.config.scale.width + 4) + 'px';
 									texts[i].style.width = m.config.scale.width + 'px';
 								}
-								setBottomLegendHeight();
+								setTimeout(setBottomLegendHeight)
 							})
 						}
 					}
@@ -1022,11 +1023,13 @@
 				},
 
 				setBottomLegendHeight = function() {
-					if (m.bottomLegend && m.config.bottomLegendHeight != m.bottomLegend.offsetHeight) {
-						var h = m.bottomLegend.offsetHeight;
-						m.config.bottomLegendHeight = m.bottomLegend.offsetHeight;
+					if(m.bottomLegend) {
 						m.bottomLegend.style.paddingLeft = m.config.scale.widthPercent + '%';
-						m.ratioDiv.style.paddingTop = 'calc(' + (config.ratio * 100) + '% - ' + h + 'px)';
+						if (m.config.bottomLegendHeight != m.bottomLegend.offsetHeight) {
+							var h = m.bottomLegend.offsetHeight;
+							m.config.bottomLegendHeight = m.bottomLegend.offsetHeight;
+							m.ratioDiv.style.paddingTop = 'calc(' + (config.ratio * 100) + '% - ' + h + 'px)';
+						}
 					}
 				},
 
