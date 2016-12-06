@@ -732,14 +732,14 @@
 									m.config.barLabelMaxWidth = point.legendText.offsetWidth;
 									if(m.config.barLabelMaxWidth > 100){ m.config.barLabelMaxWidth = 100; }
 									m.config.barLabelRotatedHeight = 8 + m.config.barLabelMaxWidth * Math.sin(48 * Math.PI / 180);
+									setTimeout(setBottomLegendHeight);
 								}
 								
-								console.log('maxw', m.config.barLabelMaxWidth, 'calch', m.config.barLabelRotatedHeight);
-
 								point.legendText.className = cssPrefix + 'ellipsis ' + cssPrefix + 'legendRot';
-								point.legendText.style.height = m.config.barLabelRotatedHeight + 'px'
+								point.legendText.style.height = m.config.barLabelRotatedHeight + 'px';
 							}
 						}
+						
 					}
 
 					point.setLeftWidth();
@@ -1021,9 +1021,10 @@
 					}
 				},
 
-				setBottomLegendHeight = function(h) {
-					if (m.bottomLegend) {
+				setBottomLegendHeight = function() {
+					if (m.bottomLegend && m.config.bottomLegendHeight != m.bottomLegend.offsetHeight) {
 						var h = m.bottomLegend.offsetHeight;
+						m.config.bottomLegendHeight = m.bottomLegend.offsetHeight;
 						m.bottomLegend.style.paddingLeft = m.config.scale.widthPercent + '%';
 						m.ratioDiv.style.paddingTop = 'calc(' + (config.ratio * 100) + '% - ' + h + 'px)';
 					}
