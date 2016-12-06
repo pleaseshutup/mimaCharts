@@ -73,7 +73,7 @@
 				.' + cssPrefix + 'legend{font-size: 12px; color: #666; transition: opacity 0.15s ease-in-out}\
 				.' + cssPrefix + 'legend span{display: inline-block; vertical-align:middle; pointer-events:none; }\
 				.' + cssPrefix + 'legendColor{ display:inline-block; border-radius: 50%; width: 4px; height: 4px; margin-right: 4px; transition: width 0.15s ' + bouncy + ', height 0.15s ' + bouncy + '; }\
-				.' + cssPrefix + 'legendRot{ width: 300% !important; max-width: none; height: 40px; text-align: right; transform: translate(-70%, -22%) rotate(-38deg); transform-origin: right; }\
+				.' + cssPrefix + 'legendRot{max-width: 100px; text-align: left; margin-left:50%; transform: rotate(48deg); transform-origin: 0 0;}\
 				.' + cssPrefix + 'settingsButton{ position:absolute; left:0; top:0; width:32px; height:32px; text-align:center; border-radius:50%; opacity: 0; transition: opacity 0.15s ease-in-out, box-shadow 0.15s ease-in-out, width 0.15s ease-in-out, height 0.15s ease-in-out, border-radius 0.15s ease-in-out; cursor: pointer; }\
 				mimachart:hover .' + cssPrefix + 'settingsButton{ opacity: 1;  box-shadow: ' + materialShadow1 + ' }\
 				.' + cssPrefix + 'settingsButton:before{ content:""; display:inline-block; vertical-align:middle; width:20px; height:20px; background-size:cover; background-image:' + getIcon({
@@ -644,7 +644,7 @@
 					});
 
 					this.node.appendChild(point.node);
-					if (this.legend) {
+					if (this.legend && this.legend.items) {
 						this.legend.items.appendChild(point.legend);
 					} else {
 						m.bottomLegend.appendChild(point.legend);
@@ -677,7 +677,7 @@
 						point.node.appendChild(point.bar);
 
 						if (point.l) {
-							point.legendText = document.createElement('div');
+							point.legendText = document.createElement('span');
 							point.legendText.className = cssPrefix + 'ellipsis';
 							point.legendText.textContent = point.l;
 							point.legend.appendChild(point.legendText);
@@ -691,7 +691,7 @@
 						point.legend.appendChild(point.legend.items);
 
 						if (point.l) {
-							point.legendText = document.createElement('div');
+							point.legendText = document.createElement('span');
 							point.legendText.className = cssPrefix + 'ellipsis';
 							point.legendText.textContent = point.l;
 							point.legend.appendChild(point.legendText);
@@ -724,8 +724,20 @@
 						if (point.info.lowestLevel && point.legendText) {
 							if (point.legendText.offsetWidth < 10) {
 								point.legendText.style.display = 'none';
-							} else if (point.legendText.offsetWidth < 100 && point.l.length > 4) {
+							} else if (m.config.rotateBarLabels || (!m.config.rotateBarLabels && point.legendText.offsetWidth >= point.legend.offsetWidth)) {
+								if(!m.config.barLabelMaxWidth){
+									m.config.barLabelMaxWidth = 0; m.config.rotateBarLabels = true;
+								}
+								if(m.config.barLabelMaxWidth < 100 && point.legendText.offsetWidth > m.config.barLabelMaxWidth) {
+									m.config.barLabelMaxWidth = point.legendText.offsetWidth;
+									if(m.config.barLabelMaxWidth > 100){ m.config.barLabelMaxWidth = 100; }
+									m.config.barLabelRotatedHeight = 8 + m.config.barLabelMaxWidth * Math.sin(48 * Math.PI / 180);
+								}
+								
+								console.log('maxw', m.config.barLabelMaxWidth, 'calch', m.config.barLabelRotatedHeight);
+
 								point.legendText.className = cssPrefix + 'ellipsis ' + cssPrefix + 'legendRot';
+								point.legendText.style.height = m.config.barLabelRotatedHeight + 'px'
 							}
 						}
 					}
@@ -1005,7 +1017,7 @@
 					} else if (config.type1 === 'b') {
 						m.bottomLegend = document.createElement('div');
 						m.bottomLegend.className = cssPrefix + 'bottomLegend';
-						m.chart.appendChild(m.bottomLegend);
+						m.chart.insertBefore(m.bottomLegend, m.settings);
 					}
 				},
 
