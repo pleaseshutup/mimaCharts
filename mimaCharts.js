@@ -398,11 +398,15 @@
 										point.legend.style.opacity = 1;
 										var pn = point.legend.parentNode;
 										while(pn) {
-											if(pn.style.opacity && pn.style.opacity < 1){
-												pn.style.opacity = 1;
-											}
-											pn = pn.parentNode;
-											if(pn && pn.className && pn.className.indexOf('bottomLegend') > -1){
+											if(pn && pn.style) {
+												if(pn.style.opacity && pn.style.opacity < 1){
+													pn.style.opacity = 1;
+												}
+												pn = pn.parentNode;
+												if(pn && pn.className && pn.className.indexOf('bottomLegend') > -1){
+													pn = false;
+												}
+											} else {
 												pn = false;
 											}
 										}
