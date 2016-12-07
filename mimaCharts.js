@@ -1042,7 +1042,7 @@
 						}
 						if(m.config.rotateBarLabels) {
 							if(m.bottomLegend.scrollWidth > m.bottomLegend.offsetWidth) {
-								m.chart.style.paddingRight = (m.bottomLegend.scrollWidth - m.bottomLegend.offsetWidth) + 'px'
+								m.chart.style.paddingRight = Math.ceil((m.bottomLegend.scrollWidth - m.bottomLegend.offsetWidth) * 0.5) + 'px'
 							}
 						}
 					}
