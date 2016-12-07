@@ -746,11 +746,13 @@
 							width: (100 / bar.info.length) + '%',
 						});
 
-						point.legendText.style.display = '';
-						point.legendText.style.height = '';
-						point.legendText.className = cssPrefix + 'ellipsis';
 
 						if (point.info.lowestLevel && point.legendText) {
+
+							point.legendText.style.display = '';
+							point.legendText.style.height = '';
+							point.legendText.className = cssPrefix + 'ellipsis';
+
 							if (point.legendText.offsetWidth && point.legendText.offsetWidth < 10) {
 								point.legendText.style.display = 'none';
 							} else if (m.state.rotateBarLabels || (!m.state.rotateBarLabels && point.legendText.scrollWidth >= point.legend.offsetWidth)) {
