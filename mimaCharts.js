@@ -722,6 +722,7 @@
 							width: (100 / bar.info.length) + '%',
 						});
 						if (point.info.lowestLevel && point.legendText) {
+							point.legendText.style.display = '';
 							if (point.legendText.offsetWidth < 10) {
 								point.legendText.style.display = 'none';
 							} else if (m.config.rotateBarLabels || (!m.config.rotateBarLabels && point.legendText.offsetWidth >= point.legend.offsetWidth)) {
@@ -974,7 +975,6 @@
 										m.config.scale.width = texts[i].offsetWidth * 1 || 20;
 										m.config.scale.widthDecimal = m.config.scale.width / m.width;
 										m.config.scale.widthPercent = 100 * m.config.scale.widthDecimal + 2
-										console.log('w percent', m.config.scale.widthPercent);
 									}
 								}
 								for (var i = 0; i < m.config.scale.steps + 1; i++) {
@@ -984,6 +984,10 @@
 								setTimeout(setBottomLegendHeight)
 							})
 						}
+					} else {
+						m.resizeQueue.push(function generateScaleResize() {
+							setTimeout(setBottomLegendHeight)
+						})
 					}
 				},
 
@@ -1014,6 +1018,10 @@
 							if (m.legend.style.right !== r) {
 								m.legend.style.right = r;
 							}
+							console.log('svg', m.chartHolder.offsetHeight)
+							if(config.maxHeight && m.chartHolder.offsetHeight >= config.maxHeight) {
+								m.legendHolder.style.left = config.maxHeight + 'px';
+							}
 						})
 					} else if (config.type1 === 'b') {
 						m.bottomLegend = document.createElement('div');
@@ -1023,12 +1031,25 @@
 				},
 
 				setBottomLegendHeight = function() {
+					var bl = 0;
 					if(m.bottomLegend) {
+						bl = m.bottomLegend.offsetHeight;
 						m.bottomLegend.style.paddingLeft = m.config.scale.widthPercent + '%';
-						if (m.config.bottomLegendHeight != m.bottomLegend.offsetHeight) {
-							var h = m.bottomLegend.offsetHeight;
-							m.config.bottomLegendHeight = m.bottomLegend.offsetHeight;
+						if (m.config.bottomLegendHeight != bl) {
+							var h = bl;
+							m.config.bottomLegendHeight = bl;
 							m.ratioDiv.style.paddingTop = 'calc(' + (config.ratio * 100) + '% - ' + h + 'px)';
+						}
+						if(m.config.rotateBarLabels) {
+							if(m.bottomLegend.scrollWidth > m.bottomLegend.offsetWidth) {
+								m.chart.style.paddingRight = (m.bottomLegend.scrollWidth - m.bottomLegend.offsetWidth) + 'px'
+							}
+						}
+					}
+					if(config.maxHeight) {
+						m.chartHolder.style.maxHeight = (m.config.maxHeight - bl) + 'px';
+						if (config.type1 === 'p' || config.type1 === 'd') {
+							m.svg.style.maxWidth = (m.config.maxHeight * 2) + 'px';
 						}
 					}
 				},
@@ -1154,7 +1175,8 @@
 					'box-sizing': 'border-box',
 					width: '100%',
 					'max-width': '100%',
-					height: config.height + 'px'
+					height: config.height + 'px',
+					'padding-right': ''
 				}).innerHTML = '';
 
 				m.chartHolder = document.createElement('div');

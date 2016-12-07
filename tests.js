@@ -408,15 +408,20 @@ function genCharts() {
 		}
 	});
 	charts.forEach(function(chart, i) {
-		if (i === config.isolateChart || typeof config.isolateChart === 'undefined') {
+		var isolated = i === config.isolateChart;
+		if (isolated || typeof config.isolateChart === 'undefined') {
+			if(isolated) {
+				chart.config.maxHeight = 300;
+			}
 			var sec = document.createElement('section'),
 				chartDOM = mimaCharts(chart.config, chart.data).chart;
 
 			sec.style.display = config[chart.config.type] || typeof config[chart.config.type] === 'undefined' ? '' : 'none';
 
 
-			var width = config['random sizes'] ? (200 + (400 * Math.random())) : 400
-			sec.style.cssText = 'display:' + (config[chart.config.type] === false ? 'none' : 'inline-block') + ';box-sizing:border-box;vertical-align:top;width:' + width + 'px;max-width:100%;padding:0 1%';
+			var width = config['random sizes'] ? (200 + (400 * Math.random())) + 'px' : '400px';
+			if(isolated){ width = '100%'; }
+			sec.style.cssText = 'display:' + (config[chart.config.type] === false ? 'none' : 'inline-block') + ';box-sizing:border-box;vertical-align:top;width:' + width + ';max-width:100%;padding:0 1%';
 			sec.innerHTML = '<h2 style="cursor:pointer">' + chart.title + '</h2>';
 
 			sec.firstChild.addEventListener('click', function(e) {

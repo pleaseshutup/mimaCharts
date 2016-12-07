@@ -5,6 +5,7 @@ mimaCharts ia a minimal vanilla javascript library to provide extendable materia
  - **Material:** follow material design guidelines.
  - **Responsive:** Every chart can be used on a small phone, a small container on a large page or filling a television screen.
  - **Single Config:** A single & simple configuration for every possible chart so any chart can be changed into another chart (where appropriate).
+ - **Interactive:** Charts can be a simple data visualization or integrated within an application to enable the user to change the chart config visually. Clicking into more detail or isolating a chart to expand and fill the screen with all available data/detail within reach.
 
 ### Usage Javascript
 ``` javascript
@@ -28,7 +29,9 @@ mimaChart({
 #### Config
 ``` javascript
 
-type: 'line' // options are line, bar, pie, donut, dial. Default is donut
+type: 'line', // options are line, bar, pie, donut, dial. Default is donut
+ratio: '', // force an aspect ratio for the chart. defaults to 2:1
+maxHeight: 'none', // set a maximum height for the chart. defaults to none, obeys aspect ratio
 scale: {
     lowest: 0, // set the lowest value on the scale, default is zero, set to "auto" to be automatic
     highest: 100, // set the highest value on the scale, leave undefined for automatic
