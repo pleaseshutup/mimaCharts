@@ -305,18 +305,23 @@
 										point.slice.setAttribute('stroke', '#fff');
 									}
 									point.slice.setAttribute('filter', '');
+								}
+								if (point.legend) {
 									point.legend.style.opacity = '';
 									point.legend.style.fontWeight = '';
 
 									m.chart.getElementsByClassName(cssPrefix + 'legend')._css({
 										opacity: 1
 									})
+								}
+								if (point.legendColor) {
 									point.legendColor._css({
 										width: '',
 										height: '',
 										pointerEvents: 'fill',
 										transform: 'translate3d(0, 0 , 0)'
 									})
+
 								}
 								if (point.bar) {
 									point.bar.style.transform = 'scale(1)';
@@ -383,12 +388,26 @@
 										if (m.legend && (e.target && (typeof e.target.className !== 'string' || e.target.className.indexOf('_legend') < 0))) {
 											m.legend.scrollTop = point.legend.offsetTop;
 										}
+									}
+									if (point.legend) {
 										[].slice.call(m.chart.getElementsByClassName(cssPrefix + 'legend')).forEach(function(el) {
 											if (el != point.legend) {
 												el.style.opacity = 0.5;
 											}
 										});
 										point.legend.style.opacity = 1;
+										var pn = point.legend.parentNode;
+										while(pn) {
+											if(pn.style.opacity && pn.style.opacity < 1){
+												pn.style.opacity = 1;
+											}
+											pn = pn.parentNode;
+											if(pn && pn.className && pn.className.indexOf('bottomLegend') > -1){
+												pn = false;
+											}
+										}
+									}
+									if (point.legendColor) {
 										point.legendColor.style.width = '8px';
 										point.legendColor.style.height = '8px';
 										point.legendColor.style.transform = 'translate3d(2px, 0 , 0)';
@@ -682,7 +701,6 @@
 							point.legendText.textContent = point.l;
 							point.legend.appendChild(point.legendText);
 							point.legend.className = cssPrefix + 'legend ' + cssPrefix + 'pe'
-								//console.log('cls', point.legend.className);
 							setPointEvents(m, point.legend, point);
 						}
 
@@ -1018,7 +1036,6 @@
 							if (m.legend.style.right !== r) {
 								m.legend.style.right = r;
 							}
-							console.log('svg', m.chartHolder.offsetHeight)
 							if(config.maxHeight && m.chartHolder.offsetHeight >= config.maxHeight) {
 								m.legendHolder.style.left = config.maxHeight + 'px';
 							}
