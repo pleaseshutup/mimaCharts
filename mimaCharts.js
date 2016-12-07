@@ -236,6 +236,7 @@
 			var k,
 				m = {
 					config: config,
+					state: {},
 					data: data,
 					dataref: {},
 					points: [],
@@ -469,6 +470,7 @@
 						if (force || (m.node.offsetWidth && m.node.offsetWidth !== m.width)) {
 							m.width = m.node.offsetWidth;
 							m.height = m.node.offsetHeight;
+							m.state = {};
 							m.resizeQueue.forEach(function(func) {
 								func();
 							})
@@ -726,8 +728,8 @@
 							left = 0;
 
 						if (bar.info.level < 1) {
-							width = ((100 - m.config.scale.widthPercent) / bar.info.length);
-							left = m.config.scale.widthPercent + (width * point.info.index)
+							width = ((100 - m.state.scaleWidthPercent) / bar.info.length);
+							left = m.state.scaleWidthPercent + (width * point.info.index)
 						} else {
 							width = (100 / bar.info.length);
 							left = width * point.info.index;
@@ -743,29 +745,34 @@
 						point.legend._css({
 							width: (100 / bar.info.length) + '%',
 						});
+
+						point.legendText.style.display = '';
+						point.legendText.style.height = '';
+						point.legendText.className = cssPrefix + 'ellipsis';
+
 						if (point.info.lowestLevel && point.legendText) {
-							point.legendText.style.display = '';
-							if (point.legendText.offsetWidth < 10) {
+							if (point.legendText.offsetWidth && point.legendText.offsetWidth < 10) {
 								point.legendText.style.display = 'none';
-							} else if (m.config.rotateBarLabels || (!m.config.rotateBarLabels && point.legendText.offsetWidth >= point.legend.offsetWidth)) {
-								if(!m.config.barLabelMaxWidth){
-									m.config.barLabelMaxWidth = 0; m.config.rotateBarLabels = true;
+							} else if (m.state.rotateBarLabels || (!m.state.rotateBarLabels && point.legendText.scrollWidth >= point.legend.offsetWidth)) {
+								if(!m.state.barLabelMaxWidth){
+									m.state.barLabelMaxWidth = 0;
+									m.state.rotateBarLabels = true;
 								}
-								if(m.config.barLabelMaxWidth < 100 && point.legendText.offsetWidth > m.config.barLabelMaxWidth) {
-									m.config.barLabelMaxWidth = point.legendText.offsetWidth;
-									if(m.config.barLabelMaxWidth > 100){ m.config.barLabelMaxWidth = 100; }
-									m.config.barLabelRotatedHeight = 8 + m.config.barLabelMaxWidth * Math.sin(48 * Math.PI / 180);
-									setTimeout(setBottomLegendHeight);
+								if(m.state.barLabelMaxWidth < 100 && point.legendText.scrollWidth > m.state.barLabelMaxWidth) {
+									m.state.barLabelMaxWidth = point.legendText.scrollWidth;
+									if(m.state.barLabelMaxWidth > 100){ m.state.barLabelMaxWidth = 100; }
+									m.state.barLabelRotatedHeight = 8 + m.state.barLabelMaxWidth * Math.sin(48 * Math.PI / 180);
 								}
-								
 								point.legendText.className = cssPrefix + 'ellipsis ' + cssPrefix + 'legendRot';
-								point.legendText.style.height = m.config.barLabelRotatedHeight + 'px';
+								point.legendText.style.height = m.state.barLabelRotatedHeight + 'px';
 								m.hasLabels = true;
 							} else {
+								point.legendText.style.height = '';
+								point.legendText.className = cssPrefix + 'ellipsis';
 								m.hasLabels = true;
 							}
 						}
-						
+					
 					}
 
 					point.setLeftWidth();
@@ -830,7 +837,7 @@
 
 						m.resizeQueue.push(function generateLinesResize() {
 							// the  - 2 is the gap for the right 
-							var x = m.config.scale.widthPercent + (((100 - m.config.scale.widthPercent - 2) / (ar.length - 1)) * p),
+							var x = m.state.scaleWidthPercent + (((100 - m.state.scaleWidthPercent - 2) / (ar.length - 1)) * p),
 								y = 98 - ((96 * point.percent_scale_decimal));
 
 							point.dot._css({
@@ -953,11 +960,11 @@
 				// generate the scale!
 				generateScale = function() {
 
-					m.config.scale.width = 0;
-					m.config.scale.widthPercent = 0;
+					m.state.scaleWidth = 0;
+					m.state.scaleWidthPercent = 0;
 					if (config.scale && (config.type1 === 'l' || config.type1 === 'b')) {
 
-						m.scale = document.createElement('div');
+						m.scale = m.scale || document.createElement('div');
 						m.scale.className = cssPrefix + 'abs ' + cssPrefix + 'scale';
 						m.chartHolder.insertBefore(m.scale, m.chartHolder.firstChild);
 
@@ -994,17 +1001,17 @@
 							}
 
 							m.resizeQueue.push(function generateScaleResize() {
-								m.config.scale.width = 0;
+								m.state.scaleWidth = 0;
 								for (var i = 0; i < m.config.scale.steps + 1; i++) {
-									if (texts[i].offsetWidth > m.config.scale.width) {
-										m.config.scale.width = texts[i].offsetWidth * 1 || 20;
-										m.config.scale.widthDecimal = m.config.scale.width / m.width;
-										m.config.scale.widthPercent = 100 * m.config.scale.widthDecimal + 2
+									if (texts[i].offsetWidth > m.state.scaleWidth) {
+										m.state.scaleWidth = texts[i].offsetWidth * 1 || 20;
+										m.state.scaleWidthDecimal = m.state.scaleWidth / m.width;
+										m.state.scaleWidthPercent = 100 * m.state.scaleWidthDecimal + 2
 									}
 								}
 								for (var i = 0; i < m.config.scale.steps + 1; i++) {
-									lines[i].style.left = (m.config.scale.width + 4) + 'px';
-									texts[i].style.width = m.config.scale.width + 'px';
+									lines[i].style.left = (m.state.scaleWidth + 4) + 'px';
+									texts[i].style.width = m.state.scaleWidth + 'px';
 								}
 								setTimeout(setBottomLegendHeight)
 							})
@@ -1055,21 +1062,26 @@
 				},
 
 				setBottomLegendHeight = function() {
-					var bl = 0;
+					var bl = 0,
+						mr = 0;
 					if(m.bottomLegend) {
 						if(m.hasLabels) {
 							m.bottomLegend.style.display = '';
 							bl = m.bottomLegend.offsetHeight;
-							m.bottomLegend.style.paddingLeft = m.config.scale.widthPercent + '%';
-							if (m.config.bottomLegendHeight != bl) {
-								var h = bl;
-								m.config.bottomLegendHeight = bl;
-								m.ratioDiv.style.paddingTop = 'calc(' + (config.ratio * 100) + '% - ' + h + 'px)';
-							}
-							if(m.config.rotateBarLabels) {
+							m.bottomLegend.style.paddingLeft = m.state.scaleWidthPercent + '%';
+
+							if(m.state.rotateBarLabels) {
 								if(m.bottomLegend.scrollWidth > m.bottomLegend.offsetWidth) {
-									m.chart.style.paddingRight = Math.ceil((m.bottomLegend.scrollWidth - m.bottomLegend.offsetWidth) * 0.5) + 'px'
+									mr = Math.ceil((m.bottomLegend.scrollWidth - m.bottomLegend.offsetWidth) * 0.5);
 								}
+							}
+							m.chartHolder.style.marginRight = mr + 'px'
+							m.bottomLegend.style.marginRight = mr + 'px'
+
+							if (m.state.bottomLegendHeight != bl) {
+								var h = bl;
+								m.state.bottomLegendHeight = bl;
+								m.ratioDiv.style.paddingTop = 'calc(' + (config.ratio * 100) + '% - ' + (h - (mr*config.ratio)) + 'px)';
 							}
 						} else {
 							m.bottomLegend.style.display = 'none';
@@ -1147,6 +1159,7 @@
 							m.points[gp].disabled = !e.target.checked
 						}
 						m.renderChart();
+						m.resize({}, true);
 						m.onchange('filter', config, m);
 					});
 
@@ -1176,6 +1189,7 @@
 
 			m.renderChart = function() {
 
+				m.state = {}; // reset state
 				m.resizeQueue = []; // reset the queue
 
 				config.type1 = (config.type || '')[0] || '';
@@ -1204,8 +1218,7 @@
 					'box-sizing': 'border-box',
 					width: '100%',
 					'max-width': '100%',
-					height: config.height + 'px',
-					'padding-right': ''
+					height: config.height + 'px'
 				}).innerHTML = '';
 
 				m.chartHolder = document.createElement('div');
@@ -1319,7 +1332,7 @@
 				}
 
 				if (m.config.type1 === 'b') {
-					m.node.style.left = m.config.scale.width + 'px';
+					m.node.style.left = m.state.scaleWidth + 'px';
 					m.node.style.width = 'auto';
 					m.node.style.right = 0;
 				}
