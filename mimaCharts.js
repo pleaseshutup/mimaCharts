@@ -760,6 +760,9 @@
 								
 								point.legendText.className = cssPrefix + 'ellipsis ' + cssPrefix + 'legendRot';
 								point.legendText.style.height = m.config.barLabelRotatedHeight + 'px';
+								m.hasLabels = true;
+							} else {
+								m.hasLabels = true;
 							}
 						}
 						
@@ -1054,17 +1057,22 @@
 				setBottomLegendHeight = function() {
 					var bl = 0;
 					if(m.bottomLegend) {
-						bl = m.bottomLegend.offsetHeight;
-						m.bottomLegend.style.paddingLeft = m.config.scale.widthPercent + '%';
-						if (m.config.bottomLegendHeight != bl) {
-							var h = bl;
-							m.config.bottomLegendHeight = bl;
-							m.ratioDiv.style.paddingTop = 'calc(' + (config.ratio * 100) + '% - ' + h + 'px)';
-						}
-						if(m.config.rotateBarLabels) {
-							if(m.bottomLegend.scrollWidth > m.bottomLegend.offsetWidth) {
-								m.chart.style.paddingRight = Math.ceil((m.bottomLegend.scrollWidth - m.bottomLegend.offsetWidth) * 0.5) + 'px'
+						if(m.hasLabels) {
+							m.bottomLegend.style.display = '';
+							bl = m.bottomLegend.offsetHeight;
+							m.bottomLegend.style.paddingLeft = m.config.scale.widthPercent + '%';
+							if (m.config.bottomLegendHeight != bl) {
+								var h = bl;
+								m.config.bottomLegendHeight = bl;
+								m.ratioDiv.style.paddingTop = 'calc(' + (config.ratio * 100) + '% - ' + h + 'px)';
 							}
+							if(m.config.rotateBarLabels) {
+								if(m.bottomLegend.scrollWidth > m.bottomLegend.offsetWidth) {
+									m.chart.style.paddingRight = Math.ceil((m.bottomLegend.scrollWidth - m.bottomLegend.offsetWidth) * 0.5) + 'px'
+								}
+							}
+						} else {
+							m.bottomLegend.style.display = 'none';
 						}
 					}
 					if(config.maxHeight) {
