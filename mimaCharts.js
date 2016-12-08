@@ -39,8 +39,6 @@
 		// all classes will start with this prefix, we threw it into a variable to make changing it easier
 		cssPrefix = '_mima_',
 
-		shadowDom = document.createElement('div'),
-
 		sortValues = function(a, b) {
 			return a.v !== b.b ? b.v - a.v : 0;
 		},
@@ -398,13 +396,13 @@
 										});
 										point.legend.style.opacity = 1;
 										var pn = point.legend.parentNode;
-										while(pn) {
-											if(pn && pn.style) {
-												if(pn.style.opacity && pn.style.opacity < 1){
+										while (pn) {
+											if (pn && pn.style) {
+												if (pn.style.opacity && pn.style.opacity < 1) {
 													pn.style.opacity = 1;
 												}
 												pn = pn.parentNode;
-												if(pn && pn.className && pn.className.indexOf('bottomLegend') > -1){
+												if (pn && pn.className && pn.className.indexOf('bottomLegend') > -1) {
 													pn = false;
 												}
 											} else {
@@ -468,12 +466,20 @@
 					resizeQueue: [],
 					resize: function(e, force) {
 						if (force || (m.node.offsetWidth && m.node.offsetWidth !== m.width)) {
+
 							m.width = m.node.offsetWidth;
 							m.height = m.node.offsetHeight;
 							m.state = {};
 							m.resizeQueue.forEach(function(func) {
 								func();
-							})
+							});
+							if (m.firstResize) {
+								setTimeout(function(){
+									m.firstResize = false;
+									m.chart.style.visibility = '';
+								}, 0)
+							}
+
 						}
 					}
 				},
@@ -748,7 +754,6 @@
 
 
 						if (point.info.lowestLevel && point.legendText) {
-
 							point.legendText.style.display = '';
 							point.legendText.style.height = '';
 							point.legendText.className = cssPrefix + 'ellipsis';
@@ -756,13 +761,15 @@
 							if (point.legendText.offsetWidth && point.legendText.offsetWidth < 10) {
 								point.legendText.style.display = 'none';
 							} else if (m.state.rotateBarLabels || (!m.state.rotateBarLabels && point.legendText.scrollWidth >= point.legend.offsetWidth)) {
-								if(!m.state.barLabelMaxWidth){
+								if (!m.state.barLabelMaxWidth) {
 									m.state.barLabelMaxWidth = 0;
 									m.state.rotateBarLabels = true;
 								}
-								if(m.state.barLabelMaxWidth < 100 && point.legendText.scrollWidth > m.state.barLabelMaxWidth) {
+								if (m.state.barLabelMaxWidth < 100 && point.legendText.scrollWidth > m.state.barLabelMaxWidth) {
 									m.state.barLabelMaxWidth = point.legendText.scrollWidth;
-									if(m.state.barLabelMaxWidth > 100){ m.state.barLabelMaxWidth = 100; }
+									if (m.state.barLabelMaxWidth > 100) {
+										m.state.barLabelMaxWidth = 100;
+									}
 									m.state.barLabelRotatedHeight = 8 + m.state.barLabelMaxWidth * Math.sin(48 * Math.PI / 180);
 								}
 								point.legendText.className = cssPrefix + 'ellipsis ' + cssPrefix + 'legendRot';
@@ -774,7 +781,7 @@
 								m.hasLabels = true;
 							}
 						}
-					
+
 					}
 
 					point.setLeftWidth();
@@ -1052,7 +1059,7 @@
 							if (m.legend.style.right !== r) {
 								m.legend.style.right = r;
 							}
-							if(config.maxHeight && m.chartHolder.offsetHeight >= config.maxHeight) {
+							if (config.maxHeight && m.chartHolder.offsetHeight >= config.maxHeight) {
 								m.legendHolder.style.left = config.maxHeight + 'px';
 							}
 						})
@@ -1066,14 +1073,14 @@
 				setBottomLegendHeight = function() {
 					var bl = 0,
 						mr = 0;
-					if(m.bottomLegend) {
-						if(m.hasLabels) {
+					if (m.bottomLegend) {
+						if (m.hasLabels) {
 							m.bottomLegend.style.display = '';
 							bl = m.bottomLegend.offsetHeight;
 							m.bottomLegend.style.paddingLeft = m.state.scaleWidthPercent + '%';
 
-							if(m.state.rotateBarLabels) {
-								if(m.bottomLegend.scrollWidth > m.bottomLegend.offsetWidth) {
+							if (m.state.rotateBarLabels) {
+								if (m.bottomLegend.scrollWidth > m.bottomLegend.offsetWidth) {
 									mr = Math.ceil((m.bottomLegend.scrollWidth - m.bottomLegend.offsetWidth) * 0.5);
 								}
 							}
@@ -1083,13 +1090,13 @@
 							if (m.state.bottomLegendHeight != bl) {
 								var h = bl;
 								m.state.bottomLegendHeight = bl;
-								m.ratioDiv.style.paddingTop = 'calc(' + (config.ratio * 100) + '% - ' + (h - (mr*config.ratio)) + 'px)';
+								m.ratioDiv.style.paddingTop = 'calc(' + (config.ratio * 100) + '% - ' + (h - (mr * config.ratio)) + 'px)';
 							}
 						} else {
 							m.bottomLegend.style.display = 'none';
 						}
 					}
-					if(config.maxHeight) {
+					if (config.maxHeight) {
 						m.chartHolder.style.maxHeight = (m.config.maxHeight - bl) + 'px';
 						if (config.type1 === 'p' || config.type1 === 'd') {
 							m.svg.style.maxWidth = (m.config.maxHeight * 2) + 'px';
@@ -1173,18 +1180,6 @@
 				}
 			}
 
-			// ok so we're going to put this div on the window so we can still get calculations of sizes of things
-			// we'll hide it so that it isn't available until the user appends it somewhere. This should not require paints.
-
-			shadowDom._css({
-				position: 'absolute',
-				opacity: 0,
-				width: 600 + 'px',
-				height: 300 + 'px',
-				left: -10000 + 'px'
-			});
-			document.body.appendChild(shadowDom);
-
 			m.__mimaIndex = window.__mimaData.atomic * 1;
 			window.__mimaData.atomic++;
 
@@ -1203,13 +1198,11 @@
 
 				if (!m.chart && !config.element) {
 					m.chart = dom('mimachart');
-					shadowDom._append(m.chart);
+					m.chart.style.visibility = 'hidden';
 					config.element = m.chart;
 				} else {
 					if (m.settings) {
 						m.settings.lastScrollH = m.settings.scrollTop;
-						shadowDom.appendChild(m.settings);
-						shadowDom.appendChild(m.settingsButton);
 					}
 					m.chart = config.element;
 				}
@@ -1344,6 +1337,7 @@
 			}
 
 			m.firstRender = true;
+			m.firstResize = true;
 			m.renderChart();
 
 			m.chart.__mimaIndex = m.__mimaIndex;
