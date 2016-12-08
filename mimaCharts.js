@@ -72,7 +72,7 @@
 				.' + cssPrefix + 'legend span{display: inline-block; vertical-align:middle; pointer-events:none; }\
 				.' + cssPrefix + 'legendColor{ display:inline-block; border-radius: 50%; width: 4px; height: 4px; margin-right: 4px; transition: width 0.15s ' + bouncy + ', height 0.15s ' + bouncy + '; }\
 				.' + cssPrefix + 'legendRot{max-width: 100px; text-align: left; margin-left:50%; transform: rotate(48deg); transform-origin: 0 0;}\
-				.' + cssPrefix + 'settingsButton{ position:absolute; left:0; top:0; width:32px; height:32px; text-align:center; border-radius:50%; opacity: 0; transition: opacity 0.15s ease-in-out, box-shadow 0.15s ease-in-out, width 0.15s ease-in-out, height 0.15s ease-in-out, border-radius 0.15s ease-in-out; cursor: pointer; }\
+				.' + cssPrefix + 'settingsButton{ position:absolute; background-color:white;left:0; top:0; width:32px; height:32px; text-align:center; background-color:white;border-radius:50%; opacity: 0; transition: opacity 0.15s ease-in-out, box-shadow 0.15s ease-in-out, width 0.15s ease-in-out, height 0.15s ease-in-out, border-radius 0.15s ease-in-out; cursor: pointer; }\
 				mimachart:hover .' + cssPrefix + 'settingsButton{ opacity: 1;  box-shadow: ' + materialShadow1 + ' }\
 				.' + cssPrefix + 'settingsButton:before{ content:""; display:inline-block; vertical-align:middle; width:20px; height:20px; background-size:cover; background-image:' + getIcon({
 					i: 'settings',
@@ -974,6 +974,7 @@
 					if (config.scale && (config.type1 === 'l' || config.type1 === 'b')) {
 
 						m.scale = m.scale || document.createElement('div');
+						m.scale.innerHTML = '';
 						m.scale.className = cssPrefix + 'abs ' + cssPrefix + 'scale';
 						m.chartHolder.insertBefore(m.scale, m.chartHolder.firstChild);
 
