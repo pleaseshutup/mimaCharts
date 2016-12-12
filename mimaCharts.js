@@ -1300,7 +1300,14 @@
 						m.data.forEach(function(item, i) {
 							item._ogindex = i;
 						});
-						typeof config.sort !== 'function' ? m.data.sort(sortValues) : m.data.sort(config.sort);
+						var typesort = typeof config.sort;
+						if(typesort === 'function') {
+							m.data.sort(config.sort)
+						} else if(typesort === 'string' && window[config.sort]) {
+							m.data.sort(window[config.sort]);
+						} else {
+							m.data.sort(sortValues)
+						}
 						m._data_sorted = true;
 					} else {
 						// if data is sorted it has to be restored if viewing in line chart form
