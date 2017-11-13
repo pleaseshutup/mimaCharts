@@ -14,12 +14,6 @@ var charts = [{
 	data: [{
 		l: 'Mark 1',
 		v: 10
-	}, {
-		l: 'Mark 2',
-		v: 20
-	}, {
-		l: 'Mark 3',
-		v: 15
 	}]
 }, {
 	title: 'Bar Chart Label Depth',

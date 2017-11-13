@@ -474,7 +474,7 @@
 								func();
 							});
 							if (m.firstResize) {
-								setTimeout(function(){
+								setTimeout(function() {
 									m.firstResize = false;
 									m.chart.style.visibility = '';
 								}, 0)
@@ -848,6 +848,9 @@
 							// the  - 2 is the gap for the right 
 							var x = m.state.scaleWidthPercent + (((100 - m.state.scaleWidthPercent - 2) / (ar.length - 1)) * p),
 								y = 98 - ((96 * point.percent_scale_decimal));
+							if (ar.length === 1) {
+								x = m.state.scaleWidthPercent;
+							}
 
 							point.dot._css({
 								left: x + '%',
@@ -1301,9 +1304,9 @@
 							item._ogindex = i;
 						});
 						var typesort = typeof config.sort;
-						if(typesort === 'function') {
+						if (typesort === 'function') {
 							m.data.sort(config.sort)
-						} else if(typesort === 'string' && window[config.sort]) {
+						} else if (typesort === 'string' && window[config.sort]) {
 							m.data.sort(window[config.sort]);
 						} else {
 							m.data.sort(sortValues)
