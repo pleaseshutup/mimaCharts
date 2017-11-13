@@ -548,26 +548,28 @@
 
 					this.info.sum += point.v;
 
-					//series high/low
-					if (!point._novalue && (point.v > this.info.highest || typeof this.info.highest === 'undefined')) {
-						this.info.highest = point.v;
-					}
-					if (!point._novalue && (point.v < this.info.lowest || typeof this.info.lowest === 'undefined')) {
-						this.info.lowest = point.v;
-					}
-
-					//overall high/low
-					if (!point._novalue && (point.v > m.info.highest || typeof m.info.highest === 'undefined')) {
-						m.info.highest = point.v;
-					}
-					if (!point._novalue && (point.v < m.info.lowest || typeof m.info.lowest === 'undefined')) {
-						m.info.lowest = point.v;
-					}
-
 					if (point.data && (!m.config.useDataLevel || this.info.level < m.config.dataLevel)) {
 						point.data.forEach(gatherInfo1, point);
 					} else {
 						point.info.lowestLevel = true;
+					}
+
+					if (point.info.lowestLevel) {
+						//series high/low
+						if (!point._novalue && (point.v > this.info.highest || typeof this.info.highest === 'undefined')) {
+							this.info.highest = point.v;
+						}
+						if (!point._novalue && (point.v < this.info.lowest || typeof this.info.lowest === 'undefined')) {
+							this.info.lowest = point.v;
+						}
+
+						//overall high/low
+						if (!point._novalue && (point.v > m.info.highest || typeof m.info.highest === 'undefined')) {
+							m.info.highest = point.v;
+						}
+						if (!point._novalue && (point.v < m.info.lowest || typeof m.info.lowest === 'undefined')) {
+							m.info.lowest = point.v;
+						}
 					}
 
 					if (p === ar.length - 1) {
