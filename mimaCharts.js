@@ -56,7 +56,7 @@
 				.' + cssPrefix + 'bottomLegend{padding-top: 4px;}\
 				.' + cssPrefix + 'abs{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none}\
 				.' + cssPrefix + 'sq:before{content:"";display:block;padding-top: 100%;}\
-				.' + cssPrefix + 'dot{position:absolute;margin:-0.8% 0 0 -0.8%;border-radius:50%;width:1.6%}\
+				.' + cssPrefix + 'dot{position:absolute;margin:-1% 0 0 -1%;border-radius:50%;width:2%}\
 				.' + cssPrefix + 'pe{pointer-events: all}\
 				.' + cssPrefix + 'ellipsis{text-overflow: ellipsis; max-width: 100%; white-space: nowrap; overflow: hidden;}\
 				.' + cssPrefix + 'ibb{display:inline-block; box-sizing:border-box; vertical-align:middle}\
@@ -256,7 +256,7 @@
 					getColorValue: function(color) {
 						return 'hsla(' + color.h + ',' + color.s + ',' + color.l + ',' + color.a + ')';
 					},
-					getColor: function(obj, i, len, parent) {
+					getColor: function(obj, i, len, parent, gradientFromParent) {
 						if (!obj.c) {
 							var color = {
 								h: 0,
@@ -267,7 +267,9 @@
 							if (parent) {
 								var div = (50 / len);
 								color.h = parent.h;
-								color.l = 24 + Math.round((div * 0.5) + (div * i)) + '%';
+								if(gradientFromParent){
+									color.l = 24 + Math.round((div * 0.5) + (div * i)) + '%';
+								}
 							} else {
 								if (len < baseColors.length) {
 									color.h = baseColors[i];
@@ -640,13 +642,7 @@
 
 				// this is executed in gatherInfo1 to figure out soley based on data segment length what even spacing should be
 				summaryInfo = function(info, ar) {
-					info.seriesIndex = m.series * 1;
-
 					info.average = info.sum ? info.sum / ar.length : 0;
-
-					// sets a color for the series
-					info.color = m.getColor(info, info.seriesIndex, ar.length, false);
-					m.series++;
 				},
 
 				// bar chart bars
@@ -660,7 +656,7 @@
 						return false;
 					}
 
-					point.color = m.getColor(point, p, ar.length, this.color ? this.color : false);
+					point.color = m.getColor(point, p, ar.length, this.color ? this.color : false, true);
 
 					point.node = dom('div')._css({
 						position: 'absolute',
@@ -811,13 +807,18 @@
 						return false;
 					}
 
-					point.color = m.getColor(point, p, ar.length, this.color ? this.color : false);
 
 					if (point.info.lowestLevel) {
 
+						if(line.info.level === 0){
+							point.color = m.getColor(point, 0, 1, this.color ? this.color : false, false);
+						} else {
+							point.color = m.getColor(point, p, ar.length, this.color ? this.color : false, false);
+						}
+
 						// color is same for series and comes from the parent or is set by the individaul point manually 
 						if (point.c) {
-							point.color = m.getColor(point, p, ar.length, this.color ? this.color : false);
+							point.color = m.getColor(point, p, ar.length, this.color ? this.color : false, false);
 						}
 
 						point.dot = document.createElement('span');
@@ -872,6 +873,8 @@
 
 						})
 
+					} else {
+						point.color = m.getColor(point, p, ar.length, this.color ? this.color : false, false);
 					}
 
 					if (!point.info.lowestLevel) {
@@ -890,7 +893,7 @@
 					}
 
 
-					point.color = m.getColor(point, p, ar.length, this.color ? this.color : false);
+					point.color = m.getColor(point, p, ar.length, this.color ? this.color : false, false);
 
 					point.deg_from = this.info.lastDegTo || 0;
 					point.deg_to = point.deg_from + (360 * point.percent_series_decimal);

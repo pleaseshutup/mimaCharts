@@ -1,3 +1,5 @@
+var numRandom = 5;
+
 var charts = [{
 	title: 'Line: Scale 10 to 50',
 	config: {
@@ -82,11 +84,59 @@ var charts = [{
 			v: 0
 		}, {
 			v: 0
+		}, {
+			v: 0
+		}, {
+			v: 0
+		}, {
+			v: 0
+		}, {
+			v: 0
+		}, {
+			v: 0
+		}, {
+			v: 0
+		}, {
+			v: 0
+		}, {
+			v: 0
+		}, {
+			v: 0
+		}, {
+			v: 0
+		}, {
+			v: 0
+		}, {
+			v: 0
 		}]
 	}, {
 		v: 1,
 		l: 'Segment 2',
 		data: [{
+			v: 1
+		}, {
+			v: 1
+		}, {
+			v: 1
+		}, {
+			v: 1
+		}, {
+			v: 1
+		}, {
+			v: 1
+		}, {
+			v: 1
+		}, {
+			v: 1
+		}, {
+			v: 1
+		}, {
+			v: 1
+		}, {
+			v: 1
+		}, {
+			v: 1
+		}, {
 			v: 1
 		}, {
 			v: 1
@@ -106,12 +156,186 @@ var charts = [{
 			v: 3
 		}, {
 			v: 4
+		}, {
+			v: 4
+		}, {
+			v: 3
+		}, {
+			v: 4
+		}, {
+			v: 4
+		}, {
+			v: 3
+		}, {
+			v: 4
+		}, {
+			v: 4
+		}, {
+			v: 3
+		}, {
+			v: 4
+		}, {
+			v: 4
+		}, {
+			v: 3
+		}, {
+			v: 4
+		}, {
+			v: 4
+		}, {
+			v: 3
+		}, {
+			v: 4
+		}, {
+			v: 4
+		}, {
+			v: 3
+		}, {
+			v: 4
+		}, {
+			v: 4
+		}, {
+			v: 3
+		}, {
+			v: 4
+		}, {
+			v: 4
+		}, {
+			v: 3
+		}, {
+			v: 4
+		}, {
+			v: 4
+		}, {
+			v: 3
+		}, {
+			v: 4
+		}, {
+			v: 4
+		}, {
+			v: 3
+		}, {
+			v: 4
 		}]
 	}, {
 		v: 2.45343,
 		l: 'Segment 4',
 		data: [{
 			v: 5
+		}, {
+			v: 2.45343
+		}, {
+			v: 2.3
+		}, {
+			v: 2.5
+		}, {
+			v: 2.45343
+		}, {
+			v: 2.3
+		}, {
+			v: 2.5
+		}, {
+			v: 2.45343
+		}, {
+			v: 2.3
+		}, {
+			v: 2.5
+		}, {
+			v: 2.45343
+		}, {
+			v: 2.3
+		}, {
+			v: 2.5
+		}, {
+			v: 2.45343
+		}, {
+			v: 2.3
+		}, {
+			v: 2.5
+		}, {
+			v: 2.45343
+		}, {
+			v: 2.3
+		}, {
+			v: 2.5
+		}, {
+			v: 2.45343
+		}, {
+			v: 2.3
+		}, {
+			v: 2.5
+		}, {
+			v: 2.45343
+		}, {
+			v: 2.3
+		}, {
+			v: 2.5
+		}, {
+			v: 2.45343
+		}, {
+			v: 2.3
+		}, {
+			v: 2.5
+		}, {
+			v: 2.45343
+		}, {
+			v: 2.3
+		}, {
+			v: 2.5
+		}, {
+			v: 2.45343
+		}, {
+			v: 2.3
+		}, {
+			v: 2.5
+		}, {
+			v: 2.45343
+		}, {
+			v: 2.3
+		}, {
+			v: 2.5
+		}, {
+			v: 2.45343
+		}, {
+			v: 2.3
+		}, {
+			v: 2.5
+		}, {
+			v: 2.45343
+		}, {
+			v: 2.3
+		}, {
+			v: 2.5
+		}, {
+			v: 2.45343
+		}, {
+			v: 2.3
+		}, {
+			v: 2.5
+		}, {
+			v: 2.45343
+		}, {
+			v: 2.3
+		}, {
+			v: 2.5
+		}, {
+			v: 2.45343
+		}, {
+			v: 2.3
+		}, {
+			v: 2.5
+		}, {
+			v: 2.45343
+		}, {
+			v: 2.3
+		}, {
+			v: 2.5
+		}, {
+			v: 2.45343
+		}, {
+			v: 2.3
+		}, {
+			v: 2.5
 		}, {
 			v: 2.45343
 		}, {
@@ -386,19 +610,22 @@ var config = sessionConfig(),
 			}
 		});
 	};
-for (var i = 0; i < 5; i++) {
-	var dataItem = {
-			title: 'Random ' + i,
-			config: {
-				type: types[Math.round(Math.random() * (types.length - 1))]
+
+if(numRandom){
+	for (var i = 0; i < numRandom; i++) {
+		var dataItem = {
+				title: 'Random ' + i,
+				config: {
+					type: types[Math.round(Math.random() * (types.length - 1))]
+				},
+				data: genRandomDataSegment()
 			},
-			data: genRandomDataSegment()
-		},
-		levels = Math.round(Math.random() * 3);
-	if (levels) {
-		addDataSegment(dataItem, 1, levels);
+			levels = Math.round(Math.random() * 3);
+		if (levels) {
+			addDataSegment(dataItem, 1, levels);
+		}
+		charts.push(dataItem);
 	}
-	charts.push(dataItem);
 }
 
 function genCharts() {
