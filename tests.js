@@ -6,27 +6,20 @@ var charts = [{
 			console.log('clicked point', point);
 		},
 		types: ['line'],
-		
+		scale: {
+			lowest: 10,
+			highest: 50
+		}
 	},
 	data: [{
 		l: 'Mark 1',
-		v: 500,
-		data: [{
-			l: 'mark 2',
-			v: 10
-		},{
-			l: 'mark 2',
-			v: 5
-		}]
-	},{
-		l: 'Mark 1',
-		data: [{
-			l: 'mark 2',
-			v: 10
-		},{
-			l: 'mark 2',
-			v: 5
-		}]
+		v: 10
+	}, {
+		l: 'Mark 2',
+		v: 20
+	}, {
+		l: 'Mark 3',
+		v: 15
 	}]
 }, {
 	title: 'Bar Chart Label Depth',
