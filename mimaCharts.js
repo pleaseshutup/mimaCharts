@@ -56,7 +56,7 @@
 				.' + cssPrefix + 'bottomLegend{padding-top: 4px;}\
 				.' + cssPrefix + 'abs{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none}\
 				.' + cssPrefix + 'sq:before{content:"";display:block;padding-top: 100%;}\
-				.' + cssPrefix + 'dot{position:absolute;margin:-1% 0 0 -1%;border-radius:50%;width:2%}\
+				.' + cssPrefix + 'dot{position:absolute;margin:-0.8% 0 0 -0.8%;border-radius:50%;width:1.6%}\
 				.' + cssPrefix + 'pe{pointer-events: all}\
 				.' + cssPrefix + 'ellipsis{text-overflow: ellipsis; max-width: 100%; white-space: nowrap; overflow: hidden;}\
 				.' + cssPrefix + 'ibb{display:inline-block; box-sizing:border-box; vertical-align:middle}\
@@ -811,10 +811,11 @@
 						return false;
 					}
 
+					point.color = m.getColor(point, p, ar.length, this.color ? this.color : false);
+
 					if (point.info.lowestLevel) {
 
 						// color is same for series and comes from the parent or is set by the individaul point manually 
-						point.color = line.info.color;
 						if (point.c) {
 							point.color = m.getColor(point, p, ar.length, this.color ? this.color : false);
 						}

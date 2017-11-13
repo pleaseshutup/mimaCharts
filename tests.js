@@ -64,7 +64,7 @@ var charts = [{
 }, {
 	title: 'Multi Line',
 	config: {
-		type: 'bar',
+		type: 'line',
 		defaultLabel: 'No Label',
 		types: ['bar', 'line'],
 		onclick: function(e, point) {
