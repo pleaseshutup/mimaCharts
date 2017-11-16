@@ -183,7 +183,9 @@
 		defaults = {
 			type: 'donut',
 			scale: {},
-			ratio: 0.5
+			ratio: 0.5,
+			parentLabels: true,
+			parentLabelsSeparator: ': '
 		},
 
 		// this is the function exposed
@@ -267,7 +269,7 @@
 							if (parent) {
 								var div = (50 / len);
 								color.h = parent.h;
-								if(gradientFromParent){
+								if (gradientFromParent) {
 									color.l = 24 + Math.round((div * 0.5) + (div * i)) + '%';
 								}
 							} else {
@@ -504,8 +506,20 @@
 						o_rad: 22,
 						i_rad: 17,
 						curIndex: 0, // this is the index of the item considering ignored/disabled items
-						length: 0 // this is the length of the array for the segment considering ignored/disabled items
+						length: 0, // this is the length of the array for the segment considering ignored/disabled items
+						parentLabels: ''
 					};
+					if (config.parentLabels !== false) {
+						var parentLabels = '',
+							parent = point.parent;
+						while (parent) {
+							if (parent.l) {
+								parentLabels += parent.l + config.parentLabelsSeparator;
+							}
+							parent = parent.parent;
+						}
+						point.parentLabels = parentLabels;
+					}
 					if (level === 0) {
 						point.info.id = 0;
 					}
@@ -789,7 +803,7 @@
 					});
 
 
-					point.hoverContent = (point.l || '') + ' ' + number(point.v);
+					point.hoverContent = point.parentLabels + (point.l || '') + ': ' + number(point.v);
 
 					if (!point.info.lowestLevel) {
 						point.data.forEach(generateBars, point);
@@ -810,7 +824,7 @@
 
 					if (point.info.lowestLevel) {
 
-						if(line.info.level === 0){
+						if (line.info.level === 0) {
 							point.color = m.getColor(point, 0, 1, this.color ? this.color : false, false);
 						} else {
 							point.color = m.getColor(point, p, ar.length, this.color ? this.color : false, false);
@@ -830,6 +844,7 @@
 
 						}
 
+						point.hoverContent = point.parentLabels + (point.l || '') + ': ' + number(point.v);
 
 						point.hoverAnchor = {
 							node: point.dot
@@ -845,7 +860,6 @@
 							point.line.setAttribute('stroke-width', '1%');
 							m.svg.appendChild(point.line);
 							setPointEvents(m, point.line, point);
-							point.hoverContent = (point.l || '') + ' ' + number(point.v);
 						}
 
 						m.resizeQueue.push(function generateLinesResize() {
@@ -946,7 +960,7 @@
 					}
 					point.slice.setAttribute('stroke-width', 0.2);
 					setPointEvents(m, point.slice, point);
-					point.hoverContent = (point.l || '') + ' ' + number(point.v) + ' (' + number(point.percent_series) + '%)';
+					point.hoverContent = point.parentLabels + (point.l || '') + ': ' + number(point.v) + ' (' + number(point.percent_series) + '%)';
 					m.svg.appendChild(point.slice);
 
 					point.legend = document.createElement('div');
@@ -1118,16 +1132,24 @@
 					m.killHover(e);
 
 					var uncheckall = 'checked',
+						levelParents = {},
 						markup = '';
 
 					m.points.forEach(function(point, p) {
-						var chkd = 'checked';
+						var chkd = 'checked',
+							parentP = '';
+
 						if (point.disabled) {
 							uncheckall = '';
 							chkd = '';
 						}
-						markup += '<label class="' + cssPrefix + 'filter" data-point="' + p + '">\
-							<input type="checkbox" data-point="' + p + '" ' + chkd + ' />\
+						if (p > 0 && point.info.level > m.points[p - 1].info.level) {
+							levelParents[point.info.level] = p-1;
+						}
+						if(typeof levelParents[point.info.level] === 'undefined'){ levelParents[point.info.level] = ''; }
+
+						markup += '<label class="' + cssPrefix + 'filter" data-point="' + p + '" data-parent-point="' + levelParents[point.info.level] + '" style="margin-left: ' + (point.info.level * 10) + 'px">\
+							<input type="checkbox" data-point="' + p + '" data-parent-point="' + levelParents[point.info.level] + '" ' + chkd + ' />\
 							<span class="' + cssPrefix + 'ibb ' + cssPrefix + 'ellipsis">' + safeText(point.l) + '</span>\
 						</label>';
 					});
@@ -1173,9 +1195,15 @@
 								if (i > 0) {
 									m.points[i - 1].disabled = !cb.checked;
 								}
-							})
+							});
 						} else {
-							m.points[gp].disabled = !e.target.checked
+							m.points[gp].disabled = !e.target.checked;
+							//set checkboxes
+							[].slice.call(m.settings.querySelectorAll('input[data-parent-point="'+gp+'"]')).forEach(function(cb, i) {
+								cb.checked = e.target.checked;
+								m.points[cb.getAttribute('data-point')].disabled = !cb.checked;
+								cb.parentNode.style.display = cb.checked ? '' : 'none';
+							});
 						}
 						m.renderChart();
 						m.resize({}, true);

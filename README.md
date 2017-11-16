@@ -40,6 +40,8 @@ scale: {
     defaultLabel: '', // if no label or a blank label is provided use this default label instead
     sort: true, // sort by highest value set to "false" to use your own provided sorted order,
     types: ['bar', 'pie', 'donut', 'line'], // allowed chart types for the viewer to switch between. default is all
+    parentLabels: true, // when hovering a point automatically add the parent names to the label
+    parentLabelsSeparator: ', ', // sets the string that is used between labels for creating parent labels
 },
 sort: function(a, b){}, // custom sort function to use or a string to use a function in window
 onclick: function(event, dataPoint, chart) {}, // define the custom click handler for when a data point is clicked,

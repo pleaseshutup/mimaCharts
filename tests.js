@@ -77,6 +77,7 @@ var charts = [{
 		v: 0,
 		l: 'Segment 1',
 		data: [{
+			l: 'label zero yo',
 			v: 0
 		}, {
 			v: 0
