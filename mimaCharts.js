@@ -1136,8 +1136,7 @@
 						markup = '';
 
 					m.points.forEach(function(point, p) {
-						var chkd = 'checked',
-							parentP = '';
+						var chkd = 'checked'
 
 						if (point.disabled) {
 							uncheckall = '';
