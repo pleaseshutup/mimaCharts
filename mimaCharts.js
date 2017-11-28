@@ -240,7 +240,6 @@
 					data: data,
 					dataref: {},
 					points: [],
-					series: 0,
 					width: 600,
 					height: 300,
 					levels: {},
@@ -770,7 +769,7 @@
 							point.legendText.style.height = '';
 							point.legendText.className = cssPrefix + 'ellipsis';
 
-							rotateBottomLegendlabels(point);
+							rotateBottomLegendLabels(point);
 						}
 
 					}
@@ -834,10 +833,12 @@
 							point.execLegend = true;
 							point.legend = dom('div')._css({
 								position: 'absolute',
+								top: 0,
 								'text-align': 'center'
 							});
 
 							m.bottomLegend.appendChild(point.legend);
+
 							if (point.l) {
 								point.legendText = document.createElement('span');
 								point.legendText.className = cssPrefix + 'ellipsis';
@@ -846,6 +847,24 @@
 								point.legend.className = cssPrefix + 'legend ' + cssPrefix + 'pe'
 								setPointEvents(m, point.legend, point);
 							}
+						}
+						if(point.i === 0 && point.parent.l){
+							point.lineLegend = dom('div')._css({
+								display: 'inline-block',
+								'vertical-align': 'middle'
+							})
+							point.lineLegend.className = cssPrefix + 'legend ' + cssPrefix + 'pe';
+
+							point.legendColor = document.createElement('span');
+							point.legendColor.className = cssPrefix + 'legendColor';
+							point.legendColor.style.border = '2px solid ' + point.color.value;
+							point.lineLegend.appendChild(point.legendColor);
+							point.legendLineText = document.createElement('span');
+							point.legendLineText.className = cssPrefix + 'ellipsis';
+							point.legendLineText.textContent = (point.parent.l || '');
+							point.legendLineText.style.marginRight = '8px';
+							point.lineLegend.appendChild(point.legendLineText);
+							m.bottomLegend.appendChild(point.lineLegend);
 						}
 
 						setPointEvents(m, point.dot, point);
@@ -877,7 +896,7 @@
 								
 								point.legend.style.width = legWidth + '%';
 
-								rotateBottomLegendlabels(point);
+								rotateBottomLegendLabels(point);
 								m.pointLegendXref[x] = point;
 							} else {
 								if(m.pointLegendXref[x]){
@@ -1111,6 +1130,7 @@
 						})
 					} else if (config.type1 === 'b' || config.type1 === 'l') {
 						m.bottomLegend = document.createElement('div');
+						m.bottomLegend.style.position = 'relative';
 						m.bottomLegend.className = cssPrefix + 'bottomLegend';
 						if(config.type1 === 'l'){
 							m.bottomLegend.style.height = '12px';
@@ -1153,7 +1173,7 @@
 					}
 				},
 
-				rotateBottomLegendlabels = function(point) {
+				rotateBottomLegendLabels = function(point) {
 					if (point.legendText.offsetWidth && point.legendText.offsetWidth < 10) {
 						point.legendText.style.display = 'none';
 					} else if (m.state.rotateBarLabels || (!m.state.rotateBarLabels && point.legendText.scrollWidth >= point.legend.offsetWidth)) {
@@ -1171,12 +1191,12 @@
 						point.legendText.className = cssPrefix + 'ellipsis ' + cssPrefix + 'legendRot';
 						point.legendText.style.height = m.state.barLabelRotatedHeight + 'px';
 						if(config.type1 === 'l'){
-							if(m.bottomLegend.offsetHeight < m.state.barLabelRotatedHeight){
-								m.bottomLegend.style.height = m.state.barLabelRotatedHeight + 'px';
-							}
+							m.bottomLegend.style.height = '';
+							m.bottomLegend.style.paddingTop = m.state.barLabelRotatedHeight + 'px';
 						}
 						m.hasLabels = true;
 					} else {
+						m.bottomLegend.style.paddingTop = '12px';
 						point.legendText.style.height = '';
 						point.legendText.className = cssPrefix + 'ellipsis';
 						m.hasLabels = true;
