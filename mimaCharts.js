@@ -865,7 +865,8 @@
 							var plotArea = (100 - m.state.scaleWidthPercent),
 								chunkWidth = (plotArea / ar.length),
 								x = m.state.scaleWidthPercent + (chunkWidth*0.5) + (chunkWidth * point.i);
-							var //x = m.state.scaleWidthPercent + (((100 - m.state.scaleWidthPercent - 2) / (ar.length - 1)) * p),
+							var // closer to edges
+								//x = m.state.scaleWidthPercent + (((100 - m.state.scaleWidthPercent - 2) / (ar.length - 1)) * p),
 								y = 98 - ((96 * point.percent_scale_decimal));
 
 							if(point.execLegend){
