@@ -478,10 +478,10 @@
 								func();
 							});
 							if (m.firstResize) {
-								setTimeout(function() {
+								requestAnimationFrame(function() {
 									m.firstResize = false;
 									m.chart.style.visibility = '';
-								}, 0)
+								})
 							}
 
 						}
@@ -1068,12 +1068,12 @@
 									lines[i].style.left = (m.state.scaleWidth + 4) + 'px';
 									texts[i].style.width = m.state.scaleWidth + 'px';
 								}
-								setTimeout(setBottomLegendHeight)
+								requestAnimationFrame(setBottomLegendHeight)
 							})
 						}
 					} else {
 						m.resizeQueue.push(function generateScaleResize() {
-							setTimeout(setBottomLegendHeight)
+							requestAnimationFrame(setBottomLegendHeight)
 						})
 					}
 				},
