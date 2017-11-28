@@ -770,35 +770,14 @@
 							point.legendText.style.height = '';
 							point.legendText.className = cssPrefix + 'ellipsis';
 
-							if (point.legendText.offsetWidth && point.legendText.offsetWidth < 10) {
-								point.legendText.style.display = 'none';
-							} else if (m.state.rotateBarLabels || (!m.state.rotateBarLabels && point.legendText.scrollWidth >= point.legend.offsetWidth)) {
-								if (!m.state.barLabelMaxWidth) {
-									m.state.barLabelMaxWidth = 0;
-									m.state.rotateBarLabels = true;
-								}
-								if (m.state.barLabelMaxWidth < 100 && point.legendText.scrollWidth > m.state.barLabelMaxWidth) {
-									m.state.barLabelMaxWidth = point.legendText.scrollWidth;
-									if (m.state.barLabelMaxWidth > 100) {
-										m.state.barLabelMaxWidth = 100;
-									}
-									m.state.barLabelRotatedHeight = 8 + m.state.barLabelMaxWidth * Math.sin(48 * Math.PI / 180);
-								}
-								point.legendText.className = cssPrefix + 'ellipsis ' + cssPrefix + 'legendRot';
-								point.legendText.style.height = m.state.barLabelRotatedHeight + 'px';
-								m.hasLabels = true;
-							} else {
-								point.legendText.style.height = '';
-								point.legendText.className = cssPrefix + 'ellipsis';
-								m.hasLabels = true;
-							}
+							rotateBottomLegendlabels(point);
 						}
 
 					}
 
 					point.setLeftWidth();
 
-					m.resizeQueue.push(function generateLinesResize() {
+					m.resizeQueue.push(function generateBarsResize() {
 						point.setLeftWidth();
 					});
 
@@ -850,6 +829,25 @@
 							node: point.dot
 						};
 
+						if(point.parent.i === 0){
+							if(!m.pointLegendXref){ m.pointLegendXref = {}; }
+							point.execLegend = true;
+							point.legend = dom('div')._css({
+								position: 'absolute',
+								'text-align': 'center'
+							});
+
+							m.bottomLegend.appendChild(point.legend);
+							if (point.l) {
+								point.legendText = document.createElement('span');
+								point.legendText.className = cssPrefix + 'ellipsis';
+								point.legendText.textContent = point.l;
+								point.legend.appendChild(point.legendText);
+								point.legend.className = cssPrefix + 'legend ' + cssPrefix + 'pe'
+								setPointEvents(m, point.legend, point);
+							}
+						}
+
 						setPointEvents(m, point.dot, point);
 						m.node.appendChild(point.dot);
 
@@ -864,8 +862,29 @@
 
 						m.resizeQueue.push(function generateLinesResize() {
 							// the  - 2 is the gap for the right 
-							var x = m.state.scaleWidthPercent + (((100 - m.state.scaleWidthPercent - 2) / (ar.length - 1)) * p),
+							var plotArea = (100 - m.state.scaleWidthPercent),
+								chunkWidth = (plotArea / ar.length),
+								x = m.state.scaleWidthPercent + (chunkWidth*0.5) + (chunkWidth * point.i);
+							var //x = m.state.scaleWidthPercent + (((100 - m.state.scaleWidthPercent - 2) / (ar.length - 1)) * p),
 								y = 98 - ((96 * point.percent_scale_decimal));
+
+							if(point.execLegend){
+								var legWidth = ((100 - m.state.scaleWidthPercent) / ar.length),
+									l = (x-(legWidth*0.5));
+								//if(l < m.state.scaleWidthPercent){ l = m.state.scaleWidthPercent; }
+								point.legend.style.left = l + '%';
+								
+								point.legend.style.width = legWidth + '%';
+
+								rotateBottomLegendlabels(point);
+								m.pointLegendXref[x] = point;
+							} else {
+								if(m.pointLegendXref[x]){
+									point.legend = m.pointLegendXref[x].legend;
+									point.legendText = m.pointLegendXref[x].legendText;
+								}
+							}
+
 							if (ar.length === 1) {
 								x = m.state.scaleWidthPercent;
 							}
@@ -886,6 +905,8 @@
 							};
 
 						})
+
+
 
 					} else {
 						point.color = m.getColor(point, p, ar.length, this.color ? this.color : false, false);
@@ -1087,9 +1108,12 @@
 								m.legendHolder.style.left = config.maxHeight + 'px';
 							}
 						})
-					} else if (config.type1 === 'b') {
+					} else if (config.type1 === 'b' || config.type1 === 'l') {
 						m.bottomLegend = document.createElement('div');
 						m.bottomLegend.className = cssPrefix + 'bottomLegend';
+						if(config.type1 === 'l'){
+							m.bottomLegend.style.height = '12px';
+						}
 						m.chart.insertBefore(m.bottomLegend, m.settings);
 					}
 				},
@@ -1125,6 +1149,36 @@
 						if (config.type1 === 'p' || config.type1 === 'd') {
 							m.svg.style.maxWidth = (m.config.maxHeight * 2) + 'px';
 						}
+					}
+				},
+
+				rotateBottomLegendlabels = function(point) {
+					if (point.legendText.offsetWidth && point.legendText.offsetWidth < 10) {
+						point.legendText.style.display = 'none';
+					} else if (m.state.rotateBarLabels || (!m.state.rotateBarLabels && point.legendText.scrollWidth >= point.legend.offsetWidth)) {
+						if (!m.state.barLabelMaxWidth) {
+							m.state.barLabelMaxWidth = 0;
+							m.state.rotateBarLabels = true;
+						}
+						if (m.state.barLabelMaxWidth < 100 && point.legendText.scrollWidth > m.state.barLabelMaxWidth) {
+							m.state.barLabelMaxWidth = point.legendText.scrollWidth;
+							if (m.state.barLabelMaxWidth > 100) {
+								m.state.barLabelMaxWidth = 100;
+							}
+							m.state.barLabelRotatedHeight = 8 + m.state.barLabelMaxWidth * Math.sin(48 * Math.PI / 180);
+						}
+						point.legendText.className = cssPrefix + 'ellipsis ' + cssPrefix + 'legendRot';
+						point.legendText.style.height = m.state.barLabelRotatedHeight + 'px';
+						if(config.type1 === 'l'){
+							if(m.bottomLegend.offsetHeight < m.state.barLabelRotatedHeight){
+								m.bottomLegend.style.height = m.state.barLabelRotatedHeight + 'px';
+							}
+						}
+						m.hasLabels = true;
+					} else {
+						point.legendText.style.height = '';
+						point.legendText.className = cssPrefix + 'ellipsis';
+						m.hasLabels = true;
 					}
 				},
 
@@ -1355,6 +1409,7 @@
 						}
 
 					}
+					m.i = 0;
 					m.data.forEach(gatherInfo1, m);
 					m.data.forEach(gatherInfo2, m);
 
