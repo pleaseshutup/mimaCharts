@@ -828,9 +828,14 @@
 							node: point.dot
 						};
 
-						if(point.parent.i === 0){
+						if(point.parent.i === m.execLineLegendAt || typeof m.execLineLegendAt === 'undefined'){
 							if(!m.pointLegendXref){ m.pointLegendXref = {}; }
 							point.execLegend = true;
+
+							if(typeof m.execLineLegendAt === 'undefined'){
+								console.log('exec legend at', point.parent.i)
+								m.execLineLegendAt = point.parent.i;
+							}
 							point.legend = dom('div')._css({
 								position: 'absolute',
 								top: 0,
@@ -1134,6 +1139,8 @@
 						m.bottomLegend.className = cssPrefix + 'bottomLegend';
 						if(config.type1 === 'l'){
 							m.bottomLegend.style.height = '12px';
+							m.bottomLegend.style.maxHeight = '100px';
+							m.bottomLegend.style.overflow = 'hidden';
 						}
 						m.chart.insertBefore(m.bottomLegend, m.settings);
 					}
@@ -1300,6 +1307,7 @@
 
 				m.state = {}; // reset state
 				m.resizeQueue = []; // reset the queue
+				delete m.execLineLegendAt;
 
 				config.type1 = (config.type || '')[0] || '';
 				if (config.type1 === 'b' || config.type1 === 'l') {
