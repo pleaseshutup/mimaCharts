@@ -828,11 +828,13 @@
 							node: point.dot
 						};
 
-						if(point.parent.i === m.execLineLegendAt || typeof m.execLineLegendAt === 'undefined'){
-							if(!m.pointLegendXref){ m.pointLegendXref = {}; }
+						if (point.parent.i === m.execLineLegendAt || typeof m.execLineLegendAt === 'undefined') {
+							if (!m.pointLegendXref) {
+								m.pointLegendXref = {};
+							}
 							point.execLegend = true;
 
-							if(typeof m.execLineLegendAt === 'undefined'){
+							if (typeof m.execLineLegendAt === 'undefined') {
 								console.log('exec legend at', point.parent.i)
 								m.execLineLegendAt = point.parent.i;
 							}
@@ -853,7 +855,7 @@
 								setPointEvents(m, point.legend, point);
 							}
 						}
-						if(point.i === 0 && point.parent.l){
+						if (point.i === 0 && point.parent.l) {
 							point.lineLegend = dom('div')._css({
 								display: 'inline-block',
 								'vertical-align': 'middle'
@@ -888,23 +890,23 @@
 							// the  - 2 is the gap for the right 
 							var plotArea = (100 - m.state.scaleWidthPercent),
 								chunkWidth = (plotArea / ar.length),
-								x = m.state.scaleWidthPercent + (chunkWidth*0.5) + (chunkWidth * point.i);
+								x = m.state.scaleWidthPercent + (chunkWidth * 0.5) + (chunkWidth * point.i);
 							var // closer to edges
 								//x = m.state.scaleWidthPercent + (((100 - m.state.scaleWidthPercent - 2) / (ar.length - 1)) * p),
 								y = 98 - ((96 * point.percent_scale_decimal));
 
-							if(point.execLegend){
+							if (point.execLegend) {
 								var legWidth = ((100 - m.state.scaleWidthPercent) / ar.length),
-									l = (x-(legWidth*0.5));
+									l = (x - (legWidth * 0.5));
 								//if(l < m.state.scaleWidthPercent){ l = m.state.scaleWidthPercent; }
 								point.legend.style.left = l + '%';
-								
+
 								point.legend.style.width = legWidth + '%';
 
 								rotateBottomLegendLabels(point);
 								m.pointLegendXref[x] = point;
 							} else {
-								if(m.pointLegendXref[x]){
+								if (m.pointLegendXref[x]) {
 									point.legend = m.pointLegendXref[x].legend;
 									point.legendText = m.pointLegendXref[x].legendText;
 								}
@@ -1137,7 +1139,7 @@
 						m.bottomLegend = document.createElement('div');
 						m.bottomLegend.style.position = 'relative';
 						m.bottomLegend.className = cssPrefix + 'bottomLegend';
-						if(config.type1 === 'l'){
+						if (config.type1 === 'l') {
 							m.bottomLegend.style.height = '12px';
 							m.bottomLegend.style.maxHeight = '100px';
 							m.bottomLegend.style.overflow = 'hidden';
@@ -1197,7 +1199,7 @@
 						}
 						point.legendText.className = cssPrefix + 'ellipsis ' + cssPrefix + 'legendRot';
 						point.legendText.style.height = m.state.barLabelRotatedHeight + 'px';
-						if(config.type1 === 'l'){
+						if (config.type1 === 'l') {
 							m.bottomLegend.style.height = '';
 							m.bottomLegend.style.paddingTop = m.state.barLabelRotatedHeight + 'px';
 						}
@@ -1225,12 +1227,15 @@
 							chkd = '';
 						}
 						if (p > 0 && point.info.level > m.points[p - 1].info.level) {
-							levelParents[point.info.level] = p-1;
+							levelParents[point.info.level] = p - 1;
 						}
-						if(typeof levelParents[point.info.level] === 'undefined'){ levelParents[point.info.level] = ''; }
+						if (typeof levelParents[point.info.level] === 'undefined') {
+							levelParents[point.info.level] = '';
+						}
 
-						markup += '<label class="' + cssPrefix + 'filter" data-point="' + p + '" data-parent-point="' + levelParents[point.info.level] + '" style="margin-left: ' + (point.info.level * 10) + 'px">\
-							<input type="checkbox" data-point="' + p + '" data-parent-point="' + levelParents[point.info.level] + '" ' + chkd + ' />\
+						var disp = point.info.level > 1 ? 'none' : '';
+						markup += '<label class="' + cssPrefix + 'filter" data-point="' + p + '" data-parent-point="' + levelParents[point.info.level] + '" style="margin-left: ' + (point.info.level * 10) + 'px;display:' + disp + '">\
+							<input type="checkbox" data-point="' + p + '" data-parent-point="' + levelParents[point.info.level] + '" class="' + cssPrefix + 'ibb" ' + chkd + ' />\
 							<span class="' + cssPrefix + 'ibb ' + cssPrefix + 'ellipsis">' + safeText(point.l) + '</span>\
 						</label>';
 					});
@@ -1280,7 +1285,7 @@
 						} else {
 							m.points[gp].disabled = !e.target.checked;
 							//set checkboxes
-							[].slice.call(m.settings.querySelectorAll('input[data-parent-point="'+gp+'"]')).forEach(function(cb, i) {
+							[].slice.call(m.settings.querySelectorAll('input[data-parent-point="' + gp + '"]')).forEach(function(cb, i) {
 								cb.checked = e.target.checked;
 								m.points[cb.getAttribute('data-point')].disabled = !cb.checked;
 								cb.parentNode.style.display = cb.checked ? '' : 'none';
