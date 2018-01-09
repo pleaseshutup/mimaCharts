@@ -53,7 +53,7 @@
 				style.id = cssPrefix + 'sheet';
 				style.appendChild(document.createTextNode('\
 				.' + cssPrefix + 'chartHolder{position:relative;}\
-				.' + cssPrefix + 'bottomLegend{padding-top: 4px;}\
+				.' + cssPrefix + 'bottomLegend{padding-top: 12px;}\
 				.' + cssPrefix + 'abs{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none}\
 				.' + cssPrefix + 'sq:before{content:"";display:block;padding-top: 100%;}\
 				.' + cssPrefix + 'dot{position:absolute;margin:-1% 0 0 -1%;border-radius:50%;width:2%}\
@@ -68,7 +68,7 @@
 				.' + cssPrefix + 'hoverContainer:before{content: ""; display:block; width:0; height:0; position: absolute; left:50%; bottom:-11px; margin-left:-6px; border: 6px solid transparent; border-top:6px solid #616161;}\
 				.' + cssPrefix + 'scaleLine{position: absolute; top: 0; left: 0; right: 0; height: 1px; background-color: #ccc; }\
 				.' + cssPrefix + 'scaleText{display: inline-block; position: absolute; top: 0; left: 0; font-size: 12px; color: #999; line-height: 10%; text-align:right; }\
-				.' + cssPrefix + 'legend{font-size: 12px; color: #666; transition: opacity 0.15s ease-in-out}\
+				.' + cssPrefix + 'legend{font-size: 12px; line-height:18px; color: #666; transition: opacity 0.15s ease-in-out}\
 				.' + cssPrefix + 'legend span{display: inline-block; vertical-align:middle; pointer-events:none; }\
 				.' + cssPrefix + 'legendColor{ display:inline-block; border-radius: 50%; width: 4px; height: 4px; margin-right: 4px; transition: width 0.15s ' + bouncy + ', height 0.15s ' + bouncy + '; }\
 				.' + cssPrefix + 'legendRot{max-width: 100px; text-align: left; margin-left:50%; transform: rotate(48deg); transform-origin: 0 0;}\
@@ -840,7 +840,7 @@
 							}
 							point.legend = dom('div')._css({
 								position: 'absolute',
-								top: 0,
+								top: '4px',
 								'text-align': 'center'
 							});
 
@@ -1140,7 +1140,7 @@
 						m.bottomLegend.style.position = 'relative';
 						m.bottomLegend.className = cssPrefix + 'bottomLegend';
 						if (config.type1 === 'l') {
-							m.bottomLegend.style.height = '12px';
+							m.bottomLegend.style.minHeight = '16px';
 							m.bottomLegend.style.maxHeight = '100px';
 							m.bottomLegend.style.overflow = 'hidden';
 						}
@@ -1154,8 +1154,10 @@
 					if (m.bottomLegend) {
 						if (m.hasLabels) {
 							m.bottomLegend.style.display = '';
-							bl = m.bottomLegend.offsetHeight;
-							m.bottomLegend.style.paddingLeft = m.state.scaleWidthPercent + '%';
+							bl = m.bottomLegend.offsetHeight + 4;
+							if (config.type1 !== 'l') {
+								m.bottomLegend.style.paddingLeft = m.state.scaleWidthPercent + '%';
+							}
 
 							if (m.state.rotateBarLabels) {
 								if (m.bottomLegend.scrollWidth > m.bottomLegend.offsetWidth) {
@@ -1195,17 +1197,18 @@
 							if (m.state.barLabelMaxWidth > 100) {
 								m.state.barLabelMaxWidth = 100;
 							}
-							m.state.barLabelRotatedHeight = 8 + m.state.barLabelMaxWidth * Math.sin(48 * Math.PI / 180);
+							m.state.barLabelRotatedHeight = 16 + m.state.barLabelMaxWidth * Math.sin(48 * Math.PI / 180);
 						}
 						point.legendText.className = cssPrefix + 'ellipsis ' + cssPrefix + 'legendRot';
 						point.legendText.style.height = m.state.barLabelRotatedHeight + 'px';
+						point.legendText.style.paddingLeft = '4px';
 						if (config.type1 === 'l') {
 							m.bottomLegend.style.height = '';
 							m.bottomLegend.style.paddingTop = m.state.barLabelRotatedHeight + 'px';
 						}
 						m.hasLabels = true;
 					} else {
-						m.bottomLegend.style.paddingTop = '12px';
+						m.bottomLegend.style.paddingTop = '24px';
 						point.legendText.style.height = '';
 						point.legendText.className = cssPrefix + 'ellipsis';
 						m.hasLabels = true;
