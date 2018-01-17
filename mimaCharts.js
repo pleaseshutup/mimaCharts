@@ -308,7 +308,14 @@
 									}
 									point.slice.setAttribute('filter', '');
 								}
-								if (point.legend) {
+								if(point.lineLegend){
+										point.dot.parentNode.parentNode.getElementsByTagName('path')._css({
+											opacity: ''
+										});
+										point.dot.parentNode.getElementsByTagName('span')._css({
+											opacity: ''
+										});
+								} else if (point.legend) {
 									point.legend.style.opacity = '';
 									point.legend.style.fontWeight = '';
 
@@ -391,7 +398,22 @@
 											m.legend.scrollTop = point.legend.offsetTop;
 										}
 									}
-									if (point.legend) {
+									if (point.lineLegend) {
+										point.dot.parentNode.parentNode.getElementsByTagName('path')._css({
+											opacity: 0.25
+										});
+										point.dot.parentNode.getElementsByTagName('span')._css({
+											opacity: 0.25
+										});
+										if(point.parent && point.parent.data){
+											point.parent.data.forEach(function(item){
+												item.dot.style.opacity = 1;
+												if(item.line){
+													item.line.style.opacity = 1;
+												}
+											})
+										}
+									} else if (point.legend) {
 										[].slice.call(m.chart.getElementsByClassName(cssPrefix + 'legend')).forEach(function(el) {
 											if (el != point.legend) {
 												el.style.opacity = 0.5;
@@ -872,6 +894,7 @@
 							point.legendLineText.style.marginRight = '8px';
 							point.lineLegend.appendChild(point.legendLineText);
 							m.bottomLegend.appendChild(point.lineLegend);
+							setPointEvents(m, point.lineLegend, point);
 						}
 
 						setPointEvents(m, point.dot, point);
