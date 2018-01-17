@@ -857,7 +857,6 @@
 							point.execLegend = true;
 
 							if (typeof m.execLineLegendAt === 'undefined') {
-								console.log('exec legend at', point.parent.i)
 								m.execLineLegendAt = point.parent.i;
 							}
 							point.legend = dom('div')._css({
