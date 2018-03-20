@@ -1,0 +1,46 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "description": "JSON schema for mimaCharts config",
+  "definitions": {
+    "l": {
+      "type": "string",
+      "description": "the name/title of the data point"
+    },
+    "v": {
+      "type": "number",
+      "description": "the numeric value to plot"
+    },
+    "c": {
+      "placeholder": "color",
+      "description": "The color to force, leave blank for automatic colors"
+    },
+    "data": {
+      "type": "array",
+      "description": "an array of data points or sub-data points",
+      "properties": {
+        "l": { "$ref": "#/definitions/l" },
+        "v": { "$ref": "#/definitions/v" },
+        "c": { "$ref": "#/definitions/c" },
+        "data": { "$ref": "#/definitions/data" }
+      }
+    }
+  },
+  "type": "object",
+  "properties": {
+      "name": { "$ref": "#/definitions/name" },
+      "description": { "$ref": "#/definitions/description" },
+      "config": {
+       "type": "object",
+       "description": "The configuration of the mimaChart display",
+       "properties": {
+        "type": {
+          "type": "string",
+          "description": "The type of chart to render",
+          "enum": ["line", "bar", "donut", "pie"]
+        }
+       }
+      }
+  },
+  "patternProperties": {
+      "data*": { "$ref": "#/definitions/data" }
+  }}
