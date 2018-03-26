@@ -1152,7 +1152,7 @@
                             left: 0,
                             right: 0,
                             'pointer-events': 'fill',
-                            'overflow-y': 'scroll'
+                            'overflow-y': config.showLegendScrollBar ? 'auto' : 'scroll'
                         })
                         m.legendHolder.appendChild(m.legend);
                         m.node.appendChild(m.legendHolder);
