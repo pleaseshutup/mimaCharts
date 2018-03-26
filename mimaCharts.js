@@ -808,6 +808,10 @@
 
 
                     point.hoverContent = point.parentLabels + (point.l || '') + ': ' + number(point.v);
+                    if(point.info.level === 1){
+                        console.log('ponit', point)
+                        point.hoverContent += ' (' + number(point.percent_series, 1, null, '%') + ')';
+                    }
 
                     if (!point.info.lowestLevel) {
                         point.data.forEach(generateBars, point);
