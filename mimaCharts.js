@@ -399,7 +399,7 @@
 
                                         point.slice.setAttribute('filter', 'url(#' + cssPrefix + 'material-shadow-1)');
                                         if (m.legend && (e.target && (typeof e.target.className !== 'string' || e.target.className.indexOf('_legend') < 0))) {
-                                            m.legend.scrollTop = point.legend.offsetTop;
+                                            //m.legend.scrollTop = point.legend.offsetTop;
                                         }
                                     }
                                     if (point.lineLegend) {
@@ -1151,6 +1151,7 @@
                             height: '100%',
                             left: 0,
                             right: 0,
+                            'pointer-events': 'fill',
                             'overflow-y': 'scroll'
                         })
                         m.legendHolder.appendChild(m.legend);
@@ -1158,7 +1159,7 @@
 
                         m.resizeQueue.push(function() {
                             var r = '-' + (m.legend.offsetWidth - m.legend.clientWidth) + 'px';
-                            if (m.legend.style.right !== r) {
+                            if (!config.showLegendScrollBar && m.legend.style.right !== r) {
                                 m.legend.style.right = r;
                             }
                             if (config.maxHeight && m.chartHolder.offsetHeight >= config.maxHeight) {
