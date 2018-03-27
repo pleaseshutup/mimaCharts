@@ -172,11 +172,9 @@
             return ret;
         },
         xyRadius = function(cx, cy, radius, degrees) {
-            //lets have zero be at the top and go clockwise
-            //degrees += Math.PI * 2
             return {
-                x: cx + radius * Math.sin(degrees * Math.PI / 180),
-                y: cy + radius * Math.cos(degrees * Math.PI / 180)
+                x: cx + radius * Math.sin(degrees * (Math.PI / 180)),
+                y: cy + radius * Math.cos(degrees * (Math.PI / 180))
             };
         },
 
@@ -809,7 +807,6 @@
 
                     point.hoverContent = point.parentLabels + (point.l || '') + ': ' + number(point.v);
                     if(point.info.level === 1){
-                        console.log('ponit', point)
                         point.hoverContent += ' (' + number(point.percent_series, 1, null, '%') + ')';
                     }
 
@@ -991,13 +988,23 @@
                     point.deg_to = point.deg_from + (360 * point.percent_series_decimal);
                     this.info.lastDegTo = point.deg_to * 1;
 
-                    point.p1 = xyRadius(this.info.cx, this.info.cy, this.info.i_rad, point.deg_from);
-                    point.p2 = xyRadius(this.info.cx, this.info.cy, this.info.o_rad, point.deg_from);
-                    point.p3 = xyRadius(this.info.cx, this.info.cy, this.info.o_rad, point.deg_to);
-                    point.p4 = xyRadius(this.info.cx, this.info.cy, this.info.i_rad, point.deg_to);
+                    if(point.percent_series_decimal < 1){
+                        point.deg_from_adj = 180 - point.deg_from;
+                        point.deg_to_adj = 180 - point.deg_to;
+                    } else {
+                        point.deg_from_adj = point.deg_from;
+                        point.deg_to_adj = point.deg_to;
 
-                    point.o_sweep = point.deg_to - point.deg_from > 180 ? '0 1,0' : '0 0,0';
-                    point.i_sweep = point.deg_to - point.deg_from > 180 ? '0 1,1' : '0 0,1';
+                    }
+
+                    point.p1 = xyRadius(this.info.cx, this.info.cy, this.info.i_rad, point.deg_from_adj);
+                    point.p2 = xyRadius(this.info.cx, this.info.cy, this.info.o_rad, point.deg_from_adj);
+                    point.p3 = xyRadius(this.info.cx, this.info.cy, this.info.o_rad, point.deg_to_adj);
+                    point.p4 = xyRadius(this.info.cx, this.info.cy, this.info.i_rad, point.deg_to_adj);
+
+                    point.o_sweep = point.deg_to - point.deg_from > 180 ? '0 1,1' : '0 0,1';
+                    point.i_sweep = point.deg_to - point.deg_from > 180 ? '0 1,0' : '0 0,0';
+
 
                     point.slice = document.createElementNS(svgNS, 'path');
                     point.hoverAnchor = {
@@ -1007,8 +1014,10 @@
                     if (point.percent_series_decimal >= 1) {
 
                         // two line hack for cicles
-                        point.p3a = xyRadius(this.info.cx, this.info.cy, this.info.o_rad, point.deg_to * 0.5);
-                        point.p1a = xyRadius(this.info.cx, this.info.cy, this.info.i_rad, point.deg_to * 0.5);
+                        point.p3a = xyRadius(this.info.cx, this.info.cy, this.info.o_rad, 360 * 0.5);
+                        point.p1a = xyRadius(this.info.cx, this.info.cy, this.info.i_rad, 360 * 0.5);
+
+  
 
                         point.d = 'M' + point.p1.x + ',' + point.p1.y +
                             ' L' + point.p2.x + ',' + point.p2.y +
