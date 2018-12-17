@@ -805,9 +805,9 @@
                     });
 
 
-                    point.hoverContent = point.parentLabels + (point.l || '') + ': ' + number(point.v);
+                    point.hoverContent = point.parentLabels + (point.l || '') + ': ' + number(point.v,'','',config.format || '');
                     if(point.info.level === 1){
-                        point.hoverContent += ' (' + number(point.percent_series, 1, null, '%') + ')';
+                        //point.hoverContent += ' (' + number(point.percent_series, 1, null, '%') + ')';
                     }
 
                     if (!point.info.lowestLevel) {
@@ -849,7 +849,7 @@
 
                         }
 
-                        point.hoverContent = point.parentLabels + (point.l || '') + ': ' + number(point.v);
+                        point.hoverContent = point.parentLabels + (point.l || '') + ': ' + number(point.v, '', '', config.format || '');
 
                         point.hoverAnchor = {
                             node: point.dot
@@ -1113,7 +1113,7 @@
                                 lines.push(line);
 
                                 text = document.createElement('span');
-                                text.textContent = number(displayNum, 1, 0);
+                                text.textContent = number(displayNum, 1, 0, config.format || '');
                                 text.className = cssPrefix + 'scaleText';
                                 text.style.top = setPerc;
                                 m.scale.appendChild(text);
