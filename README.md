@@ -54,6 +54,7 @@ dataLevel: 2, // for line and bar charts, what level of data do you want to stop
 scaleLines: [ //an array of lines to overlay over a bar or line chart that plot with the vertical scale
     {
         l: 'line title',
+        h: '1px', //line height
         v: 100, //value to plot at
     }
 ]

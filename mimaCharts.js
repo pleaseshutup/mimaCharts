@@ -1131,6 +1131,9 @@
                                     if (scaleLine.c) {
                                         line.style.backgroundColor = scaleLine.c;
                                     }
+                                    if (scaleLine.h) {
+                                        line.style.height = scaleLine.h;
+                                    }
                                     line.style.top = setPerc;
                                     m.scale.appendChild(line);
                                     line.isScaleLine = true;
