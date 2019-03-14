@@ -1120,22 +1120,59 @@
                                 texts.push(text);
                             }
 
+                            if (Array.isArray(m.config.scaleLines)) {
+                                m.config.scaleLines.forEach(function(scaleLine){
+                                    num = scaleLine.v || 0;
+                                    percent = num / range;
+                                    setPerc = config.type1 === 'b' ? (100 - (percent * 100)) + '%' : (2 + (96 - (percent * 96))) + '%'
+                                    displayNum = ((num + m.info.lowest) * 100) / 100;
+                                    line = document.createElement('div');
+                                    line.className = cssPrefix + 'scaleLine';
+                                    if (scaleLine.c) {
+                                        line.style.backgroundColor = scaleLine.c;
+                                    }
+                                    line.style.top = setPerc;
+                                    m.scale.appendChild(line);
+                                    line.isScaleLine = true;
+                                    lines.push(line);
+
+                                    if(scaleLine.l){
+                                        text = document.createElement('span');
+                                        text.textContent = scaleLine.l;
+                                        text.className = cssPrefix + 'scaleText';
+                                        text.style.top = setPerc;
+                                        m.scale.appendChild(text);
+                                        text.isScaleLine = true;
+                                        texts.push(text);
+                                    }
+                                });
+                            }
+
                             m.resizeQueue.push(function generateScaleResize() {
                                 m.state.scaleWidth = 0;
-                                for (var i = 0; i < m.config.scale.steps + 1; i++) {
-                                    if (texts[i].offsetWidth > m.state.scaleWidth) {
+                                for (var i = 0; i < texts.length; i++) {
+                                    if (!texts[i].isScaleLine && texts[i].offsetWidth > m.state.scaleWidth) {
                                         m.state.scaleWidth = texts[i].offsetWidth * 1 || 20;
                                         m.state.scaleWidthDecimal = m.state.scaleWidth / m.width;
                                         m.state.scaleWidthPercent = 100 * m.state.scaleWidthDecimal + 2
                                     }
+                                    if(texts[i].isScaleLine){
+                                        texts[i].style.left = (m.state.scaleWidth + 4) + 'px';
+                                        texts[i].style.top = 'calc('+texts[i].style.top+' + 8px)';
+                                    }
                                 }
-                                for (var i = 0; i < m.config.scale.steps + 1; i++) {
+                                for (var i = 0; i < texts.length; i++) {
+                                    if(!texts[i].isScaleLine){
+                                        texts[i].style.width = m.state.scaleWidth + 'px';
+                                    }
+                                }
+                                for (var i = 0; i < lines.length; i++) {
                                     lines[i].style.left = (m.state.scaleWidth + 4) + 'px';
-                                    texts[i].style.width = m.state.scaleWidth + 'px';
                                 }
                                 requestAnimationFrame(setBottomLegendHeight)
                             })
                         }
+
                     } else {
                         m.resizeQueue.push(function generateScaleResize() {
                             requestAnimationFrame(setBottomLegendHeight)

@@ -16,6 +16,7 @@ mimaChart({
     data: [{
         l: "slice", // "l" label
         v: 10, // "v" value
+        c: undefined, //an html color value to force 
     }]
 });
 
@@ -49,6 +50,12 @@ scale: {
 sort: function(a, b){}, // custom sort function to use or a string to use a function in window
 onclick: function(event, dataPoint, chart) {}, // define the custom click handler for when a data point is clicked,
 onchange: function(changeType, config, chart) {}, // execute this function whenever a chart's config is changed
-dataLevel: 2 // for line and bar charts, what level of data do you want to stop rendering at?
+dataLevel: 2, // for line and bar charts, what level of data do you want to stop rendering at?
+scaleLines: [ //an array of lines to overlay over a bar or line chart that plot with the vertical scale
+    {
+        l: 'line title',
+        v: 100, //value to plot at
+    }
+]
 
 ```

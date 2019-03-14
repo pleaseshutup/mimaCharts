@@ -11,7 +11,22 @@ var charts = [{
 		scale: {
 			lowest: 10,
 			highest: 50
-		}
+		},
+		scaleLines: [ //an array of lines to overlay over a bar or line chart that plot with the vertical scale
+			{
+				l: 'median value',
+				v: 30, //value to plot at
+				c: 'orange'
+			}, {
+				l: 'low value',
+				v: 10, //value to plot at
+				c: 'red'
+			}, {
+				l: 'high value',
+				v: 40, //value to plot at
+				c: 'blue'
+			}
+		]
 	},
 	data: [{
 		l: 'Mark 1',
@@ -932,7 +947,7 @@ var config = sessionConfig(),
 		});
 	};
 
-if(numRandom){
+if (numRandom) {
 	for (var i = 0; i < numRandom; i++) {
 		var dataItem = {
 				title: 'Random ' + i,
@@ -958,7 +973,7 @@ function genCharts() {
 	charts.forEach(function(chart, i) {
 		var isolated = i === config.isolateChart;
 		if (isolated || typeof config.isolateChart === 'undefined') {
-			if(isolated) {
+			if (isolated) {
 				chart.config.maxHeight = 300;
 			}
 			var sec = document.createElement('section'),
@@ -968,7 +983,9 @@ function genCharts() {
 
 
 			var width = config['random sizes'] ? (200 + (400 * Math.random())) + 'px' : '400px';
-			if(isolated){ width = '100%'; }
+			if (isolated) {
+				width = '100%';
+			}
 			sec.style.cssText = 'display:' + (config[chart.config.type] === false ? 'none' : 'inline-block') + ';box-sizing:border-box;vertical-align:top;width:' + width + ';max-width:100%;padding:0 1%';
 			sec.innerHTML = '<h2 style="cursor:pointer">' + chart.title + '</h2>';
 
