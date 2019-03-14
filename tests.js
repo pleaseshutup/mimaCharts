@@ -686,7 +686,22 @@ var charts = [{
 		type: 'bar',
 		onclick: function(e, point) {
 			console.log('clicked point', point);
-		}
+		},
+		scaleLines: [ //an array of lines to overlay over a bar or line chart that plot with the vertical scale
+			{
+				l: 'median value',
+				v: 3, //value to plot at
+				c: 'orange'
+			}, {
+				l: 'low value',
+				v: 1, //value to plot at
+				c: 'red'
+			}, {
+				l: 'high value',
+				v: 4, //value to plot at
+				c: 'blue'
+			}
+		]
 	},
 	data: [{
 		v: 1,
