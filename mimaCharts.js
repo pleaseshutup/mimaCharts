@@ -1127,7 +1127,7 @@
                                     setPerc = config.type1 === 'b' ? (100 - (percent * 100)) + '%' : (2 + (96 - (percent * 96))) + '%'
                                     displayNum = ((num + m.info.lowest) * 100) / 100;
                                     line = document.createElement('div');
-                                    line.className = cssPrefix + 'scaleLine';
+                                    line.className = cssPrefix + 'scaleLine ' + cssPrefix + 'scaleLines';
                                     if (scaleLine.c) {
                                         line.style.backgroundColor = scaleLine.c;
                                     }
