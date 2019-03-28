@@ -56,7 +56,7 @@
 				.' + cssPrefix + 'bottomLegend{padding-top: 12px;}\
 				.' + cssPrefix + 'abs{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none}\
 				.' + cssPrefix + 'sq:before{content:"";display:block;padding-top: 100%;}\
-				.' + cssPrefix + 'dot{position:absolute;margin:-1% 0 0 -1%;border-radius:50%;width:2%}\
+				.' + cssPrefix + 'dot{position:absolute;margin:-0.75% 0 0 -0.75%;border-radius:50%;width:1.5%}\
 				.' + cssPrefix + 'pe{pointer-events: all}\
 				.' + cssPrefix + 'ellipsis{text-overflow: ellipsis; max-width: 100%; white-space: nowrap; overflow: hidden;}\
 				.' + cssPrefix + 'ibb{display:inline-block; box-sizing:border-box; vertical-align:middle}\
@@ -908,7 +908,7 @@
                             point.line = document.createElementNS(svgNS, 'path');
                             point.line.setAttribute('class', cssPrefix + 'pe');
                             point.line.setAttribute('stroke', point.color.value);
-                            point.line.setAttribute('stroke-width', '1%');
+                            point.line.setAttribute('stroke-width', '0.75%');
                             m.svg.appendChild(point.line);
                             setPointEvents(m, point.line, point);
                         }
