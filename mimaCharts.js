@@ -687,6 +687,7 @@
                     var bar = this;
                     if (m.firstRender) {
                         m.points.push(point);
+                        point.overallIndex = m.points.length - 1;
                     }
 
                     if (point.disabled) {
@@ -820,6 +821,7 @@
                     var line = this;
                     if (m.firstRender) {
                         m.points.push(point);
+                        point.overallIndex = m.points.length - 1;
                     }
 
                     if (point.disabled) {
@@ -976,6 +978,7 @@
 
                     if (m.firstRender) {
                         m.points.push(point);
+                        point.overallIndex = m.points.length - 1;
                     }
                     if (point.disabled) {
                         return false;
@@ -1268,10 +1271,23 @@
                     if (point.legendText.offsetWidth && point.legendText.offsetWidth < 10) {
                         point.legendText.style.display = 'none';
                     } else if (m.state.rotateBarLabels || (!m.state.rotateBarLabels && point.legendText.scrollWidth >= point.legend.offsetWidth)) {
+                        point.legendRotated = true;
+
+
                         if (!m.state.barLabelMaxWidth) {
                             m.state.barLabelMaxWidth = 0;
-                            m.state.rotateBarLabels = true;
+
+                            if (!m.state.rotateBarLabels && point.i > 0) {
+                                m.state.rotateBarLabels = true;
+                                for(var ri = point.i - 1; ri > -1; ri -- ){
+                                    if(!m.points[point.overallIndex - (ri + 1)].legendRotated) {
+                                        rotateBottomLegendLabels(m.points[point.overallIndex - (ri + 1)]);
+                                    }
+                                }
+                            }
+                            m.state.rotateBarLabels = true; // yes twice
                         }
+
                         if (m.state.barLabelMaxWidth < 100 && point.legendText.scrollWidth > m.state.barLabelMaxWidth) {
                             m.state.barLabelMaxWidth = point.legendText.scrollWidth;
                             if (m.state.barLabelMaxWidth > 100) {

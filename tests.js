@@ -35,7 +35,10 @@ var charts = [{
 		l: 'Mark 2',
 		v: 20
 	}, {
-		l: 'Mark 3',
+		l: 'Mark 3 with a longer rotated name',
+		v: 15
+	}, {
+		l: 'Mark 4 with a longer rotated name',
 		v: 15
 	}]
 }, {
@@ -997,7 +1000,7 @@ function genCharts() {
 			sec.style.display = config[chart.config.type] || typeof config[chart.config.type] === 'undefined' ? '' : 'none';
 
 
-			var width = config['random sizes'] ? (200 + (400 * Math.random())) + 'px' : '400px';
+			var width = config['random sizes'] ? (200 + (400 * Math.random())) + 'px' : '600px';
 			if (isolated) {
 				width = '100%';
 			}
