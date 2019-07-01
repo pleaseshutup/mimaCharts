@@ -1270,9 +1270,8 @@
                 rotateBottomLegendLabels = function(point) {
                     if (point.legendText.offsetWidth && point.legendText.offsetWidth < 10) {
                         point.legendText.style.display = 'none';
+                        console.log('not exec2 on', point.l);
                     } else if (m.state.rotateBarLabels || (!m.state.rotateBarLabels && point.legendText.scrollWidth >= point.legend.offsetWidth)) {
-                        point.legendRotated = true;
-
 
                         if (!m.state.barLabelMaxWidth) {
                             m.state.barLabelMaxWidth = 0;
@@ -1280,9 +1279,7 @@
                             if (!m.state.rotateBarLabels && point.i > 0) {
                                 m.state.rotateBarLabels = true;
                                 for(var ri = point.i - 1; ri > -1; ri -- ){
-                                    if(!m.points[point.overallIndex - (ri + 1)].legendRotated) {
-                                        rotateBottomLegendLabels(m.points[point.overallIndex - (ri + 1)]);
-                                    }
+                                    rotateBottomLegendLabels(m.points[point.overallIndex - (ri + 1)]);
                                 }
                             }
                             m.state.rotateBarLabels = true; // yes twice
@@ -1303,11 +1300,13 @@
                             m.bottomLegend.style.paddingTop = m.state.barLabelRotatedHeight + 'px';
                         }
                         m.hasLabels = true;
+                        console.log('execd on', point.l);
                     } else {
                         m.bottomLegend.style.paddingTop = '24px';
                         point.legendText.style.height = '';
                         point.legendText.className = cssPrefix + 'ellipsis';
                         m.hasLabels = true;
+                        console.log('not exec on', point.l);
                     }
                 },
 
