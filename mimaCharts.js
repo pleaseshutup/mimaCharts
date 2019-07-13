@@ -1269,7 +1269,7 @@
                 },
 
                 rotateBottomLegendLabels = function(point) {
-                    if (point.legendText.offsetWidth && point.legendText.offsetWidth < 4) {
+                    if (point.legendText.offsetWidth && point.legendText.offsetWidth < 2) {
                         point.legendText.style.display = 'none';
                     } else if (m.state.rotateBarLabels || (!m.state.rotateBarLabels && point.legendText.scrollWidth >= point.legend.offsetWidth)) {
 
