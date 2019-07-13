@@ -667,6 +667,7 @@
                             m.levels[this.info.level].longestLabel = point.l.length;
                         }
                     }
+                    console.log(point)
 
                     if (!point.info.lowestLevel) {
                         point.data.forEach(gatherInfo2, point);
@@ -1268,9 +1269,8 @@
                 },
 
                 rotateBottomLegendLabels = function(point) {
-                    if (point.legendText.offsetWidth && point.legendText.offsetWidth < 10) {
+                    if (point.legendText.offsetWidth && point.legendText.offsetWidth < 4) {
                         point.legendText.style.display = 'none';
-                        console.log('not exec2 on', point.l);
                     } else if (m.state.rotateBarLabels || (!m.state.rotateBarLabels && point.legendText.scrollWidth >= point.legend.offsetWidth)) {
 
                         if (!m.state.barLabelMaxWidth) {
@@ -1300,13 +1300,11 @@
                             m.bottomLegend.style.paddingTop = m.state.barLabelRotatedHeight + 'px';
                         }
                         m.hasLabels = true;
-                        console.log('execd on', point.l);
                     } else {
                         m.bottomLegend.style.paddingTop = '24px';
                         point.legendText.style.height = '';
                         point.legendText.className = cssPrefix + 'ellipsis';
                         m.hasLabels = true;
-                        console.log('not exec on', point.l);
                     }
                 },
 
