@@ -1585,6 +1585,7 @@
             }
             setTimeout(checkIfInDom);
 
+            m.chart.addEventListener('mouseout', m.killHover);
             setStyleSheet();
             return m;
         };
