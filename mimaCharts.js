@@ -1192,10 +1192,10 @@
                     if (config.type1 === 'p' || config.type1 === 'd') {
                         m.legendHolder = dom('div')._css({
                             position: 'absolute',
-                            top: 0,
-                            bottom: 0,
-                            left: '50%',
-                            width: '50%',
+                            top: '10px',
+                            bottom: '10px',
+                            left: '55%',
+                            width: '45%',
                             overflow: 'hidden'
                         })
                         m.legend = dom('div')._css({
