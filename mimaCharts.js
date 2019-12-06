@@ -527,7 +527,7 @@
                         cx: 25,
                         cy: 25,
                         o_rad: 22,
-                        i_rad: 17,
+                        i_rad: 14,
                         curIndex: 0, // this is the index of the item considering ignored/disabled items
                         length: 0, // this is the length of the array for the segment considering ignored/disabled items
                         parentLabels: ''
